@@ -1,6 +1,9 @@
 # n8n Custom Node Development Documentation (2025)
 
-Complete guide for creating custom n8n nodes in 2025. This documentation is designed for LLM assistants to help users build effective, secure, and maintainable n8n custom nodes.
+Complete guide for creating custom n8n nodes in 2025. This documentation is designed for both developers and LLM assistants to build effective, secure, and maintainable n8n custom nodes.
+
+## 🤖 For AI Assistants
+- **[LLM-ASSISTANT-GUIDE.md](./LLM-ASSISTANT-GUIDE.md)** - **START HERE** - Guide for AI assistants helping with n8n node development
 
 ## 📚 Documentation Index
 
