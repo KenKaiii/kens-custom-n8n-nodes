@@ -1,6 +1,6 @@
-# Ken's Custom n8n Nodes Template
+# Custom n8n Nodes Template
 
-Hey! I'm Ken Kai, and I build AI stuff. I got tired of n8n's limitations, so I built some pretty advanced custom nodes. But more importantly, **I created this template so YOU can build whatever n8n nodes you want - even if you've never done it before.**
+**A complete template for building professional n8n custom nodes.** Whether you're learning or building for production, this template provides everything you need to create high-quality, secure n8n nodes.
 
 ## 🤖 The Magic: Use This With Claude
 
@@ -9,17 +9,17 @@ Here's the secret sauce: **Ask Claude to read the docs in this repo and help you
 Just say:
 > "Hey Claude, read the documentation in the `/docs` folder and help me create a custom n8n node that connects to [whatever API/service you want]"
 
-Claude will read all my guides and help you build professional-quality nodes. It's like having me as your coding buddy.
+Claude will read all the guides and help you build professional-quality nodes.
 
-## 🎯 What This Actually Is
+## 🎯 What This Includes
 
 - **Complete template** for building custom n8n nodes
-- **8 comprehensive guides** that teach you everything (in `/docs`)
-- **Real patterns** from the complex nodes I've built in production
-- **Security practices** so you don't accidentally break things
+- **8 comprehensive guides** covering everything (in `/docs`)
+- **Real patterns** from production-grade nodes
+- **Security best practices** and safe development patterns
 - **LLM-optimized** - designed for Claude to read and understand
 
-## 🚀 Installation (For Complete Beginners)
+## 🚀 Installation
 
 ### Step 1: Get This Template
 ```bash
@@ -56,24 +56,24 @@ n8n start --tunnel
 
 You should see n8n open in your browser at http://localhost:5678
 
-## 🧠 How to Actually Use This
+## 🧠 How to Use This
 
-### The Easy Way (Recommended)
-1. **Ask Claude for help** - seriously, this is the fastest way
+### AI-Assisted Development (Recommended)
+1. **Ask Claude for help** - the fastest way to build nodes
 2. **Tell Claude exactly what you want**: 
    - "Help me connect to Stripe's API"  
    - "Create a node that processes CSV files"
    - "Build something that sends Discord messages"
    - "Make a node that calls OpenAI's API"
 
-### The Manual Way
+### Manual Development
 1. **Read `/docs/capabilities-and-limitations.md` first** - learn what's possible
 2. **Follow `/docs/node-development-guide.md`** - step by step instructions
 3. **Use `/docs/testing-and-debugging.md`** when things don't work
 
 ## 📚 What's in the /docs Folder
 
-I wrote 8 detailed guides based on building real, complex n8n nodes:
+8 detailed guides covering all aspects of n8n node development:
 
 | Guide | What It Teaches |
 |-------|-----------------|
@@ -87,7 +87,7 @@ I wrote 8 detailed guides based on building real, complex n8n nodes:
 
 ## 🛠️ What You Can Build
 
-Based on the nodes I've built, here's what's totally doable:
+Here's what's possible with n8n custom nodes:
 
 ### ✅ **Easy Wins**
 - **API connectors** - Connect to any REST API (Stripe, GitHub, etc.)
@@ -107,52 +107,50 @@ Based on the nodes I've built, here's what's totally doable:
 - Long-running background processes (not how n8n works)
 - Complex state management (nodes are stateless)
 
-## 🔥 Real Talk: Why I Made This
+## 🔥 Why This Template Exists
 
-I built some pretty complex n8n nodes (think AI agents with multiple models, dynamic routing, MCP protocol support). But every time someone asked "how do I build custom nodes?", the existing tutorials were garbage.
-
-So I created this template with:
+Existing n8n node tutorials often lack depth and real-world patterns. This template provides:
 - **Real patterns** from production nodes
-- **Honest limitations** - I tell you what actually works
-- **Security practices** - because I've seen people do scary things
-- **LLM optimization** - designed for Claude to read and help you
+- **Honest limitations** - what actually works vs what doesn't
+- **Security practices** - prevent common vulnerabilities
+- **LLM optimization** - designed for AI-assisted development
 
-## 🚨 Important Stuff
+## 🚨 Important Notes
 
 ### This Template IS:
-- ✅ A complete foundation for learning n8n development
+- ✅ A complete foundation for n8n development
 - ✅ Production-ready patterns and security practices
 - ✅ Optimized for AI-assisted development with Claude
-- ✅ Based on real, complex nodes I've built
+- ✅ Based on real, complex production nodes
 
 ### This Template ISN'T:
-- ❌ Ready-to-use business nodes (it's educational)
+- ❌ Ready-to-use business nodes (it's a template)
 - ❌ A replacement for n8n's official docs
-- ❌ Guaranteed to work in every weird edge case
+- ❌ Guaranteed to work in every edge case
 
 ## 🎯 Quick Start Guide
 
 1. **Clone this repo** (see installation above)
 2. **Ask Claude**: "Read the n8n docs in `/docs` and help me build a [whatever] node"
-3. **Follow Claude's guidance** - it'll read my patterns and help you
+3. **Follow Claude's guidance** - it'll read the patterns and help you
 4. **Test locally** using `n8n start --tunnel`
 5. **Publish to npm** when ready (use `/docs/publishing-guide.md`)
 
 ## 💬 Need Help?
 
-- **Use Claude** - seriously, ask it to read the docs and help you
+- **Use Claude** - ask it to read the docs and help you
 - **Check `/docs/troubleshooting.md`** for common issues
 - **Start simple** - build a basic API connector first
 - **Read the limitations guide** - know what's possible before you start
 
-## 🎉 Go Build Cool Stuff
+## 🎉 Get Started
 
-This template gives you everything I wish I had when I started building n8n nodes. The documentation is comprehensive, the patterns are battle-tested, and it's designed to work perfectly with Claude.
+This template provides comprehensive documentation, battle-tested patterns, and is designed to work perfectly with Claude for AI-assisted development.
 
-**Stop overthinking it. Clone the repo, ask Claude for help, and start building.**
+**Clone the repo, ask Claude for help, and start building.**
 
 ---
 
-**Built by Ken Kai** | [YouTube](https://youtube.com/@kenkaidoesai) | Making AI actually useful since before it was cool
+**Created by Ken Kai** | [YouTube](https://youtube.com/@kenkaidoesai)
 
-*P.S. - If you build something awesome with this template, let me know! I love seeing what people create.*
+*If you build something awesome with this template, share it!*
