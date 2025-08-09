@@ -15,7 +15,7 @@
 *Whether you're learning or building for production, this template provides everything you need to create high-quality, secure n8n nodes.*
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
-[![Node.js](https://img.shields.io/badge/Node.js-20.15%2B-green)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-20.18%2B-green)](https://nodejs.org/)
 [![n8n](https://img.shields.io/badge/n8n-Community%20Nodes-ff4081)](https://n8n.io/)
 
 </div>
