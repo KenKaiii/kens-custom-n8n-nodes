@@ -41,6 +41,7 @@ memories.json
 reflections.json
 debug-*.md
 test-*.js
+.claude/
 
 # Temporary files
 *.tmp
