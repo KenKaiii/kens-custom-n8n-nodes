@@ -1,0 +1,68 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Development files
+*.tsbuildinfo
+*.log
+*.tmp
+.env
+.env.*
+
+# Source files (only distribute compiled)
+nodes/
+credentials/
+src/
+tests/
+features/
+
+# Development configs
+.vscode/
+.idea/
+.eslintrc.js
+.eslintrc.prepublish.js
+.prettierrc.js
+tsconfig.json
+gulpfile.js
+jest.config.js
+
+# Git files
+.git/
+.gitignore
+.gitattributes
+
+# Documentation source files
+*.md
+!README.md
+!LICENSE.md
+
+# Scripts and examples
+scripts/
+examples/
+start-n8n-debug.sh
+test-*.js
+
+# Build artifacts
+*.tgz
+coverage/
+.nyc_output/
+dist/tsconfig.tsbuildinfo
+dist/*.tsbuildinfo
+dist/**/*.map
+*.map
+
+# Personal/debug files
+memories.json
+reflections.json
+debug-memory.md
+n8n_checklist.md
+
+# Node modules (will be installed by npm)
+node_modules/
+
+# Example/test nodes
+nodes/ExampleNode/
+nodes/HttpBin/
+credentials/ExampleCredentialsApi.credentials.ts
+credentials/HttpBinApi.credentials.ts
+credentials/SuperAgentMcpApi.credentials.ts

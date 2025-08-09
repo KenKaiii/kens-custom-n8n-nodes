@@ -1,0 +1,10 @@
+# This directory will contain your custom n8n nodes
+#
+# Example structure:
+# nodes/
+# ├── YourNode/
+# │   ├── YourNode.node.ts
+# │   └── icon.svg
+# └── AnotherNode/
+#     ├── AnotherNode.node.ts
+#     └── icon.svg

@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tsbuildinfo
+
+# Environment files
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/launch.json
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Lock files (using package-lock.json)
+yarn.lock
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# Package files
+*.tgz
+*.tar.gz
+
+# Personal/debug files
+memories.json
+reflections.json
+debug-*.md
+test-*.js
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+tmp/
+.cache/
