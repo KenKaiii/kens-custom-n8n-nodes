@@ -257,7 +257,11 @@ testResults.jsonData = await runAsyncTest('JSON Data Handling', async () => {
     }
   };
   
-  const response = await axios.post('https://httpbin.org/json', jsonData);
+  const response = await axios.post('https://httpbin.org/post', jsonData, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
   
   return {
     status: response.status,
@@ -268,10 +272,17 @@ testResults.jsonData = await runAsyncTest('JSON Data Handling', async () => {
 });
 
 testResults.formData = await runAsyncTest('Form Data Handling', async () => {
-  const formData = new URLSearchParams();
-  formData.append('name', 'SuperCode Form Test');
-  formData.append('type', 'application/x-www-form-urlencoded');
-  formData.append('testing', 'true');
+  // Fallback for URLSearchParams if not available in VM context
+  let formData;
+  try {
+    formData = new URLSearchParams();
+    formData.append('name', 'SuperCode Form Test');
+    formData.append('type', 'application/x-www-form-urlencoded');
+    formData.append('testing', 'true');
+  } catch (error) {
+    // Manual form data creation as fallback
+    formData = 'name=SuperCode+Form+Test&type=application%2Fx-www-form-urlencoded&testing=true';
+  }
   
   const response = await axios.post('https://httpbin.org/post', formData, {
     headers: {

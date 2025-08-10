@@ -170,8 +170,17 @@ testResults.evaluateMatrix = runTest('Math.evaluate - Matrix Operations', () => 
 });
 
 testResults.evaluateWithVariables = runTest('Math.evaluate - With Variables', () => {
-  const scope = { x: 3, y: 4 };
-  return math.evaluate('x * y + 2', scope);
+  // Create a proper scope object - math.js is picky about the format
+  try {
+    const result = math.evaluate('x * y + 2', { x: 3, y: 4 });
+    return result;
+  } catch (error) {
+    // Fallback: try with Map if Object doesn't work
+    const scope = new Map();
+    scope.set('x', 3);
+    scope.set('y', 4);
+    return math.evaluate('x * y + 2', scope);
+  }
 });
 
 testResults.complexNumbers = runTest('Complex Numbers', () => {

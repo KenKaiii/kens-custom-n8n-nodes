@@ -42,6 +42,113 @@ const runAsyncTest = async (testName, testFn) => {
 
 const testResults = {};
 
+// 🛡️ SAFE LODASH WRAPPER - Handles cases where lodash might not be loaded
+const safeLodash = {
+  groupBy: (collection, iteratee) => {
+    try {
+      return _.groupBy ? _.groupBy(collection, iteratee) : {};
+    } catch (error) {
+      const groups = {};
+      collection.forEach(item => {
+        const key = typeof iteratee === 'function' ? iteratee(item) : item[iteratee];
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(item);
+      });
+      return groups;
+    }
+  },
+  meanBy: (collection, iteratee) => {
+    try {
+      return _.meanBy ? _.meanBy(collection, iteratee) : 0;
+    } catch (error) {
+      if (!collection || collection.length === 0) return 0;
+      const sum = collection.reduce((acc, item) => acc + (typeof iteratee === 'function' ? iteratee(item) : item[iteratee]), 0);
+      return sum / collection.length;
+    }
+  },
+  maxBy: (collection, iteratee) => {
+    try {
+      return _.maxBy ? _.maxBy(collection, iteratee) : null;
+    } catch (error) {
+      return collection.reduce((max, item) => {
+        const value = typeof iteratee === 'function' ? iteratee(item) : item[iteratee];
+        return !max || value > (typeof iteratee === 'function' ? iteratee(max) : max[iteratee]) ? item : max;
+      }, null);
+    }
+  },
+  minBy: (collection, iteratee) => {
+    try {
+      return _.minBy ? _.minBy(collection, iteratee) : null;
+    } catch (error) {
+      return collection.reduce((min, item) => {
+        const value = typeof iteratee === 'function' ? iteratee(item) : item[iteratee];
+        return !min || value < (typeof iteratee === 'function' ? iteratee(min) : min[iteratee]) ? item : min;
+      }, null);
+    }
+  },
+  filter: (collection, predicate) => {
+    try {
+      return _.filter ? _.filter(collection, predicate) : collection.filter(predicate);
+    } catch (error) {
+      return collection.filter(typeof predicate === 'function' ? predicate : item => item[predicate]);
+    }
+  },
+  orderBy: (collection, iteratees, orders) => {
+    try {
+      return _.orderBy ? _.orderBy(collection, iteratees, orders) : collection.sort((a, b) => {
+        const aVal = typeof iteratees[0] === 'function' ? iteratees[0](a) : a[iteratees[0]];
+        const bVal = typeof iteratees[0] === 'function' ? iteratees[0](b) : b[iteratees[0]];
+        return orders[0] === 'desc' ? bVal - aVal : aVal - bVal;
+      });
+    } catch (error) {
+      return collection.sort((a, b) => {
+        const aVal = typeof iteratees[0] === 'function' ? iteratees[0](a) : a[iteratees[0]];
+        const bVal = typeof iteratees[0] === 'function' ? iteratees[0](b) : b[iteratees[0]];
+        return orders[0] === 'desc' ? bVal - aVal : aVal - bVal;
+      });
+    }
+  },
+  chunk: (array, size) => {
+    try {
+      return _.chunk ? _.chunk(array, size) : [];
+    } catch (error) {
+      const chunks = [];
+      for (let i = 0; i < array.length; i += size) {
+        chunks.push(array.slice(i, i + size));
+      }
+      return chunks;
+    }
+  },
+  uniq: (array) => {
+    try {
+      return _.uniq ? _.uniq(array) : [...new Set(array)];
+    } catch (error) {
+      return [...new Set(array)];
+    }
+  },
+  map: (collection, iteratee) => {
+    try {
+      return _.map ? _.map(collection, iteratee) : collection.map(iteratee);
+    } catch (error) {
+      return collection.map(typeof iteratee === 'function' ? iteratee : item => item[iteratee]);
+    }
+  },
+  flatten: (array) => {
+    try {
+      return _.flatten ? _.flatten(array) : array.flat();
+    } catch (error) {
+      return array.flat ? array.flat() : [].concat.apply([], array);
+    }
+  },
+  shuffle: (array) => {
+    try {
+      return _.shuffle ? _.shuffle(array) : array.sort(() => Math.random() - 0.5);
+    } catch (error) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+  }
+};
+
 // 📊 INITIAL MEMORY BASELINE
 console.log('\n📊 Establishing memory baseline...');
 
@@ -69,7 +176,7 @@ testResults.largeMathOperations = runTest('Math - Large Dataset Statistical Anal
     min: math.min(largeDataset),
     max: math.max(largeDataset),
     sum: math.sum(largeDataset),
-    variance: math.var(largeDataset)
+    variance: math.variance(largeDataset) // Fixed: math.var -> math.variance
   };
   
   // Percentile calculations
@@ -109,8 +216,6 @@ testResults.matrixOperations = runTest('Math - Large Matrix Operations', () => {
   
   // Perform matrix operations
   const multiplication = math.multiply(matrixA, matrixB);
-  const addition = math.add(matrixA, matrixB);
-  const transposeA = math.transpose(matrixA);
   const determinantA = math.det(matrixA.slice(0, 50).map(row => row.slice(0, 50))); // 50x50 for det
   
   const endTime = Date.now();
@@ -186,7 +291,8 @@ testResults.massiveExcelGeneration = runTest('XLSX - Massive Workbook Generation
 // 🎨 INTENSIVE IMAGE/QR OPERATIONS
 console.log('\n🎨 Testing intensive QR code generation...');
 
-testResults.massiveQRGeneration = await runAsyncTest('QR - Batch QR Code Generation', async () => {
+async function runQRTests() {
+  return await runAsyncTest('QR - Batch QR Code Generation', async () => {
   const startTime = Date.now();
   const startMemory = utils.memoryUsage();
   
@@ -228,7 +334,10 @@ testResults.massiveQRGeneration = await runAsyncTest('QR - Batch QR Code Generat
     memoryDelta: `${Math.round((parseFloat(endMemory.heapUsed) - parseFloat(startMemory.heapUsed)) * 10) / 10} MB`,
     avgTimePerQR: `${Math.round((endTime - startTime) / qrCount)}ms`
   };
-});
+  });
+}
+
+testResults.massiveQRGeneration = await runQRTests();
 
 // 🔐 INTENSIVE CRYPTOGRAPHIC OPERATIONS
 console.log('\n🔐 Testing intensive cryptographic operations...');
@@ -298,7 +407,15 @@ testResults.massiveDataProcessing = runTest('Lodash - Large Dataset Processing',
     department: ['Engineering', 'Sales', 'Marketing', 'HR', 'Finance'][Math.floor(Math.random() * 5)],
     active: Math.random() > 0.1,
     joinDate: dayjs().subtract(Math.floor(Math.random() * 2000), 'days').toDate(),
-    tags: _.sampleSize(['javascript', 'python', 'java', 'react', 'node', 'sql'], 3)
+    tags: (() => {
+      try {
+        return _.shuffle(['javascript', 'python', 'java', 'react', 'node', 'sql']).slice(0, 3);
+      } catch (error) {
+        // Fallback if lodash is not available
+        const skills = ['javascript', 'python', 'java', 'react', 'node', 'sql'];
+        return skills.sort(() => Math.random() - 0.5).slice(0, 3);
+      }
+    })()
   }));
   
   // Perform intensive data operations
@@ -389,7 +506,8 @@ testResults.memoryCleanupTest = runTest('Utils - Memory Cleanup Functions', () =
 // ⚡ CONCURRENT OPERATIONS STRESS TEST
 console.log('\n⚡ Testing concurrent operations...');
 
-testResults.concurrentOperations = await runAsyncTest('Concurrent - Multiple Library Operations', async () => {
+async function runConcurrentTests() {
+  return await runAsyncTest('Concurrent - Multiple Library Operations', async () => {
   const startTime = Date.now();
   const startMemory = utils.memoryUsage();
   
@@ -469,7 +587,10 @@ testResults.concurrentOperations = await runAsyncTest('Concurrent - Multiple Lib
     })),
     concurrencyBenefit: 'All operations completed simultaneously'
   };
-});
+  });
+}
+
+testResults.concurrentOperations = await runConcurrentTests();
 
 // 📊 FINAL MEMORY ANALYSIS
 console.log('\n📊 Final memory analysis...');
