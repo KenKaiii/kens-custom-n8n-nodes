@@ -217,34 +217,36 @@ export class DataTransformer implements INodeType {
 		],
 	};
 
+	// eslint-disable-next-line no-unused-vars
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-		const items = this.getInputData();
+		const executeFunctions = this;
+		const items = executeFunctions.getInputData();
 		const returnData: INodeExecutionData[] = [];
 
 		for (let i = 0; i < items.length; i++) {
 			try {
-				const operation = this.getNodeParameter('operation', i) as string;
+				const operation = executeFunctions.getNodeParameter('operation', i) as string;
 				let newItem: INodeExecutionData = {
 					json: { ...items[i].json },
 				};
 
 				switch (operation) {
 					case 'addField': {
-						const fieldName = this.getNodeParameter('fieldName', i) as string;
-						const fieldValue = this.getNodeParameter('fieldValue', i) as string;
+						const fieldName = executeFunctions.getNodeParameter('fieldName', i) as string;
+						const fieldValue = executeFunctions.getNodeParameter('fieldValue', i) as string;
 						newItem.json[fieldName] = fieldValue;
 						break;
 					}
 
 					case 'removeField': {
-						const fieldName = this.getNodeParameter('fieldName', i) as string;
+						const fieldName = executeFunctions.getNodeParameter('fieldName', i) as string;
 						delete newItem.json[fieldName];
 						break;
 					}
 
 					case 'renameField': {
-						const originalFieldName = this.getNodeParameter('originalFieldName', i) as string;
-						const newFieldName = this.getNodeParameter('newFieldName', i) as string;
+						const originalFieldName = executeFunctions.getNodeParameter('originalFieldName', i) as string;
+						const newFieldName = executeFunctions.getNodeParameter('newFieldName', i) as string;
 						
 						if (newItem.json[originalFieldName] !== undefined) {
 							newItem.json[newFieldName] = newItem.json[originalFieldName];
@@ -254,8 +256,8 @@ export class DataTransformer implements INodeType {
 					}
 
 					case 'transformText': {
-						const fieldName = this.getNodeParameter('originalFieldName', i) as string;
-						const transformType = this.getNodeParameter('transformType', i) as string;
+						const fieldName = executeFunctions.getNodeParameter('originalFieldName', i) as string;
+						const transformType = executeFunctions.getNodeParameter('transformType', i) as string;
 						const originalValue = newItem.json[fieldName];
 
 						if (typeof originalValue === 'string') {
@@ -284,16 +286,16 @@ export class DataTransformer implements INodeType {
 					}
 
 					case 'calculate': {
-						const field1 = this.getNodeParameter('field1', i) as string;
-						const field2 = this.getNodeParameter('field2', i) as string;
-						const operationType = this.getNodeParameter('operationType', i) as string;
-						const resultFieldName = this.getNodeParameter('resultFieldName', i) as string;
+						const field1 = executeFunctions.getNodeParameter('field1', i) as string;
+						const field2 = executeFunctions.getNodeParameter('field2', i) as string;
+						const operationType = executeFunctions.getNodeParameter('operationType', i) as string;
+						const resultFieldName = executeFunctions.getNodeParameter('resultFieldName', i) as string;
 
 						const value1 = parseFloat(String(newItem.json[field1]));
 						const value2 = parseFloat(String(newItem.json[field2]));
 
 						if (isNaN(value1) || isNaN(value2)) {
-							throw new NodeOperationError(this.getNode(), `Cannot perform calculation: ${field1}=${newItem.json[field1]}, ${field2}=${newItem.json[field2]}`);
+							throw new NodeOperationError(executeFunctions.getNode(), `Cannot perform calculation: ${field1}=${newItem.json[field1]}, ${field2}=${newItem.json[field2]}`);
 						}
 
 						let result: number;
@@ -309,12 +311,12 @@ export class DataTransformer implements INodeType {
 								break;
 							case 'divide':
 								if (value2 === 0) {
-									throw new NodeOperationError(this.getNode(), 'Cannot divide by zero');
+									throw new NodeOperationError(executeFunctions.getNode(), 'Cannot divide by zero');
 								}
 								result = value1 / value2;
 								break;
 							default:
-								throw new NodeOperationError(this.getNode(), `Unknown operation type: ${operationType}`);
+								throw new NodeOperationError(executeFunctions.getNode(), `Unknown operation type: ${operationType}`);
 						}
 
 						newItem.json[resultFieldName] = result;
@@ -322,12 +324,12 @@ export class DataTransformer implements INodeType {
 					}
 
 					default:
-						throw new NodeOperationError(this.getNode(), `Unknown operation: ${operation}`);
+						throw new NodeOperationError(executeFunctions.getNode(), `Unknown operation: ${operation}`);
 				}
 
 				returnData.push(newItem);
 			} catch (error) {
-				if (this.continueOnFail()) {
+				if (executeFunctions.continueOnFail()) {
 					returnData.push({
 						json: {
 							error: error.message,

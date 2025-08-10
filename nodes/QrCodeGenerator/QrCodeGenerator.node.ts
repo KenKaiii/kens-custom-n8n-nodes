@@ -176,44 +176,47 @@ export class QrCodeGenerator implements INodeType {
 		],
 	};
 
+	// eslint-disable-next-line no-unused-vars
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-		const items = this.getInputData();
+		const executeFunctions = this;
+		const items = executeFunctions.getInputData();
 		const returnData: INodeExecutionData[] = [];
 
 		for (let i = 0; i < items.length; i++) {
 			try {
-				const inputSource = this.getNodeParameter('inputSource', i) as string;
-				const outputFormat = this.getNodeParameter('outputFormat', i) as string;
-				const errorCorrectionLevel = this.getNodeParameter('errorCorrectionLevel', i) as string;
-				const size = this.getNodeParameter('size', i) as number;
-				const margin = this.getNodeParameter('margin', i) as number;
-				const darkColor = this.getNodeParameter('darkColor', i) as string;
-				const lightColor = this.getNodeParameter('lightColor', i) as string;
-				const outputFieldName = this.getNodeParameter('outputFieldName', i) as string;
+				const inputSource = executeFunctions.getNodeParameter('inputSource', i) as string;
+				const outputFormat = executeFunctions.getNodeParameter('outputFormat', i) as string;
+				const errorCorrectionLevel = executeFunctions.getNodeParameter('errorCorrectionLevel', i) as string;
+				const size = executeFunctions.getNodeParameter('size', i) as number;
+				const margin = executeFunctions.getNodeParameter('margin', i) as number;
+				const darkColor = executeFunctions.getNodeParameter('darkColor', i) as string;
+				const lightColor = executeFunctions.getNodeParameter('lightColor', i) as string;
+				const outputFieldName = executeFunctions.getNodeParameter('outputFieldName', i) as string;
 
 				// Get text to encode
 				let textToEncode: string;
 				switch (inputSource) {
-					case 'field':
-						const textField = this.getNodeParameter('textField', i) as string;
+					case 'field': {
+						const textField = executeFunctions.getNodeParameter('textField', i) as string;
 						const fieldValue = items[i].json[textField];
 						if (fieldValue === undefined) {
-							throw new NodeOperationError(this.getNode(), `Field '${textField}' not found in input data`);
+							throw new NodeOperationError(executeFunctions.getNode(), `Field '${textField}' not found in input data`);
 						}
 						textToEncode = String(fieldValue);
 						break;
+					}
 					case 'manual':
-						textToEncode = this.getNodeParameter('manualText', i) as string;
+						textToEncode = executeFunctions.getNodeParameter('manualText', i) as string;
 						break;
 					case 'json':
 						textToEncode = JSON.stringify(items[i].json, null, 2);
 						break;
 					default:
-						throw new NodeOperationError(this.getNode(), `Unknown input source: ${inputSource}`);
+						throw new NodeOperationError(executeFunctions.getNode(), `Unknown input source: ${inputSource}`);
 				}
 
 				if (!textToEncode.trim()) {
-					throw new NodeOperationError(this.getNode(), 'No text provided to encode');
+					throw new NodeOperationError(executeFunctions.getNode(), 'No text provided to encode');
 				}
 
 				// Generate QR code
@@ -224,7 +227,7 @@ export class QrCodeGenerator implements INodeType {
 					margin,
 					darkColor,
 					lightColor,
-				});
+				}, executeFunctions);
 
 				const newItem: INodeExecutionData = {
 					json: {
@@ -244,7 +247,7 @@ export class QrCodeGenerator implements INodeType {
 
 				returnData.push(newItem);
 			} catch (error) {
-				if (this.continueOnFail()) {
+				if (executeFunctions.continueOnFail()) {
 					returnData.push({
 						json: {
 							error: error.message,
@@ -262,7 +265,18 @@ export class QrCodeGenerator implements INodeType {
 		return [returnData];
 	}
 
-	static generateQRCode(text: string, options: any): { data: string } {
+	static generateQRCode(
+		text: string, 
+		options: {
+			outputFormat: string;
+			errorCorrectionLevel: string;
+			size: number;
+			margin: number;
+			darkColor: string;
+			lightColor: string;
+		}, 
+		executeFunctions: IExecuteFunctions
+	): { data: string } {
 		// This is a simplified QR code generator
 		// In a real implementation, you'd use a library like 'qrcode' or 'qr-image'
 		
@@ -276,18 +290,20 @@ export class QrCodeGenerator implements INodeType {
 					data: `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA${size}AAAAA${size}CAYAAAAx8/placeholder-qr-${text.length}`
 				};
 			
-			case 'svg':
+			case 'svg': {
 				// Simulate SVG generation
 				const svgContent = QrCodeGenerator.generateSVGQRCode(text, size, darkColor, lightColor);
 				return { data: svgContent };
+			}
 			
-			case 'terminal':
+			case 'terminal': {
 				// Generate ASCII QR code representation
 				const asciiQR = QrCodeGenerator.generateAsciiQRCode(text);
 				return { data: asciiQR };
+			}
 			
 			default:
-				throw new Error(`Unsupported output format: ${outputFormat}`);
+				throw new NodeOperationError(executeFunctions.getNode(), `Unsupported output format: ${outputFormat}`);
 		}
 	}
 

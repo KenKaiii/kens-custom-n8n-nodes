@@ -4,6 +4,7 @@ import {
 	INodeType,
 	INodeTypeDescription,
 	NodeConnectionType,
+	NodeOperationError,
 } from 'n8n-workflow';
 
 import { randomBytes, createHash } from 'crypto';
@@ -151,15 +152,17 @@ export class UuidGenerator implements INodeType {
 		],
 	};
 
+	// eslint-disable-next-line no-unused-vars
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-		const items = this.getInputData();
+		const executeFunctions = this;
+		const items = executeFunctions.getInputData();
 		const returnData: INodeExecutionData[] = [];
 
 		for (let i = 0; i < items.length; i++) {
 			try {
-				const idType = this.getNodeParameter('idType', i) as string;
-				const fieldName = this.getNodeParameter('fieldName', i) as string;
-				const quantity = this.getNodeParameter('quantity', i) as number;
+				const idType = executeFunctions.getNodeParameter('idType', i) as string;
+				const fieldName = executeFunctions.getNodeParameter('fieldName', i) as string;
+				const quantity = executeFunctions.getNodeParameter('quantity', i) as number;
 
 				const baseItem = { ...items[i].json };
 
@@ -176,22 +179,24 @@ export class UuidGenerator implements INodeType {
 						case 'longId':
 							generatedId = UuidGenerator.generateAlphanumericId(16);
 							break;
-						case 'numericId':
-							const numericLength = this.getNodeParameter('numericLength', i) as number;
+						case 'numericId': {
+							const numericLength = executeFunctions.getNodeParameter('numericLength', i) as number;
 							generatedId = UuidGenerator.generateNumericId(numericLength);
 							break;
-						case 'hashId':
-							const hashInputField = this.getNodeParameter('hashInputField', i) as string;
-							const hashAlgorithm = this.getNodeParameter('hashAlgorithm', i) as string;
-							const hashLength = this.getNodeParameter('hashLength', i) as number;
+						}
+						case 'hashId': {
+							const hashInputField = executeFunctions.getNodeParameter('hashInputField', i) as string;
+							const hashAlgorithm = executeFunctions.getNodeParameter('hashAlgorithm', i) as string;
+							const hashLength = executeFunctions.getNodeParameter('hashLength', i) as number;
 							const inputValue = baseItem[hashInputField];
 							
 							if (inputValue === undefined) {
-								throw new Error(`Hash input field '${hashInputField}' not found in data`);
+								throw new NodeOperationError(executeFunctions.getNode(), `Hash input field '${hashInputField}' not found in data`);
 							}
 							
 							generatedId = UuidGenerator.generateHashId(String(inputValue), hashAlgorithm, hashLength);
 							break;
+						}
 						default:
 							generatedId = UuidGenerator.generateUUID4();
 					}
@@ -211,7 +216,7 @@ export class UuidGenerator implements INodeType {
 					returnData.push(newItem);
 				}
 			} catch (error) {
-				if (this.continueOnFail()) {
+				if (executeFunctions.continueOnFail()) {
 					returnData.push({
 						json: {
 							error: error.message,

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import {
 	IExecuteFunctions,
 	INodeExecutionData,
@@ -11,14 +12,14 @@ import { createContext, runInContext } from 'vm';
 
 export class SuperCodeNode implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Super Code Node',
-		name: 'superCodeNode',
+		displayName: 'Super Code',
+		name: 'superCode',
 		icon: 'fa:code',
 		group: ['transform'],
 		version: 1,
 		description: 'Execute JavaScript/TypeScript with enhanced libraries and utilities',
 		defaults: {
-			name: 'Super Code Node',
+			name: 'Super Code',
 		},
 		inputs: [{ displayName: '', type: NodeConnectionType.Main }],
 		outputs: [{ displayName: '', type: NodeConnectionType.Main }],
@@ -33,7 +34,7 @@ export class SuperCodeNode implements INodeType {
 					editorLanguage: 'javaScript',
 					rows: 20,
 				},
-				default: `// 🚀 SuperCodeNode - The Most Powerful n8n Code Node Ever Created!
+				default: `// 🚀 Super Code - The Most Powerful n8n Code Node Ever Created!
 // ⚡ LAZY LOADING: Libraries load only when accessed (0ms overhead if unused)
 
 // 📊 CORE DATA LIBRARIES (10):
@@ -196,24 +197,26 @@ export class SuperCodeNode implements INodeType {
 
 
 
+	// eslint-disable-next-line no-unused-vars
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
-		const items = this.getInputData();
-		const executionMode = this.getNodeParameter('executionMode', 0, 'runOnceForAllItems') as string;
-		const code = this.getNodeParameter('code', 0) as string;
-		const timeout = this.getNodeParameter('timeout', 0, 30) as number;
+		const executeFunctions = this;
+		const items = executeFunctions.getInputData();
+		const executionMode = executeFunctions.getNodeParameter('executionMode', 0, 'runOnceForAllItems') as string;
+		const code = executeFunctions.getNodeParameter('code', 0) as string;
+		const timeout = executeFunctions.getNodeParameter('timeout', 0, 30) as number;
 
 		if (!code.trim()) {
-			throw new NodeOperationError(this.getNode(), 'No code provided. Please add your JavaScript/TypeScript code.');
+			throw new NodeOperationError(executeFunctions.getNode(), 'No code provided. Please add your JavaScript/TypeScript code.');
 		}
 
 		// Create enhanced sandbox with lazy loading
 		const createEnhancedSandbox = (items: INodeExecutionData[]) => {
 			// Library cache to avoid repeated loading
-			const libraryCache: { [key: string]: any } = {};
+			const libraryCache: { [key: string]: unknown } = {};
 			const performanceTracker: { [key: string]: number } = {};
 			
 			// LLM-Friendly Error Handler - Provides detailed diagnostics for AI code generation
-			const createLLMError = (type: string, libraryName: string, originalError: any, context?: any) => {
+			const createLLMError = (type: string, libraryName: string, originalError: Error, context?: Record<string, unknown>) => {
 				const errorCodes: { [key: string]: string } = {
 					LIBRARY_MISSING: 'E001',
 					LIBRARY_LOAD_FAILED: 'E002', 
@@ -264,11 +267,11 @@ export class SuperCodeNode implements INodeType {
 						performanceTracker[libraryName] = Date.now() - startTime;
 						console.log(`[SuperCode] ✅ Loaded ${libraryName} (${performanceTracker[libraryName]}ms)`);
 						
-					} catch (error: any) {
-						if (error.code === 'MODULE_NOT_FOUND') {
-							throw createLLMError('LIBRARY_MISSING', libraryName, error);
+					} catch (error: unknown) {
+						if (error && typeof error === 'object' && 'code' in error && (error as {code: string}).code === 'MODULE_NOT_FOUND') {
+							throw createLLMError('LIBRARY_MISSING', libraryName, error as unknown as Error);
 						} else {
-							throw createLLMError('LIBRARY_LOAD_FAILED', libraryName, error, { requirePath, property });
+							throw createLLMError('LIBRARY_LOAD_FAILED', libraryName, error as Error, { requirePath, property });
 						}
 					}
 				}
@@ -343,33 +346,33 @@ export class SuperCodeNode implements INodeType {
 				get fuzzy() { return lazyLoad('fuse.js', 'fuse.js'); },
 				
 				console: {
-					log: (...args: any[]) => console.log('[SuperCode]', ...args),
-					error: (...args: any[]) => console.error('[SuperCode]', ...args),
-					warn: (...args: any[]) => console.warn('[SuperCode]', ...args),
+					log: (...args: unknown[]) => console.log('[SuperCode]', ...args),
+					error: (...args: unknown[]) => console.error('[SuperCode]', ...args),
+					warn: (...args: unknown[]) => console.warn('[SuperCode]', ...args),
 				},
 				utils: {
 					now: () => new Date().toISOString(),
-					formatDate: (date: any, format?: any) => {
+					formatDate: (date: string | number | Date, format?: string) => {
 						const d = new Date(date);
 						return format ? d.toLocaleDateString() : d.toISOString();
 					},
 					isEmail: (email: string) => /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email),
 					isUrl: (url: string) => {
-						try { new URL(url); return true; } catch { return false; }
+						try { new globalThis.URL(url); return true; } catch { return false; }
 					},
-					flatten: (obj: any, prefix = '') => {
-						const flattened: any = {};
+					flatten: (obj: Record<string, unknown>, prefix = '') => {
+						const flattened: Record<string, unknown> = {};
 						for (const key in obj) {
 							const newKey = prefix ? `${prefix}.${key}` : key;
 							if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
-								Object.assign(flattened, sandbox.utils.flatten(obj[key], newKey));
+								Object.assign(flattened, sandbox.utils.flatten(obj[key] as Record<string, unknown>, newKey));
 							} else {
 								flattened[newKey] = obj[key];
 							}
 						}
 						return flattened;
 					},
-					retry: async (fn: Function, options = { attempts: 3, delay: 1000 }) => {
+					retry: async (fn: () => Promise<unknown>, options = { attempts: 3, delay: 1000 }) => {
 						let lastError;
 						for (let i = 0; i < options.attempts; i++) {
 							try {
@@ -387,7 +390,7 @@ export class SuperCodeNode implements INodeType {
 					
 					// 🧠 Memory Management & Monitoring
 					memoryUsage: () => {
-						const usage = process.memoryUsage();
+						const usage = globalThis.process.memoryUsage();
 						return {
 							heapUsed: `${Math.round(usage.heapUsed / 1024 / 1024)} MB`,
 							heapTotal: `${Math.round(usage.heapTotal / 1024 / 1024)} MB`, 
@@ -427,7 +430,7 @@ export class SuperCodeNode implements INodeType {
 					
 					// 🔍 Health Check
 					healthCheck: () => {
-						const memory = process.memoryUsage();
+						const memory = globalThis.process.memoryUsage();
 						const heapPercent = (memory.heapUsed / memory.heapTotal) * 100;
 						
 						return {
@@ -448,12 +451,12 @@ export class SuperCodeNode implements INodeType {
 							.trim();
 					},
 					
-					validateSchema: (data: any, schema: any) => {
+					validateSchema: (data: unknown, schema: unknown) => {
 						try {
-							const joi = lazyLoad('joi', 'joi');
-							return joi.validate(data, schema);
-						} catch (error: any) {
-							throw createLLMError('TYPE_ERROR', 'joi', error, { data, schema });
+							const joi = lazyLoad('joi', 'joi') as Record<string, unknown>;
+							return (joi.validate as Function)(data, schema);
+						} catch (error) {
+							throw createLLMError('TYPE_ERROR', 'joi', error as Error, { data, schema });
 						}
 					},
 					
@@ -492,10 +495,10 @@ export class SuperCodeNode implements INodeType {
 					// Get loaded library stats
 					getLoadedLibraries: () => Object.keys(libraryCache),
 				},
-				setTimeout,
-				clearTimeout,
-				setInterval,
-				clearInterval,
+				setTimeout: globalThis.setTimeout,
+				clearTimeout: globalThis.clearTimeout,
+				setInterval: globalThis.setInterval,
+				clearInterval: globalThis.clearInterval,
 				Promise,
 				JSON,
 				Date,
@@ -507,7 +510,7 @@ export class SuperCodeNode implements INodeType {
 				Boolean,
 				RegExp,
 				Error,
-				require, // Add require to VM context for lazy loading
+				require: globalThis.require, // Add require to VM context for lazy loading
 			};
 			return sandbox;
 		};
@@ -647,9 +650,9 @@ export class SuperCodeNode implements INodeType {
 							});
 						}
 					} catch (error) {
-						if (this.continueOnFail()) {
+						if (executeFunctions.continueOnFail()) {
 							results.push({
-								json: { error: error.message, originalData: items[i].json },
+								json: { error: (error as Error).message, originalData: items[i].json },
 								error,
 								pairedItem: { item: i },
 							});
@@ -662,7 +665,7 @@ export class SuperCodeNode implements INodeType {
 				return [results];
 			}
 		} catch (error) {
-			throw new NodeOperationError(this.getNode(), `Code execution failed: ${error.message}\\n\\nStack trace:\\n${error.stack}`);
+			throw new NodeOperationError(executeFunctions.getNode(), `Code execution failed: ${(error as Error).message}\\n\\nStack trace:\\n${(error as Error).stack}`);
 		}
 	}
 
