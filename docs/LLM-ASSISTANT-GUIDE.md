@@ -11,14 +11,55 @@ When a user asks for help building n8n nodes:
 3. **Choose appropriate patterns** from `node-development-guide.md`
 4. **Apply security practices** from `security-best-practices.md`
 
-### 2. **Quick Decision Tree**
+### 2. **Universal Decision Tree - Any Node is Possible**
 ```
-User Request → What type of node?
-├── API Integration → Use HTTP patterns + credentials
-├── Data Processing → Use transformation patterns
-├── AI/LLM Integration → Use AI patterns + multiple inputs  
-├── Database Operations → Use connection patterns + security
-└── Complex Logic → Use advanced patterns + state management
+User Request → Analyze Core Function:
+├── 🌐 External API/Service? 
+│   ├── REST API → HTTP integration pattern
+│   ├── GraphQL → GraphQL integration pattern  
+│   ├── WebSocket → Real-time connection pattern
+│   ├── Database → Connection + query pattern
+│   ├── Cloud Service (AWS/GCP/Azure) → Service-specific API pattern
+│   └── Any HTTP-based service → Custom HTTP pattern
+├── 🔄 Data Processing?
+│   ├── Transform/Format → Data transformation pattern
+│   ├── Validate/Filter → Validation pattern
+│   ├── Calculate/Aggregate → Mathematical processing pattern
+│   ├── Parse (JSON/XML/CSV) → Parser pattern
+│   └── Convert formats → Format conversion pattern
+├── 🤖 AI/ML Integration?
+│   ├── LLM Providers (OpenAI, Anthropic, etc.) → AI pattern
+│   ├── Computer Vision APIs → Image processing pattern
+│   ├── Text Analysis → NLP pattern
+│   ├── Multiple AI services → Multi-model routing pattern
+│   └── Custom AI endpoints → Custom AI pattern
+├── 📊 Business Logic?
+│   ├── Workflow routing → Conditional logic pattern
+│   ├── Complex calculations → Business rules pattern
+│   ├── Multi-step processes → Sequential processing pattern
+│   ├── Decision trees → Decision logic pattern
+│   └── Custom algorithms → Algorithm implementation pattern
+├── 🔌 Protocol Implementation?
+│   ├── MQTT/WebSocket → Real-time protocol pattern
+│   ├── FTP/SFTP → File transfer pattern
+│   ├── Email (SMTP/IMAP) → Email protocol pattern
+│   ├── Custom protocols → Protocol wrapper pattern
+│   └── Message queues → Queue integration pattern
+├── 🛠️ System Integration?
+│   ├── CRM/ERP systems → Enterprise integration pattern
+│   ├── E-commerce platforms → Commerce API pattern
+│   ├── Social media APIs → Social integration pattern
+│   ├── Payment processors → Payment API pattern
+│   └── Any SaaS tool → SaaS integration pattern
+└── 🔒 Security/Auth?
+    ├── OAuth flows → OAuth implementation pattern
+    ├── JWT handling → JWT processing pattern
+    ├── Encryption/Decryption → Crypto pattern
+    ├── API key management → Credential pattern
+    └── Custom auth → Authentication wrapper pattern
+
+💡 REMEMBER: If it has an API or can be accessed programmatically, 
+   it can be turned into an n8n node!
 ```
 
 ## 🔍 Key Patterns for Code Generation
@@ -74,9 +115,10 @@ const apiKey = 'sk_live_abc123...';
 while (true) { /* infinite loop */ }
 ```
 
-## 🛠️ Code Generation Templates
+## 🛠️ Universal Code Generation Templates
 
-### **Basic API Node Template**
+### **Universal API Integration Template**
+*Use for ANY API/service integration - REST, GraphQL, Cloud Services, SaaS tools, etc.*
 ```typescript
 export class {{NodeName}} implements INodeType {
     description: INodeTypeDescription = {
@@ -115,10 +157,16 @@ export class {{NodeName}} implements INodeType {
             try {
                 const operation = this.getNodeParameter('operation', itemIndex) as string;
                 
+                // Adapt URL structure for any API:
+                // REST: `https://api.service.com/${operation}`  
+                // GraphQL: `https://api.service.com/graphql`
+                // Cloud: `https://service.cloud-provider.com/api/v1/${operation}`
                 const requestOptions = {
-                    method: 'GET',
-                    url: `https://api.example.com/${operation}`,
+                    method: '{{HTTP_METHOD}}', // GET, POST, PUT, DELETE, PATCH
+                    url: `{{BASE_URL}}/${operation}`, // Any API base URL
                     json: true,
+                    // Add body for POST/PUT operations:
+                    ...(operation !== 'get' && { body: item.json }),
                 };
 
                 const response = await this.helpers.httpRequestWithAuthentication.call(
