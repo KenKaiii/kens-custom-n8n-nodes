@@ -77,8 +77,24 @@ export class SuperCodeNode implements INodeType {
 // 📊 ADVANCED XML (1):
 // • XMLParser - Fast XML: new XMLParser().parse(xmlString)
 
+// 🔐 AUTHENTICATION & SECURITY (2):
+// • jwt - JWT Tokens: jwt.sign(payload, secret), jwt.verify(token, secret)
+// • bcrypt - Password Hashing: await bcrypt.hash(password, 10), await bcrypt.compare(password, hash)
+
+// 💰 BLOCKCHAIN & CRYPTO (2):
+// • ethers - Ethereum: new ethers.Wallet(privateKey), ethers.utils.parseEther('1.0')
+// • web3 - Web3: new web3.eth.Contract(abi, address), web3.utils.toWei('1', 'ether')
+
+// 🌍 INTERNATIONAL BUSINESS (3):
+// • phoneNumber - Phone: parsePhoneNumber('+1234567890', 'US').formatNational()
+// • currency - Money: currency(29.99).add(0.05).format()
+// • iban - Banking: IBAN.isValid('DE89370400440532013000')
+
+// 🔍 ADVANCED SEARCH & TEXT (1):
+// • fuzzy - Fuzzy Search: new Fuse(list, {keys: ['name']}).search('query')
+
 // 🛠️ UTILITY FUNCTIONS:
-// • utils.getAvailableLibraries() - List all 24 available libraries
+// • utils.getAvailableLibraries() - List all 33 available libraries
 // • utils.getLoadedLibraries() - See which libraries are currently loaded
 // • utils.isLibraryLoaded('xlsx') - Check if specific library is loaded
 // • utils.isEmail(email), utils.isUrl(url) - Quick validation
@@ -309,6 +325,22 @@ export class SuperCodeNode implements INodeType {
 				
 				// 📊 Advanced XML
 				get XMLParser() { return lazyLoad('fast-xml-parser', 'fast-xml-parser', 'XMLParser'); },
+
+				// 🔐 AUTHENTICATION & SECURITY (New High-Demand Libraries)
+				get jwt() { return lazyLoad('jsonwebtoken', 'jsonwebtoken'); },
+				get bcrypt() { return lazyLoad('bcrypt', 'bcrypt'); },
+				
+				// 💰 BLOCKCHAIN & CRYPTO (Untapped Market)
+				get ethers() { return lazyLoad('ethers', 'ethers'); },
+				get web3() { return lazyLoad('web3', 'web3'); },
+				
+				// 🌍 INTERNATIONAL BUSINESS (Global Requirements)  
+				get phoneNumber() { return lazyLoad('libphonenumber-js', 'libphonenumber-js'); },
+				get currency() { return lazyLoad('currency.js', 'currency.js'); },
+				get iban() { return lazyLoad('iban', 'iban'); },
+				
+				// 🔍 ADVANCED SEARCH & TEXT (Developer Requests)
+				get fuzzy() { return lazyLoad('fuse.js', 'fuse.js'); },
 				
 				console: {
 					log: (...args: any[]) => console.log('[SuperCode]', ...args),
@@ -443,7 +475,15 @@ export class SuperCodeNode implements INodeType {
 						// Database & Security
 						'knex', 'node-forge (forge)', 'moment-timezone (moment)',
 						// Advanced XML
-						'fast-xml-parser (XMLParser)'
+						'fast-xml-parser (XMLParser)',
+						// 🔐 Authentication & Security (NEW!)
+						'jsonwebtoken (jwt)', 'bcrypt',
+						// 💰 Blockchain & Crypto (NEW!)  
+						'ethers', 'web3',
+						// 🌍 International Business (NEW!)
+						'libphonenumber-js (phoneNumber)', 'currency.js (currency)', 'iban',
+						// 🔍 Advanced Search & Text (NEW!)
+						'fuse.js (fuzzy)'
 					],
 					
 					// Check if library is loaded
@@ -467,6 +507,7 @@ export class SuperCodeNode implements INodeType {
 				Boolean,
 				RegExp,
 				Error,
+				require, // Add require to VM context for lazy loading
 			};
 			return sandbox;
 		};
@@ -508,7 +549,7 @@ export class SuperCodeNode implements INodeType {
 							}
 							if (error.name === 'ReferenceError') {
 								// Don't intercept ReferenceErrors for known lazy-loaded libraries
-								const knownLibraries = ['_', 'axios', 'dayjs', 'joi', 'Joi', 'validator', 'uuid', 'csvParse', 'Handlebars', 'cheerio', 'CryptoJS', 'XLSX', 'pdfLib', 'math', 'xml2js', 'YAML', 'sharp', 'Jimp', 'QRCode', 'natural', 'archiver', 'puppeteer', 'knex', 'forge', 'moment', 'XMLParser'];
+								const knownLibraries = ['_', 'axios', 'dayjs', 'joi', 'Joi', 'validator', 'uuid', 'csvParse', 'Handlebars', 'cheerio', 'CryptoJS', 'XLSX', 'pdfLib', 'math', 'xml2js', 'YAML', 'sharp', 'Jimp', 'QRCode', 'natural', 'archiver', 'puppeteer', 'knex', 'forge', 'moment', 'XMLParser', 'jwt', 'bcrypt', 'ethers', 'web3', 'phoneNumber', 'currency', 'iban', 'fuzzy'];
 								const isKnownLibrary = knownLibraries.some(lib => error.message.includes(lib + ' is not defined'));
 								if (!isKnownLibrary) {
 									throw new Error('🤖 LLM-FRIENDLY ERROR [E004]\\n📍 Issue: ' + error.message + '\\n💡 Fix: 1) Declare variable first 2) Check spelling 3) Import library if needed');
@@ -575,7 +616,7 @@ export class SuperCodeNode implements INodeType {
 								}
 								if (error.name === 'ReferenceError') {
 									// Don't intercept ReferenceErrors for known lazy-loaded libraries
-									const knownLibraries = ['_', 'axios', 'dayjs', 'joi', 'Joi', 'validator', 'uuid', 'csvParse', 'Handlebars', 'cheerio', 'CryptoJS', 'XLSX', 'pdfLib', 'math', 'xml2js', 'YAML', 'sharp', 'Jimp', 'QRCode', 'natural', 'archiver', 'puppeteer', 'knex', 'forge', 'moment', 'XMLParser'];
+									const knownLibraries = ['_', 'axios', 'dayjs', 'joi', 'Joi', 'validator', 'uuid', 'csvParse', 'Handlebars', 'cheerio', 'CryptoJS', 'XLSX', 'pdfLib', 'math', 'xml2js', 'YAML', 'sharp', 'Jimp', 'QRCode', 'natural', 'archiver', 'puppeteer', 'knex', 'forge', 'moment', 'XMLParser', 'jwt', 'bcrypt', 'ethers', 'web3', 'phoneNumber', 'currency', 'iban', 'fuzzy'];
 									const isKnownLibrary = knownLibraries.some(lib => error.message.includes(lib + ' is not defined'));
 									if (!isKnownLibrary) {
 										throw new Error('🤖 LLM-FRIENDLY ERROR [E004]\\n📍 Issue: ' + error.message + '\\n💡 Fix: 1) Declare variable first 2) Check spelling 3) Import library if needed');
