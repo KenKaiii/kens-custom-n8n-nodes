@@ -140,101 +140,48 @@ export class SuperCodeNode implements INodeType {
 				description: 'Choose the programming language to execute',
 			},
 			{
-				displayName: 'Code',
+				displayName: 'JavaScript Code',
 				name: 'code',
 				type: 'string',
+				displayOptions: {
+					show: {
+						language: ['javascript'],
+					},
+				},
 				typeOptions: {
 					editor: 'codeNodeEditor',
 					editorLanguage: 'javaScript',
 					rows: 20,
 				},
-				default: `// 🚀 SuperCodeNode - The Most Powerful n8n Code Node Ever Created!
-// ⚡ LAZY LOADING: Libraries load only when accessed (0ms overhead if unused)
+				default: `// Available libraries: lodash (_), axios, dayjs, joi, validator, uuid, csvParse, Handlebars, cheerio, CryptoJS, XLSX, pdfLib, math, xml2js, YAML, sharp, Jimp, QRCode, natural, archiver, puppeteer, knex, forge, moment, XMLParser, jwt, bcrypt, ethers, web3, phoneNumber, currency, iban, fuzzy
 
-// 📊 CORE DATA LIBRARIES (10):
-// • lodash (_) - Utilities: _.chunk([1,2,3,4], 2)
-// • axios - HTTP: await axios.get('https://api.example.com')
-// • dayjs - Dates: dayjs().format('YYYY-MM-DD HH:mm:ss')
-// • joi/Joi - Validation: joi.string().email().validate(email)
-// • validator - Validation: validator.isEmail(email)
-// • uuid - IDs: uuid() // generates unique ID
-// • csvParse - CSV: csvParse(csvString, callback)
-// • Handlebars - Templates: Handlebars.compile('Hello {{name}}')
-// • cheerio - HTML: cheerio.load(html)('h1').text()
-// • CryptoJS - Crypto: CryptoJS.AES.encrypt(text, 'secret')
-
-// 💼 BUSINESS-CRITICAL LIBRARIES (5):
-// • XLSX - Excel: XLSX.readFile('file.xlsx'), XLSX.writeFile(workbook, 'output.xlsx')
-// • pdfLib - PDF: await pdfLib.PDFDocument.create()
-// • math - Advanced Math: math.evaluate('sqrt(3^2 + 4^2)')
-// • xml2js - XML: xml2js.parseString(xml, callback)
-// • YAML - YAML: YAML.parse(yamlString), YAML.stringify(object)
-
-// 🖼️ MEDIA PROCESSING (3):
-// • sharp - Images: await sharp(buffer).resize(800, 600).toBuffer()
-// • Jimp - Images: await Jimp.read(buffer).resize(800, 600)
-// • QRCode - QR Codes: await QRCode.toDataURL('text')
-
-// 🤖 AI/NLP LIBRARIES (1):
-// • natural - NLP: natural.SentimentAnalyzer.getSentiment(tokens)
-
-// 📁 FILE & ARCHIVE (1):
-// • archiver - ZIP: archiver('zip').append(data, {name: 'file.txt'})
-
-// 🌐 WEB & SCRAPING (1):
-// • puppeteer - Browser: await puppeteer.launch({headless: true})
-
-// 🔒 DATABASE & SECURITY (3):
-// • knex - SQL Builder: knex('users').where('id', 1).select('*')
-// • forge - Security: forge.pki.rsa.generateKeyPair(2048)
-// • moment - Timezones: moment.tz('2023-01-01', 'America/New_York')
-
-// 📊 ADVANCED XML (1):
-// • XMLParser - Fast XML: new XMLParser().parse(xmlString)
-
-// 🔐 AUTHENTICATION & SECURITY (2):
-// • jwt - JWT Tokens: jwt.sign(payload, secret), jwt.verify(token, secret)
-// • bcrypt - Password Hashing: await bcrypt.hash(password, 10), await bcrypt.compare(password, hash)
-
-// 💰 BLOCKCHAIN & CRYPTO (2):
-// • ethers - Ethereum: new ethers.Wallet(privateKey), ethers.utils.parseEther('1.0')
-// • web3 - Web3: new web3.eth.Contract(abi, address), web3.utils.toWei('1', 'ether')
-
-// 🌍 INTERNATIONAL BUSINESS (3):
-// • phoneNumber - Phone: parsePhoneNumber('+1234567890', 'US').formatNational()
-// • currency - Money: currency(29.99).add(0.05).format()
-// • iban - Banking: IBAN.isValid('DE89370400440532013000')
-
-// 🔍 ADVANCED SEARCH & TEXT (1):
-// • fuzzy - Fuzzy Search: new Fuse(list, {keys: ['name']}).search('query')
-
-// 🛠️ UTILITY FUNCTIONS:
-// • utils.getAvailableLibraries() - List all 33 available libraries
-// • utils.getLoadedLibraries() - See which libraries are currently loaded
-// • utils.isLibraryLoaded('xlsx') - Check if specific library is loaded
-// • utils.isEmail(email), utils.isUrl(url) - Quick validation
-// • utils.flatten(obj) - Flatten nested objects
-// • utils.retry(fn, {attempts: 3}) - Retry failed operations
-// • utils.sleep(1000) - Async delay
-
-// 📊 INPUT DATA:
-// • $input.all() - All input items
-// • $input.first() - First input item  
-// • $input.json - JSON data (single item) or array (multiple)
-
-// 📤 RETURN FORMAT:
-// • Single: return { key: 'value' }
-// • Multiple: return [{ json: {...} }, { json: {...} }]
-// • Array: return data.map(item => ({ json: item }))
-
-// 💡 EXAMPLE - Excel Processing (only loads XLSX when used):
-// const workbook = XLSX.readFile('data.xlsx');
-// const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-// const data = XLSX.utils.sheet_to_json(worksheet);
-// return data.map(row => ({ json: row }));
-
+// Your JavaScript code here
+return { result: 'Hello from Super Code!' };
 `,
 				description: 'JavaScript/TypeScript code with enhanced libraries and utilities',
+				noDataExpression: true,
+			},
+			{
+				displayName: 'Python Code',
+				name: 'code',
+				type: 'string',
+				displayOptions: {
+					show: {
+						language: ['python'],
+					},
+				},
+				typeOptions: {
+					editor: 'codeNodeEditor',
+					editorLanguage: 'python',
+					rows: 20,
+				},
+				default: `# 30+ Python libraries available: pandas, numpy, requests, datetime, json, sys, urllib, re, hashlib, base64, uuid, os, and many more
+# Pre-imported: pandas (pd), numpy (np), requests, datetime, json, sys, urllib.parse, re, hashlib, base64, uuid, os
+
+# Your Python code here
+result = {"message": "Hello from Super Code Python!"}
+`,
+				description: 'Python code with popular libraries and utilities',
 				noDataExpression: true,
 			},
 			{
@@ -299,13 +246,6 @@ export class SuperCodeNode implements INodeType {
 					minValue: 16,
 					maxValue: 512,
 				},
-			},
-			{
-				displayName: 'Available Libraries',
-				name: 'librariesInfo',
-				type: 'notice',
-				default:
-					'📦 Enhanced libraries: lodash (_), axios, dayjs, joi, validator, uuid, csv-parse, handlebars, cheerio, crypto-js\n🔒 Secure snt data processing patterns\n✨ Utilities: isEmail, isUrl, flatten, retry, sleep',
 			},
 		],
 	};
@@ -382,7 +322,7 @@ export class SuperCodeNode implements INodeType {
 			};
 
 			// VM-Safe Lazy Loading Pattern (fixes VM context getter incompatibility)
-			const createVmSafeLazyLoader = (hostObj: any, name: string, libraryName: string, requirePath: string, property?: string) => {
+			const createVmSafeLazyLoader = (hostObj: any, name: string, _libraryName: string, requirePath: string, property?: string) => {
 				let defined = false;
 				let cachedValue: any;
 				
