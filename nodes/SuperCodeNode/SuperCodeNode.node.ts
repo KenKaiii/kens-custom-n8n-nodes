@@ -107,14 +107,14 @@ print(json.dumps(result))
 
 export class SuperCodeNode implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Super Code Node DEBUG TEST',
+		displayName: 'Super Code',
 		name: 'superCodeNodeVmSafe',
 		icon: 'fa:code',
 		group: ['transform'],
 		version: 1,
 		description: 'Execute JavaScript/TypeScript with enhanced libraries and utilities',
 		defaults: {
-			name: 'Super Code Node (VM-Safe)',
+			name: 'Super Code',
 		},
 		inputs: [{ displayName: '', type: NodeConnectionType.Main }],
 		outputs: [{ displayName: '', type: NodeConnectionType.Main }],
