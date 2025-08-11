@@ -49,12 +49,17 @@ export class SuperCodeNode implements INodeType {
 				description: 'Programming language to execute',
 			},
 			{
-				displayName: 'Code',
-				name: 'code',
+				displayName: 'JavaScript Code',
+				name: 'javascriptCode',
 				type: 'string',
+				displayOptions: {
+					show: {
+						language: ['javascript'],
+					},
+				},
 				typeOptions: {
 					editor: 'codeNodeEditor',
-					editorLanguage: '={{ $parameter["language"] === "python" ? "python" : "javaScript" }}',
+					editorLanguage: 'javaScript',
 					rows: 20,
 				},
 				default: `// 🚀 Super Code - The Most Powerful n8n Code Node Ever Created!
@@ -148,6 +153,103 @@ return $input.all();
 				noDataExpression: true,
 			},
 			{
+				displayName: 'Python Code',
+				name: 'pythonCode',
+				type: 'string',
+				displayOptions: {
+					show: {
+						language: ['python'],
+					},
+				},
+				typeOptions: {
+					editor: 'codeNodeEditor',
+					editorLanguage: 'python',
+					rows: 20,
+				},
+				default: `# 🐍 Super Code Python - Powerful Python Libraries for n8n Workflows!
+# 🔬 DATA SCIENCE & ANALYSIS: pandas, numpy, polars for data processing
+
+# 📊 DATA PROCESSING & ANALYSIS (3):
+# • pandas (pd) - DataFrames: pd.DataFrame({'col': [1,2,3]})
+# • numpy (np) - Arrays: np.array([1,2,3]).mean()
+# • polars (pl) - Fast DataFrames: pl.DataFrame({'col': [1,2,3]})
+
+# 🌐 HTTP/API INTEGRATION (3):
+# • requests - HTTP: requests.get('https://api.example.com')
+# • httpx - Async HTTP: await httpx.AsyncClient().get(url)
+# • aiohttp - Async: async with aiohttp.ClientSession() as session
+
+# ✅ DATA VALIDATION (3):
+# • pydantic (BaseModel) - Models: class User(BaseModel): name: str
+# • marshmallow (Schema) - Serialization: UserSchema().load(data)
+# • cerberus (Validator) - Validation: v = Validator(schema)
+
+# 🔐 AUTHENTICATION & SECURITY (4):
+# • jwt - JWT Tokens: jwt.encode({'user': 'john'}, 'secret')
+# • passlib (CryptContext) - Password: ctx.hash('password')
+# • cryptography (Fernet) - Encryption: Fernet.generate_key()
+# • bcrypt - Hashing: bcrypt.hashpw(password, bcrypt.gensalt())
+
+# 📁 FILE PROCESSING (4):
+# • Pillow (Image) - Images: Image.open('photo.jpg').resize((800,600))
+# • PyPDF2 - PDFs: PyPDF2.PdfReader('document.pdf')
+# • python-magic (magic) - File Types: magic.from_file('file.txt')
+# • openpyxl - Excel: openpyxl.load_workbook('data.xlsx')
+
+# 📅 DATE/TIME (2):
+# • python-dateutil (parser) - Parsing: parser.parse('2023-01-01')
+# • arrow - Better dates: arrow.now().format('YYYY-MM-DD')
+
+# 📝 TEXT PROCESSING (2):
+# • regex - Advanced RegEx: regex.search(r'\\p{L}+', text)
+# • fuzzywuzzy (fuzz) - Fuzzy matching: fuzz.ratio('hello', 'helo')
+
+# 🌍 BUSINESS LOGIC (2):
+# • phonenumbers - Phone validation: phonenumbers.parse('+1-555-123-4567')
+# • babel (numbers) - Internationalization: numbers.format_currency(29.99, 'USD')
+
+# 🗄️ DATABASE (3):
+# • sqlalchemy (create_engine) - SQL: create_engine('sqlite:///db.sqlite')
+# • pymongo - MongoDB: pymongo.MongoClient('mongodb://localhost:27017/')
+# • redis - Redis: redis.Redis(host='localhost', port=6379)
+
+# 🤖 AI/ML (4):
+# • scikit-learn (RandomForestClassifier) - ML: clf = RandomForestClassifier()
+# • transformers (pipeline) - NLP: pipeline('sentiment-analysis')
+# • openai - OpenAI API: openai.Completion.create()
+# • langchain (LLMChain) - LLM Chains: LLMChain(llm=llm, prompt=prompt)
+
+# 🕷️ WEB SCRAPING (3):
+# • beautifulsoup4 (BeautifulSoup) - HTML: BeautifulSoup(html, 'html.parser')
+# • selenium (webdriver) - Browser: webdriver.Chrome()
+# • scrapy - Web scraping framework: scrapy.Spider
+
+# 📧 EMAIL (built-in):
+# • smtplib - Email sending: smtplib.SMTP('smtp.gmail.com', 587)
+
+# 📊 INPUT DATA:
+# • input_data - All input items from n8n
+
+# 📤 RETURN FORMAT:
+# • Set 'result' variable: result = {'key': 'value'}
+# • List of items: result = [{'item1': 'data'}, {'item2': 'data'}]
+
+# 💡 EXAMPLE - Data processing with pandas:
+# import pandas as pd
+# df = pd.DataFrame(input_data)
+# processed = df.groupby('category').sum()
+# result = processed.to_dict('records')
+
+result = {
+    "message": "Python execution ready!", 
+    "libraries_available": "30+ libraries loaded",
+    "input_items": len(input_data)
+}
+`,
+				description: 'Python code with comprehensive data science and ML libraries',
+				noDataExpression: true,
+			},
+			{
 				displayName: 'Advanced Settings',
 				name: 'advancedSettings',
 				type: 'boolean',
@@ -227,7 +329,9 @@ return $input.all();
 		const items = executeFunctions.getInputData();
 		const language = executeFunctions.getNodeParameter('language', 0, 'javascript') as string;
 		const executionMode = executeFunctions.getNodeParameter('executionMode', 0, 'runOnceForAllItems') as string;
-		const code = executeFunctions.getNodeParameter('code', 0) as string;
+		const code = language === 'python' 
+			? executeFunctions.getNodeParameter('pythonCode', 0) as string
+			: executeFunctions.getNodeParameter('javascriptCode', 0) as string;
 		const timeout = executeFunctions.getNodeParameter('timeout', 0, 30) as number;
 
 		if (!code.trim()) {
