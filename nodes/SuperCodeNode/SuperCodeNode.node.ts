@@ -107,14 +107,14 @@ print(json.dumps(result))
 
 export class SuperCodeNode implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Super Code Node',
-		name: 'superCodeNode',
+		displayName: 'Super Code Node DEBUG TEST',
+		name: 'superCodeNodeVmSafe',
 		icon: 'fa:code',
 		group: ['transform'],
 		version: 1,
 		description: 'Execute JavaScript/TypeScript with enhanced libraries and utilities',
 		defaults: {
-			name: 'Super Code Node',
+			name: 'Super Code Node (VM-Safe)',
 		},
 		inputs: [{ displayName: '', type: NodeConnectionType.Main }],
 		outputs: [{ displayName: '', type: NodeConnectionType.Main }],
@@ -330,8 +330,11 @@ export class SuperCodeNode implements INodeType {
 			return await pythonExecutor.execute(code, items, timeout, this);
 		}
 
-		// Create enhanced sandbox with lazy loading
+		console.log('[SuperCode] 🚀 EXECUTION STARTING - JAVASCRIPT MODE - VM-SAFE VERSION');
+		
+		// Create enhanced sandbox with direct library loading (VM-compatible)
 		const createEnhancedSandbox = (items: INodeExecutionData[]) => {
+			console.log('[SuperCode] 🏗️ Creating enhanced sandbox with direct loading...');
 			// Library cache to avoid repeated loading
 			const libraryCache: { [key: string]: any } = {};
 			const performanceTracker: { [key: string]: number } = {};
@@ -378,39 +381,46 @@ export class SuperCodeNode implements INodeType {
 				);
 			};
 
-			// Enhanced lazy loader with LLM-friendly errors
-			const lazyLoad = (libraryName: string, requirePath: string, property?: string) => {
-				if (!libraryCache[libraryName]) {
-					try {
-						const startTime = Date.now();
-						const lib = require(requirePath);
-
-						if (!lib) {
-							throw createLLMError(
-								'LIBRARY_MISSING',
-								libraryName,
-								new Error(`Module '${requirePath}' returned undefined`),
-							);
+			// VM-Safe Lazy Loading Pattern (fixes VM context getter incompatibility)
+			const createVmSafeLazyLoader = (hostObj: any, name: string, libraryName: string, requirePath: string, property?: string) => {
+				let defined = false;
+				let cachedValue: any;
+				
+				Object.defineProperty(hostObj, name, {
+					get: function() {
+						if (!defined) {
+							console.log(`[SuperCode] 🔄 VM-Safe loading ${name} from ${requirePath}...`);
+							defined = true;
+							
+							try {
+								// Direct require() call for VM-Safe loading
+								const lib = require(requirePath);
+								cachedValue = property ? lib[property] : lib;
+								
+								// Redefine as value property for VM compatibility
+								Object.defineProperty(this, name, {
+									value: cachedValue,
+									writable: false,
+									configurable: true,
+									enumerable: true
+								});
+								
+								console.log(`[SuperCode] ✅ VM-Safe loaded ${name} successfully`);
+								return cachedValue;
+							} catch (error) {
+								console.log(`[SuperCode] ❌ VM-Safe loading failed for ${name}: ${error.message}`);
+								throw error;
+							}
 						}
-
-						libraryCache[libraryName] = property ? lib[property] : lib;
-						performanceTracker[libraryName] = Date.now() - startTime;
-						console.log(
-							`[SuperCode] ✅ Loaded ${libraryName} (${performanceTracker[libraryName]}ms)`,
-						);
-					} catch (error: any) {
-						if (error.code === 'MODULE_NOT_FOUND') {
-							throw createLLMError('LIBRARY_MISSING', libraryName, error);
-						} else {
-							throw createLLMError('LIBRARY_LOAD_FAILED', libraryName, error, {
-								requirePath,
-								property,
-							});
-						}
-					}
-				}
-				return libraryCache[libraryName];
+						return this[name];
+					},
+					configurable: true,
+					enumerable: true
+				});
 			};
+
+			// Enhanced lazy loader with LLM-friendly errors and comprehensive logging
+			// Old lazyLoad function removed - now using VM-Safe pattern only
 
 			const sandbox = {
 				$input: {
@@ -420,132 +430,7 @@ export class SuperCodeNode implements INodeType {
 					json: items.length === 1 ? items[0].json : items.map((item) => item.json),
 				},
 
-				// Lazy-loaded libraries - only require when accessed
-				// 📊 Core Data Libraries
-				get _() {
-					return lazyLoad('lodash', 'lodash');
-				},
-				get axios() {
-					return lazyLoad('axios', 'axios');
-				},
-				get dayjs() {
-					return lazyLoad('dayjs', 'dayjs');
-				},
-				get Joi() {
-					return lazyLoad('joi', 'joi');
-				},
-				get joi() {
-					return lazyLoad('joi', 'joi');
-				},
-				get validator() {
-					return lazyLoad('validator', 'validator');
-				},
-				get uuid() {
-					return lazyLoad('uuid', 'uuid', 'v4');
-				},
-				get csvParse() {
-					return lazyLoad('csv-parse', 'csv-parse', 'parse');
-				},
-				get Handlebars() {
-					return lazyLoad('handlebars', 'handlebars');
-				},
-				get cheerio() {
-					return lazyLoad('cheerio', 'cheerio');
-				},
-				get CryptoJS() {
-					return lazyLoad('crypto-js', 'crypto-js');
-				},
-
-				// 📊 Business-Critical Libraries
-				get XLSX() {
-					return lazyLoad('xlsx', 'xlsx');
-				},
-				get pdfLib() {
-					return lazyLoad('pdf-lib', 'pdf-lib');
-				},
-				get math() {
-					return lazyLoad('mathjs', 'mathjs');
-				},
-				get xml2js() {
-					return lazyLoad('xml2js', 'xml2js');
-				},
-				get YAML() {
-					return lazyLoad('yaml', 'yaml');
-				},
-
-				// 🖼️ Media Processing
-				get sharp() {
-					return lazyLoad('sharp', 'sharp');
-				},
-				get Jimp() {
-					return lazyLoad('jimp', 'jimp');
-				},
-				get QRCode() {
-					return lazyLoad('qrcode', 'qrcode');
-				},
-
-				// 🤖 AI/NLP Libraries
-				get natural() {
-					return lazyLoad('natural', 'natural');
-				},
-
-				// 🗄️ File & Archive Processing
-				get archiver() {
-					return lazyLoad('archiver', 'archiver');
-				},
-
-				// 🌐 Web & Scraping
-				get puppeteer() {
-					return lazyLoad('puppeteer-core', 'puppeteer-core');
-				},
-
-				// 🗄️ Database & Security
-				get knex() {
-					return lazyLoad('knex', 'knex');
-				},
-				get forge() {
-					return lazyLoad('node-forge', 'node-forge');
-				},
-				get moment() {
-					return lazyLoad('moment-timezone', 'moment-timezone');
-				},
-
-				// 📊 Advanced XML
-				get XMLParser() {
-					return lazyLoad('fast-xml-parser', 'fast-xml-parser', 'XMLParser');
-				},
-
-				// 🔐 AUTHENTICATION & SECURITY (New High-Demand Libraries)
-				get jwt() {
-					return lazyLoad('jsonwebtoken', 'jsonwebtoken');
-				},
-				get bcrypt() {
-					return lazyLoad('bcrypt', 'bcrypt');
-				},
-
-				// 💰 BLOCKCHAIN & CRYPTO (Untapped Market)
-				get ethers() {
-					return lazyLoad('ethers', 'ethers');
-				},
-				get web3() {
-					return lazyLoad('web3', 'web3');
-				},
-
-				// 🌍 INTERNATIONAL BUSINESS (Global Requirements)
-				get phoneNumber() {
-					return lazyLoad('libphonenumber-js', 'libphonenumber-js');
-				},
-				get currency() {
-					return lazyLoad('currency.js', 'currency.js');
-				},
-				get iban() {
-					return lazyLoad('iban', 'iban');
-				},
-
-				// 🔍 ADVANCED SEARCH & TEXT (Developer Requests)
-				get fuzzy() {
-					return lazyLoad('fuse.js', 'fuse.js');
-				},
+				// Libraries will be added via VM-Safe lazy loading pattern below
 
 				console: {
 					log: (...args: any[]) => console.log('[SuperCode]', ...args),
@@ -664,7 +549,7 @@ export class SuperCodeNode implements INodeType {
 
 					validateSchema: (data: any, schema: any) => {
 						try {
-							const joi = lazyLoad('joi', 'joi');
+							const joi = require('joi');
 							return joi.validate(data, schema);
 						} catch (error: any) {
 							throw createLLMError('TYPE_ERROR', 'joi', error, { data, schema });
@@ -743,10 +628,88 @@ export class SuperCodeNode implements INodeType {
 				Error,
 				require, // Add require to VM context for lazy loading
 			};
+			
+			console.log('[SuperCode] ✅ Sandbox created with getters:', Object.keys(sandbox).slice(0, 10));
+			
+			// Apply VM-Safe Lazy Loading to fix VM context getter incompatibility
+			console.log('[SuperCode] 🔧 Applying VM-Safe lazy loading pattern...');
+			
+			// Remove existing getters and replace with VM-safe lazy loaders
+			const libraryMappings = [
+				// Core Data Libraries
+				['_', 'lodash', 'lodash'],
+				['axios', 'axios', 'axios'],
+				['dayjs', 'dayjs', 'dayjs'],
+				['joi', 'joi', 'joi'],
+				['Joi', 'joi', 'joi'],
+				['validator', 'validator', 'validator'],
+				['uuid', 'uuid', 'uuid', 'v4'],
+				['csvParse', 'csv-parse', 'csv-parse', 'parse'],
+				['Handlebars', 'handlebars', 'handlebars'],
+				['cheerio', 'cheerio', 'cheerio'],
+				['CryptoJS', 'crypto-js', 'crypto-js'],
+				
+				// Business-Critical Libraries
+				['XLSX', 'xlsx', 'xlsx'],
+				['pdfLib', 'pdf-lib', 'pdf-lib'],
+				['math', 'mathjs', 'mathjs'],
+				['xml2js', 'xml2js', 'xml2js'],
+				['YAML', 'yaml', 'yaml'],
+				
+				// Media Processing
+				['sharp', 'sharp', 'sharp'],
+				['Jimp', 'jimp', 'jimp'],
+				['QRCode', 'qrcode', 'qrcode'],
+				
+				// AI/NLP
+				['natural', 'natural', 'natural'],
+				
+				// File & Archive
+				['archiver', 'archiver', 'archiver'],
+				
+				// Web & Scraping
+				['puppeteer', 'puppeteer-core', 'puppeteer-core'],
+				
+				// Database & Security
+				['knex', 'knex', 'knex'],
+				['forge', 'node-forge', 'node-forge'],
+				['moment', 'moment-timezone', 'moment-timezone'],
+				
+				// Advanced XML
+				['XMLParser', 'fast-xml-parser', 'fast-xml-parser', 'XMLParser'],
+				
+				// Auth & Security
+				['jwt', 'jsonwebtoken', 'jsonwebtoken'],
+				['bcrypt', 'bcrypt', 'bcrypt'],
+				
+				// Blockchain & Crypto
+				['ethers', 'ethers', 'ethers'],
+				['web3', 'web3', 'web3'],
+				
+				// International Business
+				['phoneNumber', 'libphonenumber-js', 'libphonenumber-js'],
+				['currency', 'currency.js', 'currency.js'],
+				['iban', 'iban', 'iban'],
+				
+				// Advanced Search & Text
+				['fuzzy', 'fuse.js', 'fuse.js']
+			];
+			
+			// Apply VM-safe lazy loading to each library
+			for (const [name, libraryName, requirePath, property] of libraryMappings) {
+				// Remove existing getter if it exists
+				delete (sandbox as any)[name];
+				
+				// Add VM-safe lazy loader
+				createVmSafeLazyLoader(sandbox, name, libraryName, requirePath, property);
+			}
+			
+			console.log('[SuperCode] ✅ VM-Safe lazy loading applied to all libraries');
 			return sandbox;
 		};
 
 		try {
+			console.log('[SuperCode] 🚀 EXECUTION STARTING - VM-SAFE VERSION LOADED');
 			if (executionMode === 'runOnceForAllItems') {
 				// Execute code once for all items
 				const sandbox = createEnhancedSandbox(items);
