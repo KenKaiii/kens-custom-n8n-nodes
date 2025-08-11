@@ -1,7 +1,6 @@
 {
 	"name": "n8n-nodes-educational-template",
 	"version": "1.0.0",
-	"type": "module",
 	"description": "Educational template for creating custom n8n nodes",
 	"keywords": [
 		"n8n-community-node-package",

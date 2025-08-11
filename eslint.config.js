@@ -1,9 +1,10 @@
-import js from '@eslint/js';
-import typescript from '@typescript-eslint/eslint-plugin';
-import typescriptParser from '@typescript-eslint/parser';
-import n8nNodesBase from 'eslint-plugin-n8n-nodes-base';
+/* eslint-disable */
+const js = require('@eslint/js');
+const typescript = require('@typescript-eslint/eslint-plugin');
+const typescriptParser = require('@typescript-eslint/parser');
+const n8nNodesBase = require('eslint-plugin-n8n-nodes-base');
 
-export default [
+module.exports = [
 	js.configs.recommended,
 	{
 		files: ['**/*.ts'],
