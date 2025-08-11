@@ -105,16 +105,17 @@ print(json.dumps(result))
 	}
 }
 
-export class SuperCodeNode implements INodeType {
+export class SuperCodeTool implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'Super Code',
-		name: 'superCodeNodeVmSafe',
-		icon: 'file:supercode.svg',
-		group: ['transform'],
+		displayName: 'Super Code Tool',
+		name: 'superCodeTool',
+		icon: 'file:supercodetool.svg',
+		group: [],
 		version: 1,
-		description: 'Execute JavaScript/TypeScript with enhanced libraries and utilities',
+		description: 'AI Agent code execution tool with JavaScript/Python and 34+ enhanced libraries',
+		usableAsTool: true,
 		defaults: {
-			name: 'Super Code',
+			name: 'Super Code Tool',
 		},
 		inputs: [{ displayName: '', type: NodeConnectionType.Main }],
 		outputs: [{ displayName: '', type: NodeConnectionType.Main }],
@@ -128,12 +129,12 @@ export class SuperCodeNode implements INodeType {
 					{
 						name: 'JavaScript',
 						value: 'javascript',
-						description: 'Execute JavaScript/TypeScript with 33+ enhanced libraries',
+						description: 'Execute JavaScript/TypeScript with 34+ enhanced libraries for AI agents',
 					},
 					{
 						name: 'Python',
 						value: 'python',
-						description: 'Execute Python with 30+ popular libraries (pandas, requests, etc.)',
+						description: 'Execute Python with 30+ popular libraries (pandas, requests, etc.) for AI agents',
 					},
 				],
 				default: 'javascript',
@@ -153,12 +154,13 @@ export class SuperCodeNode implements INodeType {
 					editorLanguage: 'javaScript',
 					rows: 20,
 				},
-				default: `// Available libraries: lodash (_), axios, dayjs, joi, validator, uuid, csvParse, Handlebars, cheerio, CryptoJS, XLSX, pdfLib, math, xml2js, YAML, sharp, Jimp, QRCode, natural, archiver, puppeteer, knex, forge, moment, XMLParser, jwt, bcrypt, ethers, web3, phoneNumber, currency, iban, fuzzy
+				default: `// AI Agent Super Code Tool - JavaScript Mode
+// Available: lodash (_), axios, dayjs, joi, validator, uuid, csvParse, Handlebars, cheerio, CryptoJS, XLSX, pdfLib, math, xml2js, YAML, sharp, Jimp, QRCode, natural, archiver, puppeteer, knex, forge, moment, XMLParser, jwt, bcrypt, ethers, web3, phoneNumber, currency, iban, fuzzy
 
-// Your JavaScript code here
-return { result: 'Hello from Super Code!' };
+// Your AI agent code here
+return { result: 'AI Agent Tool Ready!', agent: 'super-code-tool' };
 `,
-				description: 'JavaScript/TypeScript code with enhanced libraries and utilities',
+				description: 'JavaScript/TypeScript code with enhanced libraries for AI agents',
 				noDataExpression: true,
 			},
 			{
@@ -175,13 +177,14 @@ return { result: 'Hello from Super Code!' };
 					editorLanguage: 'python',
 					rows: 20,
 				},
-				default: `# 30+ Python libraries available: pandas, numpy, requests, datetime, json, sys, urllib, re, hashlib, base64, uuid, os, and many more
+				default: `# AI Agent Super Code Tool - Python Mode  
 # Pre-imported: pandas (pd), numpy (np), requests, datetime, json, sys, urllib.parse, re, hashlib, base64, uuid, os
+# 30+ Python libraries available for AI agent tasks
 
-# Your Python code here
-result = {"message": "Hello from Super Code Python!"}
+# Your AI agent code here
+result = {"message": "AI Agent Tool Ready!", "agent": "super-code-tool", "language": "python"}
 `,
-				description: 'Python code with popular libraries and utilities',
+				description: 'Python code with popular libraries for AI agents',
 				noDataExpression: true,
 			},
 			{
@@ -213,7 +216,7 @@ result = {"message": "Hello from Super Code Python!"}
 					},
 				],
 				default: 'runOnceForAllItems',
-				description: 'How to execute the JavaScript code',
+				description: 'How to execute the code for AI agent workflows',
 			},
 			{
 				displayName: 'Timeout (seconds)',
@@ -225,7 +228,7 @@ result = {"message": "Hello from Super Code Python!"}
 					},
 				},
 				default: 30,
-				description: 'Maximum execution time in seconds',
+				description: 'Maximum execution time in seconds for AI agent tasks',
 				typeOptions: {
 					minValue: 1,
 					maxValue: 300,
@@ -241,7 +244,7 @@ result = {"message": "Hello from Super Code Python!"}
 					},
 				},
 				default: 128,
-				description: 'Maximum memory usage in MB',
+				description: 'Maximum memory usage in MB for AI agent operations',
 				typeOptions: {
 					minValue: 16,
 					maxValue: 512,
@@ -260,7 +263,7 @@ result = {"message": "Hello from Super Code Python!"}
 		if (!code.trim()) {
 			throw new NodeOperationError(
 				this.getNode(),
-				`No code provided. Please add your ${language === 'python' ? 'Python' : 'JavaScript/TypeScript'} code.`,
+				`No code provided. Please add your ${language === 'python' ? 'Python' : 'JavaScript/TypeScript'} code for the AI agent.`,
 			);
 		}
 
@@ -270,16 +273,14 @@ result = {"message": "Hello from Super Code Python!"}
 			return await pythonExecutor.execute(code, items, timeout, this);
 		}
 
-		console.log('[SuperCode] 🚀 EXECUTION STARTING - JAVASCRIPT MODE - VM-SAFE VERSION');
+		console.log('[SuperCodeTool] 🤖 AI AGENT TOOL STARTING - JAVASCRIPT MODE - VM-SAFE VERSION');
 		
-		// Create enhanced sandbox with direct library loading (VM-compatible)
+		// Create enhanced sandbox with direct library loading (VM-compatible) - COPIED FROM SUPERCODE NODE
 		const createEnhancedSandbox = (items: INodeExecutionData[]) => {
-			console.log('[SuperCode] 🏗️ Creating enhanced sandbox with direct loading...');
-			// Library cache to avoid repeated loading
+			console.log('[SuperCodeTool] 🏗️ Creating enhanced sandbox for AI agents...');
 			const libraryCache: { [key: string]: any } = {};
 			const performanceTracker: { [key: string]: number } = {};
 
-			// LLM-Friendly Error Handler - Provides detailed diagnostics for AI code generation
 			const createLLMError = (
 				type: string,
 				libraryName: string,
@@ -312,7 +313,7 @@ result = {"message": "Hello from Super Code Python!"}
 				const fix = fixes[code] || 'Check syntax and library documentation';
 
 				return new Error(
-					`🤖 LLM-FRIENDLY ERROR [${code}]\n` +
+					`🤖 AI AGENT ERROR [${code}]\n` +
 						`📍 Library: ${libraryName}\n` +
 						`🔍 Issue: ${originalError.message}\n` +
 						`💡 Fix: ${fix}\n` +
@@ -321,7 +322,6 @@ result = {"message": "Hello from Super Code Python!"}
 				);
 			};
 
-			// VM-Safe Lazy Loading Pattern (fixes VM context getter incompatibility)
 			const createVmSafeLazyLoader = (hostObj: any, name: string, _libraryName: string, requirePath: string, property?: string) => {
 				let defined = false;
 				let cachedValue: any;
@@ -329,15 +329,13 @@ result = {"message": "Hello from Super Code Python!"}
 				Object.defineProperty(hostObj, name, {
 					get: function() {
 						if (!defined) {
-							console.log(`[SuperCode] 🔄 VM-Safe loading ${name} from ${requirePath}...`);
+							console.log(`[SuperCodeTool] 🔄 AI Agent loading ${name} from ${requirePath}...`);
 							defined = true;
 							
 							try {
-								// Direct require() call for VM-Safe loading
 								const lib = require(requirePath);
 								cachedValue = property ? lib[property] : lib;
 								
-								// Redefine as value property for VM compatibility
 								Object.defineProperty(this, name, {
 									value: cachedValue,
 									writable: false,
@@ -345,10 +343,10 @@ result = {"message": "Hello from Super Code Python!"}
 									enumerable: true
 								});
 								
-								console.log(`[SuperCode] ✅ VM-Safe loaded ${name} successfully`);
+								console.log(`[SuperCodeTool] ✅ AI Agent loaded ${name} successfully`);
 								return cachedValue;
 							} catch (error) {
-								console.log(`[SuperCode] ❌ VM-Safe loading failed for ${name}: ${error.message}`);
+								console.log(`[SuperCodeTool] ❌ AI Agent loading failed for ${name}: ${error.message}`);
 								throw error;
 							}
 						}
@@ -359,9 +357,6 @@ result = {"message": "Hello from Super Code Python!"}
 				});
 			};
 
-			// Enhanced lazy loader with LLM-friendly errors and comprehensive logging
-			// Old lazyLoad function removed - now using VM-Safe pattern only
-
 			const sandbox = {
 				$input: {
 					all: () => items,
@@ -370,12 +365,10 @@ result = {"message": "Hello from Super Code Python!"}
 					json: items.length === 1 ? items[0].json : items.map((item) => item.json),
 				},
 
-				// Libraries will be added via VM-Safe lazy loading pattern below
-
 				console: {
-					log: (...args: any[]) => console.log('[SuperCode]', ...args),
-					error: (...args: any[]) => console.error('[SuperCode]', ...args),
-					warn: (...args: any[]) => console.warn('[SuperCode]', ...args),
+					log: (...args: any[]) => console.log('[SuperCodeTool]', ...args),
+					error: (...args: any[]) => console.error('[SuperCodeTool]', ...args),
+					warn: (...args: any[]) => console.warn('[SuperCodeTool]', ...args),
 				},
 				utils: {
 					now: () => new Date().toISOString(),
@@ -383,7 +376,7 @@ result = {"message": "Hello from Super Code Python!"}
 						const d = new Date(date);
 						return format ? d.toLocaleDateString() : d.toISOString();
 					},
-					isEmail: (email: string) => /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email),
+					isEmail: (email: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
 					isUrl: (url: string) => {
 						try {
 							new URL(url);
@@ -422,7 +415,6 @@ result = {"message": "Hello from Super Code Python!"}
 					},
 					sleep: (ms: number) => new Promise((resolve) => setTimeout(resolve, ms)),
 
-					// 🧠 Memory Management & Monitoring
 					memoryUsage: () => {
 						const usage = process.memoryUsage();
 						return {
@@ -435,7 +427,6 @@ result = {"message": "Hello from Super Code Python!"}
 						};
 					},
 
-					// 📊 Performance Monitoring
 					getPerformanceStats: () => ({
 						loadTimes: performanceTracker,
 						averageLoadTime:
@@ -446,7 +437,6 @@ result = {"message": "Hello from Super Code Python!"}
 						totalLibrariesLoaded: Object.keys(libraryCache).length,
 					}),
 
-					// 🧹 Resource Cleanup
 					cleanup: (libraryNames?: string[]) => {
 						const heavyLibraries = ['sharp', 'puppeteer-core', 'pdf-lib', 'jimp', 'archiver'];
 						const toCleanup = libraryNames || heavyLibraries.filter((lib) => libraryCache[lib]);
@@ -457,14 +447,13 @@ result = {"message": "Hello from Super Code Python!"}
 								delete libraryCache[lib];
 								delete performanceTracker[lib];
 								cleaned++;
-								console.log(`[SuperCode] 🧹 Cleaned up ${lib}`);
+								console.log(`[SuperCodeTool] 🧹 AI Agent cleaned up ${lib}`);
 							}
 						});
 
 						return { cleaned, remaining: Object.keys(libraryCache).length };
 					},
 
-					// 🔍 Health Check
 					healthCheck: () => {
 						const memory = process.memoryUsage();
 						const heapPercent = (memory.heapUsed / memory.heapTotal) * 100;
@@ -478,7 +467,6 @@ result = {"message": "Hello from Super Code Python!"}
 						};
 					},
 
-					// 🛡️ Security & Validation
 					sanitizeInput: (input: string) => {
 						return input
 							.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
@@ -496,59 +484,17 @@ result = {"message": "Hello from Super Code Python!"}
 						}
 					},
 
-					// Library availability checker
 					getAvailableLibraries: () => [
-						// Core Data Libraries
-						'lodash (_)',
-						'axios',
-						'dayjs',
-						'joi',
-						'validator',
-						'uuid',
-						'csv-parse (csvParse)',
-						'handlebars (Handlebars)',
-						'cheerio',
-						'crypto-js (CryptoJS)',
-						// Business-Critical Libraries
-						'xlsx (XLSX)',
-						'pdf-lib (pdfLib)',
-						'mathjs (math)',
-						'xml2js',
-						'yaml (YAML)',
-						// Media Processing
-						'sharp',
-						'jimp (Jimp)',
-						'qrcode (QRCode)',
-						// AI/NLP Libraries
-						'natural',
-						// File & Archive Processing
-						'archiver',
-						// Web & Scraping
-						'puppeteer-core (puppeteer)',
-						// Database & Security
-						'knex',
-						'node-forge (forge)',
-						'moment-timezone (moment)',
-						// Advanced XML
-						'fast-xml-parser (XMLParser)',
-						// 🔐 Authentication & Security (NEW!)
-						'jsonwebtoken (jwt)',
-						'bcrypt',
-						// 💰 Blockchain & Crypto (NEW!)
-						'ethers',
-						'web3',
-						// 🌍 International Business (NEW!)
-						'libphonenumber-js (phoneNumber)',
-						'currency.js (currency)',
-						'iban',
-						// 🔍 Advanced Search & Text (NEW!)
-						'fuse.js (fuzzy)',
+						'lodash (_)', 'axios', 'dayjs', 'joi', 'validator', 'uuid', 'csv-parse (csvParse)',
+						'handlebars (Handlebars)', 'cheerio', 'crypto-js (CryptoJS)', 'xlsx (XLSX)',
+						'pdf-lib (pdfLib)', 'mathjs (math)', 'xml2js', 'yaml (YAML)', 'sharp',
+						'jimp (Jimp)', 'qrcode (QRCode)', 'natural', 'archiver', 'puppeteer-core (puppeteer)',
+						'knex', 'node-forge (forge)', 'moment-timezone (moment)', 'fast-xml-parser (XMLParser)',
+						'jsonwebtoken (jwt)', 'bcrypt', 'ethers', 'web3', 'libphonenumber-js (phoneNumber)',
+						'currency.js (currency)', 'iban', 'fuse.js (fuzzy)'
 					],
 
-					// Check if library is loaded
 					isLibraryLoaded: (libraryName: string) => !!libraryCache[libraryName],
-
-					// Get loaded library stats
 					getLoadedLibraries: () => Object.keys(libraryCache),
 				},
 				setTimeout,
@@ -566,92 +512,61 @@ result = {"message": "Hello from Super Code Python!"}
 				Boolean,
 				RegExp,
 				Error,
-				require, // Add require to VM context for lazy loading
+				require,
 			};
 			
-			console.log('[SuperCode] ✅ Sandbox created with getters:', Object.keys(sandbox).slice(0, 10));
-			
-			// Apply VM-Safe Lazy Loading to fix VM context getter incompatibility
-			console.log('[SuperCode] 🔧 Applying VM-Safe lazy loading pattern...');
-			
-			// Remove existing getters and replace with VM-safe lazy loaders
-			const libraryMappings = [
-				// Core Data Libraries
-				['_', 'lodash', 'lodash'],
-				['axios', 'axios', 'axios'],
-				['dayjs', 'dayjs', 'dayjs'],
-				['joi', 'joi', 'joi'],
-				['Joi', 'joi', 'joi'],
-				['validator', 'validator', 'validator'],
-				['uuid', 'uuid', 'uuid', 'v4'],
-				['csvParse', 'csv-parse', 'csv-parse', 'parse'],
-				['Handlebars', 'handlebars', 'handlebars'],
-				['cheerio', 'cheerio', 'cheerio'],
-				['CryptoJS', 'crypto-js', 'crypto-js'],
-				
-				// Business-Critical Libraries
-				['XLSX', 'xlsx', 'xlsx'],
-				['pdfLib', 'pdf-lib', 'pdf-lib'],
-				['math', 'mathjs', 'mathjs'],
-				['xml2js', 'xml2js', 'xml2js'],
-				['YAML', 'yaml', 'yaml'],
-				
-				// Media Processing
-				['sharp', 'sharp', 'sharp'],
-				['Jimp', 'jimp', 'jimp'],
-				['QRCode', 'qrcode', 'qrcode'],
-				
-				// AI/NLP
-				['natural', 'natural', 'natural'],
-				
-				// File & Archive
-				['archiver', 'archiver', 'archiver'],
-				
-				// Web & Scraping
-				['puppeteer', 'puppeteer-core', 'puppeteer-core'],
-				
-				// Database & Security
-				['knex', 'knex', 'knex'],
-				['forge', 'node-forge', 'node-forge'],
-				['moment', 'moment-timezone', 'moment-timezone'],
-				
-				// Advanced XML
-				['XMLParser', 'fast-xml-parser', 'fast-xml-parser', 'XMLParser'],
-				
-				// Auth & Security
-				['jwt', 'jsonwebtoken', 'jsonwebtoken'],
-				['bcrypt', 'bcrypt', 'bcrypt'],
-				
-				// Blockchain & Crypto
-				['ethers', 'ethers', 'ethers'],
-				['web3', 'web3', 'web3'],
-				
-				// International Business
-				['phoneNumber', 'libphonenumber-js', 'libphonenumber-js'],
-				['currency', 'currency.js', 'currency.js'],
-				['iban', 'iban', 'iban'],
-				
-				// Advanced Search & Text
-				['fuzzy', 'fuse.js', 'fuse.js']
-			];
-			
-			// Apply VM-safe lazy loading to each library
-			for (const [name, libraryName, requirePath, property] of libraryMappings) {
-				// Remove existing getter if it exists
-				delete (sandbox as any)[name];
-				
-				// Add VM-safe lazy loader
-				createVmSafeLazyLoader(sandbox, name, libraryName, requirePath, property);
-			}
-			
-			console.log('[SuperCode] ✅ VM-Safe lazy loading applied to all libraries');
-			return sandbox;
-		};
+		console.log('[SuperCodeTool] ✅ AI Agent sandbox created with getters:', Object.keys(sandbox).slice(0, 10));
+		console.log('[SuperCodeTool] 🔧 Applying VM-Safe lazy loading for AI agents...');
+		
+		const libraryMappings = [
+			['_', 'lodash', 'lodash'],
+			['axios', 'axios', 'axios'],
+			['dayjs', 'dayjs', 'dayjs'],
+			['joi', 'joi', 'joi'],
+			['Joi', 'joi', 'joi'],
+			['validator', 'validator', 'validator'],
+			['uuid', 'uuid', 'uuid', 'v4'],
+			['csvParse', 'csv-parse', 'csv-parse', 'parse'],
+			['Handlebars', 'handlebars', 'handlebars'],
+			['cheerio', 'cheerio', 'cheerio'],
+			['CryptoJS', 'crypto-js', 'crypto-js'],
+			['XLSX', 'xlsx', 'xlsx'],
+			['pdfLib', 'pdf-lib', 'pdf-lib'],
+			['math', 'mathjs', 'mathjs'],
+			['xml2js', 'xml2js', 'xml2js'],
+			['YAML', 'yaml', 'yaml'],
+			['sharp', 'sharp', 'sharp'],
+			['Jimp', 'jimp', 'jimp'],
+			['QRCode', 'qrcode', 'qrcode'],
+			['natural', 'natural', 'natural'],
+			['archiver', 'archiver', 'archiver'],
+			['puppeteer', 'puppeteer-core', 'puppeteer-core'],
+			['knex', 'knex', 'knex'],
+			['forge', 'node-forge', 'node-forge'],
+			['moment', 'moment-timezone', 'moment-timezone'],
+			['XMLParser', 'fast-xml-parser', 'fast-xml-parser', 'XMLParser'],
+			['jwt', 'jsonwebtoken', 'jsonwebtoken'],
+			['bcrypt', 'bcrypt', 'bcrypt'],
+			['ethers', 'ethers', 'ethers'],
+			['web3', 'web3', 'web3'],
+			['phoneNumber', 'libphonenumber-js', 'libphonenumber-js'],
+			['currency', 'currency.js', 'currency.js'],
+			['iban', 'iban', 'iban'],
+			['fuzzy', 'fuse.js', 'fuse.js']
+		];
+		
+		for (const [name, libraryName, requirePath, property] of libraryMappings) {
+			delete (sandbox as any)[name];
+			createVmSafeLazyLoader(sandbox, name, libraryName, requirePath, property);
+		}
+		
+		console.log('[SuperCodeTool] ✅ VM-Safe lazy loading applied for AI agents');
+		return sandbox;
+	};
 
 		try {
-			console.log('[SuperCode] 🚀 EXECUTION STARTING - VM-SAFE VERSION LOADED');
+			console.log('[SuperCodeTool] 🤖 AI AGENT EXECUTION STARTING - VM-SAFE VERSION LOADED');
 			if (executionMode === 'runOnceForAllItems') {
-				// Execute code once for all items
 				const sandbox = createEnhancedSandbox(items);
 				const context = createContext(sandbox);
 
@@ -659,45 +574,40 @@ result = {"message": "Hello from Super Code Python!"}
 					(async function() {
 						const executionStartTime = Date.now();
 						let operationCount = 0;
-						const maxOperations = 100000; // Prevent infinite loops
+						const maxOperations = 100000;
 						
 						const checkTimeout = () => {
 							operationCount++;
 							if (operationCount > maxOperations) {
-								throw new Error('🤖 LLM-FRIENDLY ERROR [E009]\\n📍 Issue: Possible infinite loop detected\\n💡 Fix: Check for infinite while/for loops, add break conditions');
+								throw new Error('🤖 AI AGENT ERROR [E009]\\\\n📍 Issue: Possible infinite loop detected\\\\n💡 Fix: Check for infinite while/for loops, add break conditions');
 							}
 							if (Date.now() - executionStartTime > ${timeout * 1000}) {
-								throw new Error('🤖 LLM-FRIENDLY ERROR [E010]\\n📍 Issue: Code execution timeout (${timeout}s)\\n💡 Fix: 1) Reduce data processing 2) Use async/await 3) Increase timeout in Advanced Settings');
+								throw new Error('🤖 AI AGENT ERROR [E010]\\\\n📍 Issue: Code execution timeout (${timeout}s)\\\\n💡 Fix: 1) Reduce data processing 2) Use async/await 3) Increase timeout in Advanced Settings');
 							}
 						};
 						
-						// Enhanced async wrapper with better error handling
 						try {
 							${code}
 						} catch (error) {
-							// Categorize common errors for LLM assistance
 							if (error.name === 'TypeError') {
 								if (error.message.includes('undefined')) {
-									throw new Error('🤖 LLM-FRIENDLY ERROR [E005]\\n📍 Issue: ' + error.message + '\\n💡 Fix: Check if variable exists before using: if (variable) { ... }');
+									throw new Error('🤖 AI AGENT ERROR [E005]\\\\n📍 Issue: ' + error.message + '\\\\n💡 Fix: Check if variable exists before using: if (variable) { ... }');
 								}
 								if (error.message.includes('not a function')) {
-									throw new Error('🤖 LLM-FRIENDLY ERROR [E003]\\n📍 Issue: ' + error.message + '\\n💡 Fix: 1) Check method name spelling 2) Ensure library is loaded 3) Check object has method');
+									throw new Error('🤖 AI AGENT ERROR [E003]\\\\n📍 Issue: ' + error.message + '\\\\n💡 Fix: 1) Check method name spelling 2) Ensure library is loaded 3) Check object has method');
 								}
 							}
 							if (error.name === 'ReferenceError') {
-								// Don't intercept ReferenceErrors for known lazy-loaded libraries
 								const knownLibraries = ['_', 'axios', 'dayjs', 'joi', 'Joi', 'validator', 'uuid', 'csvParse', 'Handlebars', 'cheerio', 'CryptoJS', 'XLSX', 'pdfLib', 'math', 'xml2js', 'YAML', 'sharp', 'Jimp', 'QRCode', 'natural', 'archiver', 'puppeteer', 'knex', 'forge', 'moment', 'XMLParser', 'jwt', 'bcrypt', 'ethers', 'web3', 'phoneNumber', 'currency', 'iban', 'fuzzy'];
 								const isKnownLibrary = knownLibraries.some(lib => error.message.includes(lib + ' is not defined'));
 								if (!isKnownLibrary) {
-									throw new Error('🤖 LLM-FRIENDLY ERROR [E004]\\n📍 Issue: ' + error.message + '\\n💡 Fix: 1) Declare variable first 2) Check spelling 3) Import library if needed');
+									throw new Error('🤖 AI AGENT ERROR [E004]\\\\n📍 Issue: ' + error.message + '\\\\n💡 Fix: 1) Declare variable first 2) Check spelling 3) Import library if needed');
 								}
-								// Re-throw original error for known libraries to allow lazy loading
 								throw error;
 							}
 							if (error.message.includes('await')) {
-								throw new Error('🤖 LLM-FRIENDLY ERROR [E006]\\n📍 Issue: ' + error.message + '\\n💡 Fix: Add await before async operations: await axios.get(), await sharp().resize()');
+								throw new Error('🤖 AI AGENT ERROR [E006]\\\\n📍 Issue: ' + error.message + '\\\\n💡 Fix: Add await before async operations: await axios.get(), await sharp().resize()');
 							}
-							// Re-throw with original stack for debugging
 							throw error;
 						}
 					})();
@@ -721,7 +631,6 @@ result = {"message": "Hello from Super Code Python!"}
 					return [[]];
 				}
 			} else {
-				// Execute code for each item
 				const results: INodeExecutionData[] = [];
 
 				for (let i = 0; i < items.length; i++) {
@@ -737,10 +646,10 @@ result = {"message": "Hello from Super Code Python!"}
 							const checkTimeout = () => {
 								operationCount++;
 								if (operationCount > maxOperations) {
-									throw new Error('🤖 LLM-FRIENDLY ERROR [E009]\\n📍 Issue: Possible infinite loop detected\\n💡 Fix: Check for infinite while/for loops, add break conditions');
+									throw new Error('🤖 AI AGENT ERROR [E009]\\\\n📍 Issue: Possible infinite loop detected\\\\n💡 Fix: Check for infinite while/for loops, add break conditions');
 								}
 								if (Date.now() - executionStartTime > ${timeout * 1000}) {
-									throw new Error('🤖 LLM-FRIENDLY ERROR [E010]\\n📍 Issue: Code execution timeout (${timeout}s)\\n💡 Fix: 1) Reduce data processing 2) Use async/await 3) Increase timeout in Advanced Settings');
+									throw new Error('🤖 AI AGENT ERROR [E010]\\\\n📍 Issue: Code execution timeout (${timeout}s)\\\\n💡 Fix: 1) Reduce data processing 2) Use async/await 3) Increase timeout in Advanced Settings');
 								}
 							};
 							
@@ -749,24 +658,22 @@ result = {"message": "Hello from Super Code Python!"}
 							} catch (error) {
 								if (error.name === 'TypeError') {
 									if (error.message.includes('undefined')) {
-										throw new Error('🤖 LLM-FRIENDLY ERROR [E005]\\n📍 Issue: ' + error.message + '\\n💡 Fix: Check if variable exists before using: if (variable) { ... }');
+										throw new Error('🤖 AI AGENT ERROR [E005]\\\\n📍 Issue: ' + error.message + '\\\\n💡 Fix: Check if variable exists before using: if (variable) { ... }');
 									}
 									if (error.message.includes('not a function')) {
-										throw new Error('🤖 LLM-FRIENDLY ERROR [E003]\\n📍 Issue: ' + error.message + '\\n💡 Fix: 1) Check method name spelling 2) Ensure library is loaded 3) Check object has method');
+										throw new Error('🤖 AI AGENT ERROR [E003]\\\\n📍 Issue: ' + error.message + '\\\\n💡 Fix: 1) Check method name spelling 2) Ensure library is loaded 3) Check object has method');
 									}
 								}
 								if (error.name === 'ReferenceError') {
-									// Don't intercept ReferenceErrors for known lazy-loaded libraries
 									const knownLibraries = ['_', 'axios', 'dayjs', 'joi', 'Joi', 'validator', 'uuid', 'csvParse', 'Handlebars', 'cheerio', 'CryptoJS', 'XLSX', 'pdfLib', 'math', 'xml2js', 'YAML', 'sharp', 'Jimp', 'QRCode', 'natural', 'archiver', 'puppeteer', 'knex', 'forge', 'moment', 'XMLParser', 'jwt', 'bcrypt', 'ethers', 'web3', 'phoneNumber', 'currency', 'iban', 'fuzzy'];
 									const isKnownLibrary = knownLibraries.some(lib => error.message.includes(lib + ' is not defined'));
 									if (!isKnownLibrary) {
-										throw new Error('🤖 LLM-FRIENDLY ERROR [E004]\\n📍 Issue: ' + error.message + '\\n💡 Fix: 1) Declare variable first 2) Check spelling 3) Import library if needed');
+										throw new Error('🤖 AI AGENT ERROR [E004]\\\\n📍 Issue: ' + error.message + '\\\\n💡 Fix: 1) Declare variable first 2) Check spelling 3) Import library if needed');
 									}
-									// Re-throw original error for known libraries to allow lazy loading
 									throw error;
 								}
 								if (error.message.includes('await')) {
-									throw new Error('🤖 LLM-FRIENDLY ERROR [E006]\\n📍 Issue: ' + error.message + '\\n💡 Fix: Add await before async operations: await axios.get(), await sharp().resize()');
+									throw new Error('🤖 AI AGENT ERROR [E006]\\\\n📍 Issue: ' + error.message + '\\\\n💡 Fix: Add await before async operations: await axios.get(), await sharp().resize()');
 								}
 								throw error;
 							}
@@ -792,7 +699,7 @@ result = {"message": "Hello from Super Code Python!"}
 					} catch (error) {
 						if (this.continueOnFail()) {
 							results.push({
-								json: { error: error.message, originalData: items[i].json },
+								json: { error: (error as Error).message, originalData: items[i].json },
 								error,
 								pairedItem: { item: i },
 							});
@@ -807,7 +714,7 @@ result = {"message": "Hello from Super Code Python!"}
 		} catch (error) {
 			throw new NodeOperationError(
 				this.getNode(),
-				`Code execution failed: ${error.message}\\n\\nStack trace:\\n${error.stack}`,
+				`AI Agent code execution failed: ${(error as Error).message}\n\nStack trace:\n${(error as Error).stack}`,
 			);
 		}
 	}
