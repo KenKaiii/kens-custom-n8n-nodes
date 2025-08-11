@@ -9,6 +9,10 @@ import {
 } from 'n8n-workflow';
 
 import { createContext, runInContext } from 'vm';
+import { spawn } from 'child_process';
+import { writeFileSync, unlinkSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
 
 export class SuperCodeNode implements INodeType {
 	description: INodeTypeDescription = {
@@ -26,12 +30,31 @@ export class SuperCodeNode implements INodeType {
 		credentials: [],
 		properties: [
 			{
+				displayName: 'Language',
+				name: 'language',
+				type: 'options',
+				options: [
+					{
+						name: 'JavaScript',
+						value: 'javascript',
+						description: 'Execute JavaScript/TypeScript code with 33+ libraries',
+					},
+					{
+						name: 'Python',
+						value: 'python',
+						description: 'Execute Python code with 30+ libraries (pandas, requests, etc.)',
+					},
+				],
+				default: 'javascript',
+				description: 'Programming language to execute',
+			},
+			{
 				displayName: 'Code',
 				name: 'code',
 				type: 'string',
 				typeOptions: {
 					editor: 'codeNodeEditor',
-					editorLanguage: 'javaScript',
+					editorLanguage: '={{ $parameter["language"] === "python" ? "python" : "javaScript" }}',
 					rows: 20,
 				},
 				default: `// 🚀 Super Code - The Most Powerful n8n Code Node Ever Created!
@@ -119,6 +142,7 @@ export class SuperCodeNode implements INodeType {
 // const data = XLSX.utils.sheet_to_json(worksheet);
 // return data.map(row => ({ json: row }));
 
+return $input.all();
 `,
 				description: 'JavaScript/TypeScript code with enhanced libraries and utilities',
 				noDataExpression: true,
@@ -201,14 +225,31 @@ export class SuperCodeNode implements INodeType {
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const executeFunctions = this;
 		const items = executeFunctions.getInputData();
+		const language = executeFunctions.getNodeParameter('language', 0, 'javascript') as string;
 		const executionMode = executeFunctions.getNodeParameter('executionMode', 0, 'runOnceForAllItems') as string;
 		const code = executeFunctions.getNodeParameter('code', 0) as string;
 		const timeout = executeFunctions.getNodeParameter('timeout', 0, 30) as number;
 
 		if (!code.trim()) {
-			throw new NodeOperationError(executeFunctions.getNode(), 'No code provided. Please add your JavaScript/TypeScript code.');
+			throw new NodeOperationError(executeFunctions.getNode(), `No code provided. Please add your ${language === 'python' ? 'Python' : 'JavaScript/TypeScript'} code.`);
 		}
 
+		// Route to appropriate execution engine
+		if (language === 'python') {
+			return await SuperCodeNode.executePythonCode(executeFunctions, items, code, executionMode, timeout);
+		} else {
+			return await SuperCodeNode.executeJavaScriptCode(executeFunctions, items, code, executionMode, timeout);
+		}
+	}
+
+	// JavaScript Execution Engine
+	private static async executeJavaScriptCode(
+		executeFunctions: IExecuteFunctions,
+		items: INodeExecutionData[],
+		code: string,
+		executionMode: string,
+		timeout: number
+	): Promise<INodeExecutionData[][]> {
 		// Create enhanced sandbox with lazy loading
 		const createEnhancedSandbox = (items: INodeExecutionData[]) => {
 			// Library cache to avoid repeated loading
@@ -669,5 +710,331 @@ export class SuperCodeNode implements INodeType {
 		}
 	}
 
+	// Python Execution Engine
+	private static async executePythonCode(
+		executeFunctions: IExecuteFunctions,
+		items: INodeExecutionData[],
+		code: string,
+		executionMode: string,
+		timeout: number
+	): Promise<INodeExecutionData[][]> {
+		return new Promise((resolve, reject) => {
+			const tempDir = tmpdir();
+			const scriptPath = join(tempDir, `n8n_python_${Date.now()}_${Math.random().toString(36).substring(7)}.py`);
+			
+			try {
+				// Prepare Python environment and data
+				const inputData = executionMode === 'runOnceForAllItems' 
+					? items.map(item => item.json)
+					: [items[0]?.json || {}];
+
+				// Create Python script with preloaded libraries and data
+				const pythonScript = `
+import json
+import sys
+import traceback
+from typing import List, Dict, Any
+
+# 📊 DATA PROCESSING & ANALYSIS
+try:
+    import pandas as pd
+except ImportError:
+    pd = None
+    
+try:
+    import numpy as np
+except ImportError:
+    np = None
+    
+try:
+    import polars as pl
+except ImportError:
+    pl = None
+
+# 🌐 HTTP/API INTEGRATION
+try:
+    import requests
+except ImportError:
+    requests = None
+    
+try:
+    import httpx
+except ImportError:
+    httpx = None
+    
+try:
+    import aiohttp
+except ImportError:
+    aiohttp = None
+
+# ✅ DATA VALIDATION
+try:
+    from pydantic import BaseModel, ValidationError
+except ImportError:
+    BaseModel = None
+    ValidationError = None
+    
+try:
+    from marshmallow import Schema, fields
+except ImportError:
+    Schema = None
+    fields = None
+    
+try:
+    from cerberus import Validator
+except ImportError:
+    Validator = None
+
+# 🔐 AUTHENTICATION & SECURITY
+try:
+    import jwt
+except ImportError:
+    jwt = None
+    
+try:
+    from passlib.context import CryptContext
+except ImportError:
+    CryptContext = None
+    
+try:
+    from cryptography.fernet import Fernet
+except ImportError:
+    Fernet = None
+    
+try:
+    import bcrypt
+except ImportError:
+    bcrypt = None
+
+# 📁 FILE PROCESSING
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
+    
+try:
+    import PyPDF2
+except ImportError:
+    PyPDF2 = None
+    
+try:
+    import magic
+except ImportError:
+    magic = None
+    
+try:
+    import openpyxl
+except ImportError:
+    openpyxl = None
+
+# 📅 DATE/TIME
+try:
+    from dateutil import parser, relativedelta
+except ImportError:
+    parser = None
+    relativedelta = None
+    
+try:
+    import arrow
+except ImportError:
+    arrow = None
+
+# 📝 TEXT PROCESSING
+try:
+    import regex
+except ImportError:
+    regex = None
+    
+try:
+    from fuzzywuzzy import fuzz, process
+except ImportError:
+    fuzz = None
+    process = None
+
+# 🌍 BUSINESS LOGIC
+try:
+    import phonenumbers
+except ImportError:
+    phonenumbers = None
+    
+try:
+    from babel import numbers, dates
+except ImportError:
+    numbers = None
+    dates = None
+
+# 🗄️ DATABASE
+try:
+    from sqlalchemy import create_engine, text
+except ImportError:
+    create_engine = None
+    text = None
+    
+try:
+    import pymongo
+except ImportError:
+    pymongo = None
+    
+try:
+    import redis
+except ImportError:
+    redis = None
+
+# 🤖 AI/ML
+try:
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.model_selection import train_test_split
+except ImportError:
+    RandomForestClassifier = None
+    train_test_split = None
+    
+try:
+    from transformers import pipeline
+except ImportError:
+    pipeline = None
+    
+try:
+    import openai
+except ImportError:
+    openai = None
+    
+try:
+    from langchain import LLMChain
+except ImportError:
+    LLMChain = None
+
+# 🕷️ WEB SCRAPING
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    BeautifulSoup = None
+    
+try:
+    from selenium import webdriver
+    from selenium.webdriver.common.by import By
+except ImportError:
+    webdriver = None
+    By = None
+    
+try:
+    import scrapy
+except ImportError:
+    scrapy = None
+
+# 📧 EMAIL (built-in)
+import smtplib
+from email.mime.text import MIMEText
+
+# Input data from n8n
+input_data = ${JSON.stringify(inputData)}
+
+# User code execution
+try:
+    # Execute user code
+${code.split('\n').map(line => '    ' + line.trimStart()).join('\n')}
+    
+    # If no explicit return, return input_data
+    if 'result' not in locals() and 'return' not in '''${code.replace(/'/g, "\\'")}''':
+        result = input_data
+        
+except Exception as e:
+    result = {
+        "error": str(e),
+        "error_type": type(e).__name__,
+        "traceback": traceback.format_exc(),
+        "input_data": input_data
+    }
+
+# Output result as JSON
+print(json.dumps(result if 'result' in locals() else input_data))
+`;
+
+				// Write Python script to temp file
+				writeFileSync(scriptPath, pythonScript);
+
+				// Execute Python script
+				const pythonProcess = spawn('python3', [scriptPath], {
+					timeout: timeout * 1000,
+					stdio: ['pipe', 'pipe', 'pipe']
+				});
+
+				let stdout = '';
+				let stderr = '';
+
+				pythonProcess.stdout.on('data', (data) => {
+					stdout += data.toString();
+				});
+
+				pythonProcess.stderr.on('data', (data) => {
+					stderr += data.toString();
+				});
+
+				pythonProcess.on('close', (code) => {
+					try {
+						// Cleanup temp file
+						unlinkSync(scriptPath);
+					} catch (cleanupError) {
+						console.warn('[SuperCode] Failed to cleanup temp file:', cleanupError);
+					}
+
+					if (code === 0) {
+						try {
+							const result = JSON.parse(stdout.trim());
+							
+							// Format result for n8n
+							if (Array.isArray(result)) {
+								const formatted = result.map(item => ({
+									json: typeof item === 'object' && item !== null ? item : { data: item }
+								}));
+								resolve([formatted]);
+							} else if (result !== undefined) {
+								const formatted = [{
+									json: typeof result === 'object' && result !== null ? result : { data: result }
+								}];
+								resolve([formatted]);
+							} else {
+								resolve([[]]);
+							}
+						} catch (parseError) {
+							reject(new NodeOperationError(
+								executeFunctions.getNode(),
+								`Python code execution completed but output parsing failed: ${(parseError as Error).message}\\n\\nOutput: ${stdout}\\nError: ${stderr}`
+							));
+						}
+					} else {
+						reject(new NodeOperationError(
+							executeFunctions.getNode(),
+							`Python code execution failed (exit code: ${code}):\\n\\nStderr: ${stderr}\\nStdout: ${stdout}`
+						));
+					}
+				});
+
+				pythonProcess.on('error', (error) => {
+					try {
+						unlinkSync(scriptPath);
+					} catch (cleanupError) {
+						console.warn('[SuperCode] Failed to cleanup temp file:', cleanupError);
+					}
+					
+					if (error.message.includes('ENOENT')) {
+						reject(new NodeOperationError(
+							executeFunctions.getNode(),
+							'Python3 not found. Please install Python 3 on the system running n8n.\\n\\nInstallation:\\n- Ubuntu/Debian: apt install python3 python3-pip\\n- macOS: brew install python3\\n- Windows: Download from https://python.org'
+						));
+					} else {
+						reject(new NodeOperationError(executeFunctions.getNode(), `Python execution error: ${error.message}`));
+					}
+				});
+
+			} catch (error) {
+				try {
+					unlinkSync(scriptPath);
+				} catch (cleanupError) {
+					console.warn('[SuperCode] Failed to cleanup temp file:', cleanupError);
+				}
+				reject(new NodeOperationError(executeFunctions.getNode(), `Python setup failed: ${(error as Error).message}`));
+			}
+		});
+	}
 
 }
