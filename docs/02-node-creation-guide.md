@@ -354,10 +354,38 @@ try {
 - `fa:file` - File operations
 - `fa:cog` - Settings/configuration
 
-### Custom Icons
-1. Create SVG icon (20x20px recommended)
-2. Place in `nodes/MyCustomNode/icon.svg`
-3. Reference as `file:icon.svg`
+### Custom Icons (RECOMMENDED)
+1. Create SVG icon (60x60px recommended)
+2. Place in `nodes/MyCustomNode/myicon.svg`
+3. Reference as `file:myicon.svg`
+
+**IMPORTANT**: Custom SVG icons are more reliable than FontAwesome icons. Example:
+
+```typescript
+export class MyCustomNode implements INodeType {
+    description: INodeTypeDescription = {
+        displayName: 'My Custom Node',
+        name: 'myCustomNode',
+        icon: 'file:myicon.svg', // Custom SVG file
+        // ... rest of config
+    };
+}
+```
+
+### SVG Icon Template
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6B35;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F7931E;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="60" height="60" rx="12" fill="url(#grad1)"/>
+  <!-- Your custom icon graphics here -->
+</svg>
+```
 
 ## Build and Test
 

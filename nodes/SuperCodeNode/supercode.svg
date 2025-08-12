@@ -1,7 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="60" height="60" rx="12" fill="#FF6B35"/>
-  <path d="M15 20L25 30L15 40" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M45 20L35 30L45 40" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M30 15L25 45" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6B35;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F7931E;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="60" height="60" rx="12" fill="url(#grad1)"/>
+  <!-- Rocket Body -->
+  <path d="M30 8L36 20H24L30 8Z" fill="white"/>
+  <rect x="26" y="20" width="8" height="18" fill="white"/>
+  <!-- Rocket Fins -->
+  <path d="M24 32L20 38L24 38Z" fill="white"/>
+  <path d="M36 32L40 38L36 38Z" fill="white"/>
+  <!-- Rocket Window -->
+  <circle cx="30" cy="16" r="3" fill="#FF6B35"/>
+  <!-- Rocket Flames -->
+  <path d="M26 38L28 44L30 40L32 44L34 38" fill="#FFD700"/>
+  <path d="M27 40L29 48L30 42L31 48L33 40" fill="#FF4444"/>
 </svg>

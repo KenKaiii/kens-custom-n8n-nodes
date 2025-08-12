@@ -16,6 +16,7 @@ class PythonExecutor {
 		items: INodeExecutionData[],
 		timeout: number,
 		context: IExecuteFunctions,
+		aiConnections?: { llm?: any; memory?: any; tools?: any },
 	): Promise<INodeExecutionData[][]> {
 		return new Promise((resolve, reject) => {
 			const pythonScript = `
@@ -38,6 +39,11 @@ input_data = json.loads('''${JSON.stringify(items.map((item) => item.json))}''')
 # Make input data available as variables
 data = input_data
 items = input_data
+
+# 🤖 AI Agent Mode: Auto-populated AI variables (seamless UX!)
+llm = ${aiConnections?.llm ? JSON.stringify(aiConnections.llm).replace(/true/g, 'True').replace(/false/g, 'False').replace(/null/g, 'None') : 'None'}
+memory = ${aiConnections?.memory ? JSON.stringify(aiConnections.memory).replace(/true/g, 'True').replace(/false/g, 'False').replace(/null/g, 'None') : 'None'}
+tools = ${aiConnections?.tools ? JSON.stringify(aiConnections.tools).replace(/true/g, 'True').replace(/false/g, 'False').replace(/null/g, 'None') : 'None'}
 
 # User code execution
 try:
@@ -128,17 +134,30 @@ export class SuperCodeNode implements INodeType {
 			name: 'Super Code',
 		},
 		inputs: `={{ 
-			((aiAgentMode) => {
+			((values, aiAgentMode) => {
+				const connectorTypes = {
+					'${NodeConnectionType.AiChain}': 'Chain',
+					'${NodeConnectionType.AiDocument}': 'Document',
+					'${NodeConnectionType.AiEmbedding}': 'Embedding',
+					'${NodeConnectionType.AiLanguageModel}': 'Language Model',
+					'${NodeConnectionType.AiMemory}': 'Memory',
+					'${NodeConnectionType.AiOutputParser}': 'Output Parser',
+					'${NodeConnectionType.AiTextSplitter}': 'Text Splitter',
+					'${NodeConnectionType.AiTool}': 'Tool',
+					'${NodeConnectionType.AiVectorStore}': 'Vector Store',
+					'${NodeConnectionType.Main}': 'Main'
+				};
 				const baseInputs = [{ displayName: '', type: '${NodeConnectionType.Main}' }];
-				if (aiAgentMode) {
-					baseInputs.push(
-						{ displayName: 'Chat Model', type: '${NodeConnectionType.AiLanguageModel}', required: false },
-						{ displayName: 'Memory', type: '${NodeConnectionType.AiMemory}', required: false },
-						{ displayName: 'Tools', type: '${NodeConnectionType.AiTool}', required: false, maxConnections: 10 }
-					);
+				if (aiAgentMode && values) {
+					return baseInputs.concat(values.map(value => ({
+						type: value.type,
+						required: value.required,
+						maxConnections: value.maxConnections === -1 ? undefined : value.maxConnections,
+						displayName: connectorTypes[value.type] !== 'Main' ? connectorTypes[value.type] : undefined
+					})));
 				}
 				return baseInputs;
-			})($parameter.aiAgentMode)
+			})($parameter.aiConnections?.input, $parameter.aiAgentMode)
 		}}`,
 		outputs: [{ displayName: '', type: NodeConnectionType.Main }],
 		credentials: [],
@@ -167,7 +186,88 @@ export class SuperCodeNode implements INodeType {
 				name: 'aiAgentMode',
 				type: 'boolean',
 				default: false,
-				description: 'Enable AI Agent Mode with Chat Model, Memory, and Tools connections',
+				description:
+					'Enable AI Agent Mode with 10 AI connection types (Chain, Document, Embedding, Language Model, Memory, Output Parser, Text Splitter, Tools, Vector Store)',
+			},
+			{
+				displayName: 'Execution Mode',
+				name: 'executionType',
+				type: 'options',
+				options: [
+					{
+						name: 'Execute',
+						value: 'execute',
+						description: 'Process workflow data and return to main output',
+					},
+					{
+						name: 'Supply Data',
+						value: 'supplyData',
+						description: 'Provide AI components to other nodes, no main I/O processing',
+					},
+				],
+				default: 'execute',
+				description:
+					'Choose execution mode: Execute for data processing or Supply Data for AI component provision',
+			},
+			{
+				displayName: 'AI Connections',
+				name: 'aiConnections',
+				placeholder: 'Add AI Connection',
+				type: 'fixedCollection',
+				displayOptions: {
+					show: {
+						aiAgentMode: [true],
+					},
+				},
+				default: {},
+				typeOptions: {
+					multipleValues: true,
+					sortable: true,
+				},
+				options: [
+					{
+						name: 'input',
+						displayName: 'Input',
+						values: [
+							{
+								displayName: 'Type',
+								name: 'type',
+								type: 'options',
+								options: [
+									{ name: 'Chain', value: NodeConnectionType.AiChain },
+									{ name: 'Document', value: NodeConnectionType.AiDocument },
+									{ name: 'Embedding', value: NodeConnectionType.AiEmbedding },
+									{ name: 'Language Model', value: NodeConnectionType.AiLanguageModel },
+									{ name: 'Memory', value: NodeConnectionType.AiMemory },
+									{ name: 'Output Parser', value: NodeConnectionType.AiOutputParser },
+									{ name: 'Text Splitter', value: NodeConnectionType.AiTextSplitter },
+									{ name: 'Tool', value: NodeConnectionType.AiTool },
+									{ name: 'Vector Store', value: NodeConnectionType.AiVectorStore },
+								],
+								default: NodeConnectionType.AiLanguageModel,
+								description: 'Type of AI connection to add',
+							},
+							{
+								displayName: 'Max Connections',
+								name: 'maxConnections',
+								type: 'number',
+								default: 1,
+								description: 'Maximum number of connections allowed (-1 for unlimited)',
+								typeOptions: {
+									minValue: -1,
+									maxValue: 100,
+								},
+							},
+							{
+								displayName: 'Required',
+								name: 'required',
+								type: 'boolean',
+								default: false,
+								description: 'Whether this connection is required',
+							},
+						],
+					},
+				],
 			},
 			{
 				displayName: 'JavaScript Code',
@@ -185,8 +285,53 @@ export class SuperCodeNode implements INodeType {
 				},
 				default: `// Available libraries: lodash (_), axios, dayjs, joi, validator, uuid, csvParse, Handlebars, cheerio, CryptoJS, XLSX, pdfLib, math, xml2js, YAML, sharp, Jimp, QRCode, natural, archiver, puppeteer, knex, forge, moment, XMLParser, jwt, bcrypt, ethers, web3, phoneNumber, currency, iban, fuzzy
 
+// 🤖 AI Agent Mode: Auto-populated AI variables (seamless UX!)
+const aiConnections = {
+    llm_available: !!llm,
+    memory_available: !!memory,
+    tools_available: !!tools
+};
+
+if (llm) {
+    // Language model is automatically available when connected
+    console.log('AI LLM available:', typeof llm, Object.keys(llm));
+    // Note: AI connections come as arrays, access actual LLM with llm[0]
+    const actualLLM = llm[0];
+    if (actualLLM) {
+        console.log('Actual LLM methods:', Object.getOwnPropertyNames(actualLLM));
+        aiConnections.llm_info = {
+            type: typeof llm,
+            keys: Object.keys(llm).slice(0, 5),
+            actual_llm_available: !!actualLLM,
+            actual_llm_methods: Object.getOwnPropertyNames(actualLLM).slice(0, 10)
+        };
+    }
+}
+
+if (memory) {
+    // Memory is automatically available when connected
+    console.log('AI Memory available:', typeof memory, Object.keys(memory));
+    aiConnections.memory_info = {
+        type: typeof memory,
+        keys: Object.keys(memory).slice(0, 5)
+    };
+}
+
+if (tools) {
+    // Tools are automatically available when connected
+    console.log('AI Tools available:', typeof tools, Object.keys(tools));
+    aiConnections.tools_info = {
+        type: typeof tools,
+        keys: Object.keys(tools).slice(0, 5)
+    };
+}
+
 // Your JavaScript code here
-return { result: 'Hello from Super Code!' };
+return { 
+    result: 'Hello from Super Code!', 
+    ai_mode: !!llm,
+    ai_connections: aiConnections 
+};
 `,
 				description: 'JavaScript/TypeScript code with enhanced libraries and utilities',
 				noDataExpression: true,
@@ -208,8 +353,35 @@ return { result: 'Hello from Super Code!' };
 				default: `# 30+ Python libraries available: pandas, numpy, requests, datetime, json, sys, urllib, re, hashlib, base64, uuid, os, and many more
 # Pre-imported: pandas (pd), numpy (np), requests, datetime, json, sys, urllib.parse, re, hashlib, base64, uuid, os
 
+# 🤖 AI Agent Mode: Auto-populated AI variables (seamless UX!)
+ai_connections = {
+    "llm_available": llm is not None,
+    "memory_available": memory is not None,
+    "tools_available": tools is not None
+}
+
+if llm is not None:
+    # Language model is automatically available when connected
+    # Note: llm object structure depends on the connected AI model
+    # Uncomment to inspect: ai_connections["llm_type"] = type(llm).__name__
+    ai_connections["llm_type"] = type(llm).__name__
+
+if memory is not None:
+    # Memory is automatically available when connected
+    # Uncomment to inspect: ai_connections["memory_type"] = type(memory).__name__
+    ai_connections["memory_type"] = type(memory).__name__
+
+if tools is not None:
+    # Tools are automatically available when connected
+    # Uncomment to inspect: ai_connections["tools_type"] = type(tools).__name__
+    ai_connections["tools_type"] = type(tools).__name__
+
 # Your Python code here
-result = {"message": "Hello from Super Code Python!"}
+result = {
+    "message": "Hello from Super Code Python!", 
+    "ai_mode": llm is not None,
+    "ai_connections": ai_connections
+}
 `,
 				description: 'Python code with popular libraries and utilities',
 				noDataExpression: true,
@@ -296,14 +468,69 @@ result = {"message": "Hello from Super Code Python!"}
 
 		// Handle Python execution
 		if (language === 'python') {
+			const aiAgentMode = this.getNodeParameter('aiAgentMode', 0, false) as boolean;
+			let aiConnections: { llm?: any; memory?: any; tools?: any } | undefined;
+
+			// 🤖 Get AI connections for Python if AI Agent Mode is enabled
+			if (aiAgentMode) {
+				console.log('[SuperCode] 🤖 Getting AI connections for Python execution...');
+				aiConnections = {};
+
+				try {
+					const llmConnection = await this.getInputConnectionData(
+						NodeConnectionType.AiLanguageModel,
+						0,
+					);
+					if (llmConnection) {
+						// 🎯 Extract actual LLM from array for user convenience
+						aiConnections.llm = Array.isArray(llmConnection) ? llmConnection[0] : llmConnection;
+						console.log('[SuperCode] ✅ Got LLM connection for Python (extracted from array)');
+					}
+				} catch (error) {
+					console.log('[SuperCode] ℹ️ No LLM connection for Python');
+				}
+
+				try {
+					const memoryConnection = await this.getInputConnectionData(
+						NodeConnectionType.AiMemory,
+						0,
+					);
+					if (memoryConnection) {
+						// 🎯 Extract actual memory from array for user convenience
+						aiConnections.memory = Array.isArray(memoryConnection)
+							? memoryConnection[0]
+							: memoryConnection;
+						console.log('[SuperCode] ✅ Got Memory connection for Python (extracted from array)');
+					}
+				} catch (error) {
+					console.log('[SuperCode] ℹ️ No Memory connection for Python');
+				}
+
+				try {
+					const toolConnection = await this.getInputConnectionData(NodeConnectionType.AiTool, 0);
+					if (toolConnection) {
+						// 🎯 Extract actual tools from array for user convenience
+						aiConnections.tools = Array.isArray(toolConnection)
+							? toolConnection[0]
+							: toolConnection;
+						console.log('[SuperCode] ✅ Got Tools connection for Python (extracted from array)');
+					}
+				} catch (error) {
+					console.log('[SuperCode] ℹ️ No Tools connection for Python');
+				}
+			}
+
 			const pythonExecutor = new PythonExecutor();
-			return await pythonExecutor.execute(code, items, timeout, this);
+			return await pythonExecutor.execute(code, items, timeout, this, aiConnections);
 		}
 
 		console.log('[SuperCode] 🚀 EXECUTION STARTING - JAVASCRIPT MODE - VM-SAFE VERSION');
 
+		// AI Agent Mode: Get AI connections if enabled
+		const aiAgentMode = this.getNodeParameter('aiAgentMode', 0, false) as boolean;
+
 		// Create enhanced sandbox with direct library loading (VM-compatible)
-		const createEnhancedSandbox = (items: INodeExecutionData[]) => {
+		const createEnhancedSandbox = async (items: INodeExecutionData[]) => {
 			console.log('[SuperCode] 🏗️ Creating enhanced sandbox with direct loading...');
 			// Library cache to avoid repeated loading
 			const libraryCache: { [key: string]: any } = {};
@@ -405,6 +632,14 @@ result = {"message": "Hello from Super Code Python!"}
 					last: () => items[items.length - 1],
 					json: items.length === 1 ? items[0].json : items.map((item) => item.json),
 				},
+
+				// 🤖 AI Agent Mode: AI Connection Access (like LangChain Code node)
+				getInputConnectionData: aiAgentMode ? this.getInputConnectionData.bind(this) : undefined,
+
+				// 🎯 Auto-populated AI variables for seamless UX
+				llm: undefined as any, // Will be populated if AI Agent Mode is enabled
+				memory: undefined as any, // Will be populated if AI Agent Mode is enabled
+				tools: undefined as any, // Will be populated if AI Agent Mode is enabled
 
 				// Libraries will be added via VM-Safe lazy loading pattern below
 
@@ -684,6 +919,56 @@ result = {"message": "Hello from Super Code Python!"}
 			}
 
 			console.log('[SuperCode] ✅ VM-Safe lazy loading applied to all libraries');
+
+			// 🤖 Auto-populate AI variables when AI Agent Mode is enabled
+			if (aiAgentMode) {
+				console.log('[SuperCode] 🤖 Auto-populating AI variables...');
+
+				// Auto-populate llm (Language Model) - extract actual component
+				try {
+					const llmConnection = await this.getInputConnectionData(
+						NodeConnectionType.AiLanguageModel,
+						0,
+					);
+					if (llmConnection) {
+						// 🎯 Extract actual LLM from array for user convenience
+						sandbox.llm = Array.isArray(llmConnection) ? llmConnection[0] : llmConnection;
+						console.log('[SuperCode] ✅ Auto-populated llm variable (extracted from array)');
+					}
+				} catch (error) {
+					console.log('[SuperCode] ℹ️ No Language Model connection found');
+				}
+
+				// Auto-populate memory - extract actual component
+				try {
+					const memoryConnection = await this.getInputConnectionData(
+						NodeConnectionType.AiMemory,
+						0,
+					);
+					if (memoryConnection) {
+						// 🎯 Extract actual memory from array for user convenience
+						sandbox.memory = Array.isArray(memoryConnection)
+							? memoryConnection[0]
+							: memoryConnection;
+						console.log('[SuperCode] ✅ Auto-populated memory variable (extracted from array)');
+					}
+				} catch (error) {
+					console.log('[SuperCode] ℹ️ No Memory connection found');
+				}
+
+				// Auto-populate tools - extract actual component
+				try {
+					const toolConnection = await this.getInputConnectionData(NodeConnectionType.AiTool, 0);
+					if (toolConnection) {
+						// 🎯 Extract actual tools from array for user convenience
+						sandbox.tools = Array.isArray(toolConnection) ? toolConnection[0] : toolConnection;
+						console.log('[SuperCode] ✅ Auto-populated tools variable (extracted from array)');
+					}
+				} catch (error) {
+					console.log('[SuperCode] ℹ️ No Tool connections found');
+				}
+			}
+
 			return sandbox;
 		};
 
@@ -691,7 +976,7 @@ result = {"message": "Hello from Super Code Python!"}
 			console.log('[SuperCode] 🚀 EXECUTION STARTING - VM-SAFE VERSION LOADED');
 			if (executionMode === 'runOnceForAllItems') {
 				// Execute code once for all items
-				const sandbox = createEnhancedSandbox(items);
+				const sandbox = await createEnhancedSandbox(items);
 				const context = createContext(sandbox);
 
 				const wrappedCode = `
@@ -764,7 +1049,7 @@ result = {"message": "Hello from Super Code Python!"}
 				const results: INodeExecutionData[] = [];
 
 				for (let i = 0; i < items.length; i++) {
-					const sandbox = createEnhancedSandbox([items[i]]);
+					const sandbox = await createEnhancedSandbox([items[i]]);
 					const context = createContext(sandbox);
 
 					const wrappedCode = `
