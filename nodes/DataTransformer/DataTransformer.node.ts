@@ -245,9 +245,12 @@ export class DataTransformer implements INodeType {
 					}
 
 					case 'renameField': {
-						const originalFieldName = executeFunctions.getNodeParameter('originalFieldName', i) as string;
+						const originalFieldName = executeFunctions.getNodeParameter(
+							'originalFieldName',
+							i,
+						) as string;
 						const newFieldName = executeFunctions.getNodeParameter('newFieldName', i) as string;
-						
+
 						if (newItem.json[originalFieldName] !== undefined) {
 							newItem.json[newFieldName] = newItem.json[originalFieldName];
 							delete newItem.json[originalFieldName];
@@ -270,8 +273,9 @@ export class DataTransformer implements INodeType {
 									transformedValue = originalValue.toLowerCase();
 									break;
 								case 'titlecase':
-									transformedValue = originalValue.replace(/\w\S*/g, (txt) =>
-										txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase()
+									transformedValue = originalValue.replace(
+										/\w\S*/g,
+										(txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase(),
 									);
 									break;
 								case 'reverse':
@@ -289,13 +293,19 @@ export class DataTransformer implements INodeType {
 						const field1 = executeFunctions.getNodeParameter('field1', i) as string;
 						const field2 = executeFunctions.getNodeParameter('field2', i) as string;
 						const operationType = executeFunctions.getNodeParameter('operationType', i) as string;
-						const resultFieldName = executeFunctions.getNodeParameter('resultFieldName', i) as string;
+						const resultFieldName = executeFunctions.getNodeParameter(
+							'resultFieldName',
+							i,
+						) as string;
 
 						const value1 = parseFloat(String(newItem.json[field1]));
 						const value2 = parseFloat(String(newItem.json[field2]));
 
 						if (isNaN(value1) || isNaN(value2)) {
-							throw new NodeOperationError(executeFunctions.getNode(), `Cannot perform calculation: ${field1}=${newItem.json[field1]}, ${field2}=${newItem.json[field2]}`);
+							throw new NodeOperationError(
+								executeFunctions.getNode(),
+								`Cannot perform calculation: ${field1}=${newItem.json[field1]}, ${field2}=${newItem.json[field2]}`,
+							);
 						}
 
 						let result: number;
@@ -316,7 +326,10 @@ export class DataTransformer implements INodeType {
 								result = value1 / value2;
 								break;
 							default:
-								throw new NodeOperationError(executeFunctions.getNode(), `Unknown operation type: ${operationType}`);
+								throw new NodeOperationError(
+									executeFunctions.getNode(),
+									`Unknown operation type: ${operationType}`,
+								);
 						}
 
 						newItem.json[resultFieldName] = result;
@@ -324,7 +337,10 @@ export class DataTransformer implements INodeType {
 					}
 
 					default:
-						throw new NodeOperationError(executeFunctions.getNode(), `Unknown operation: ${operation}`);
+						throw new NodeOperationError(
+							executeFunctions.getNode(),
+							`Unknown operation: ${operation}`,
+						);
 				}
 
 				returnData.push(newItem);

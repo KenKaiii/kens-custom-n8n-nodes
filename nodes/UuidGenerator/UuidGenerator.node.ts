@@ -185,16 +185,26 @@ export class UuidGenerator implements INodeType {
 							break;
 						}
 						case 'hashId': {
-							const hashInputField = executeFunctions.getNodeParameter('hashInputField', i) as string;
+							const hashInputField = executeFunctions.getNodeParameter(
+								'hashInputField',
+								i,
+							) as string;
 							const hashAlgorithm = executeFunctions.getNodeParameter('hashAlgorithm', i) as string;
 							const hashLength = executeFunctions.getNodeParameter('hashLength', i) as number;
 							const inputValue = baseItem[hashInputField];
-							
+
 							if (inputValue === undefined) {
-								throw new NodeOperationError(executeFunctions.getNode(), `Hash input field '${hashInputField}' not found in data`);
+								throw new NodeOperationError(
+									executeFunctions.getNode(),
+									`Hash input field '${hashInputField}' not found in data`,
+								);
 							}
-							
-							generatedId = UuidGenerator.generateHashId(String(inputValue), hashAlgorithm, hashLength);
+
+							generatedId = UuidGenerator.generateHashId(
+								String(inputValue),
+								hashAlgorithm,
+								hashLength,
+							);
 							break;
 						}
 						default:
@@ -236,11 +246,11 @@ export class UuidGenerator implements INodeType {
 
 	static generateUUID4(): string {
 		const bytes = randomBytes(16);
-		
+
 		// Set version (4) and variant bits
 		bytes[6] = (bytes[6] & 0x0f) | 0x40;
 		bytes[8] = (bytes[8] & 0x3f) | 0x80;
-		
+
 		const hex = bytes.toString('hex');
 		return [
 			hex.substring(0, 8),
@@ -255,18 +265,18 @@ export class UuidGenerator implements INodeType {
 		const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 		const bytes = randomBytes(length);
 		let result = '';
-		
+
 		for (let i = 0; i < length; i++) {
 			result += chars[bytes[i] % chars.length];
 		}
-		
+
 		return result;
 	}
 
 	static generateNumericId(length: number): string {
 		const bytes = randomBytes(length);
 		let result = '';
-		
+
 		for (let i = 0; i < length; i++) {
 			// Ensure first digit is not 0
 			if (i === 0) {
@@ -275,7 +285,7 @@ export class UuidGenerator implements INodeType {
 				result += String(bytes[i] % 10);
 			}
 		}
-		
+
 		return result;
 	}
 

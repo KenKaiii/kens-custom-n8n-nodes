@@ -186,7 +186,10 @@ export class QrCodeGenerator implements INodeType {
 			try {
 				const inputSource = executeFunctions.getNodeParameter('inputSource', i) as string;
 				const outputFormat = executeFunctions.getNodeParameter('outputFormat', i) as string;
-				const errorCorrectionLevel = executeFunctions.getNodeParameter('errorCorrectionLevel', i) as string;
+				const errorCorrectionLevel = executeFunctions.getNodeParameter(
+					'errorCorrectionLevel',
+					i,
+				) as string;
 				const size = executeFunctions.getNodeParameter('size', i) as number;
 				const margin = executeFunctions.getNodeParameter('margin', i) as number;
 				const darkColor = executeFunctions.getNodeParameter('darkColor', i) as string;
@@ -200,7 +203,10 @@ export class QrCodeGenerator implements INodeType {
 						const textField = executeFunctions.getNodeParameter('textField', i) as string;
 						const fieldValue = items[i].json[textField];
 						if (fieldValue === undefined) {
-							throw new NodeOperationError(executeFunctions.getNode(), `Field '${textField}' not found in input data`);
+							throw new NodeOperationError(
+								executeFunctions.getNode(),
+								`Field '${textField}' not found in input data`,
+							);
 						}
 						textToEncode = String(fieldValue);
 						break;
@@ -212,7 +218,10 @@ export class QrCodeGenerator implements INodeType {
 						textToEncode = JSON.stringify(items[i].json, null, 2);
 						break;
 					default:
-						throw new NodeOperationError(executeFunctions.getNode(), `Unknown input source: ${inputSource}`);
+						throw new NodeOperationError(
+							executeFunctions.getNode(),
+							`Unknown input source: ${inputSource}`,
+						);
 				}
 
 				if (!textToEncode.trim()) {
@@ -220,14 +229,18 @@ export class QrCodeGenerator implements INodeType {
 				}
 
 				// Generate QR code
-				const qrCodeResult = QrCodeGenerator.generateQRCode(textToEncode, {
-					outputFormat,
-					errorCorrectionLevel,
-					size,
-					margin,
-					darkColor,
-					lightColor,
-				}, executeFunctions);
+				const qrCodeResult = QrCodeGenerator.generateQRCode(
+					textToEncode,
+					{
+						outputFormat,
+						errorCorrectionLevel,
+						size,
+						margin,
+						darkColor,
+						lightColor,
+					},
+					executeFunctions,
+				);
 
 				const newItem: INodeExecutionData = {
 					json: {
@@ -266,7 +279,7 @@ export class QrCodeGenerator implements INodeType {
 	}
 
 	static generateQRCode(
-		text: string, 
+		text: string,
 		options: {
 			outputFormat: string;
 			errorCorrectionLevel: string;
@@ -274,12 +287,12 @@ export class QrCodeGenerator implements INodeType {
 			margin: number;
 			darkColor: string;
 			lightColor: string;
-		}, 
-		executeFunctions: IExecuteFunctions
+		},
+		executeFunctions: IExecuteFunctions,
 	): { data: string } {
 		// This is a simplified QR code generator
 		// In a real implementation, you'd use a library like 'qrcode' or 'qr-image'
-		
+
 		const { outputFormat, size, darkColor, lightColor } = options;
 
 		switch (outputFormat) {
@@ -287,23 +300,26 @@ export class QrCodeGenerator implements INodeType {
 				// Simulate a data URL - in reality you'd generate actual QR code image
 				QrCodeGenerator.createSimpleQRMatrix(text); // Generate matrix for consistency
 				return {
-					data: `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA${size}AAAAA${size}CAYAAAAx8/placeholder-qr-${text.length}`
+					data: `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA${size}AAAAA${size}CAYAAAAx8/placeholder-qr-${text.length}`,
 				};
-			
+
 			case 'svg': {
 				// Simulate SVG generation
 				const svgContent = QrCodeGenerator.generateSVGQRCode(text, size, darkColor, lightColor);
 				return { data: svgContent };
 			}
-			
+
 			case 'terminal': {
 				// Generate ASCII QR code representation
 				const asciiQR = QrCodeGenerator.generateAsciiQRCode(text);
 				return { data: asciiQR };
 			}
-			
+
 			default:
-				throw new NodeOperationError(executeFunctions.getNode(), `Unsupported output format: ${outputFormat}`);
+				throw new NodeOperationError(
+					executeFunctions.getNode(),
+					`Unsupported output format: ${outputFormat}`,
+				);
 		}
 	}
 
@@ -311,7 +327,7 @@ export class QrCodeGenerator implements INodeType {
 		// Simplified QR matrix generation for demonstration
 		const size = Math.max(21, Math.ceil(Math.sqrt(text.length * 8)));
 		const matrix: number[][] = [];
-		
+
 		for (let i = 0; i < size; i++) {
 			matrix[i] = [];
 			for (let j = 0; j < size; j++) {
@@ -320,17 +336,22 @@ export class QrCodeGenerator implements INodeType {
 				matrix[i][j] = hash % 2;
 			}
 		}
-		
+
 		return matrix;
 	}
 
-	static generateSVGQRCode(text: string, size: number, darkColor: string, lightColor: string): string {
+	static generateSVGQRCode(
+		text: string,
+		size: number,
+		darkColor: string,
+		lightColor: string,
+	): string {
 		const matrix = QrCodeGenerator.createSimpleQRMatrix(text);
 		const moduleSize = size / matrix.length;
-		
+
 		let svg = `<svg width="${size}" height="${size}" xmlns="http://www.w3.org/2000/svg">`;
 		svg += `<rect width="${size}" height="${size}" fill="${lightColor}"/>`;
-		
+
 		for (let i = 0; i < matrix.length; i++) {
 			for (let j = 0; j < matrix[i].length; j++) {
 				if (matrix[i][j] === 1) {
@@ -340,7 +361,7 @@ export class QrCodeGenerator implements INodeType {
 				}
 			}
 		}
-		
+
 		svg += '</svg>';
 		return svg;
 	}
@@ -348,14 +369,14 @@ export class QrCodeGenerator implements INodeType {
 	static generateAsciiQRCode(text: string): string {
 		const matrix = QrCodeGenerator.createSimpleQRMatrix(text);
 		let ascii = '';
-		
+
 		for (let i = 0; i < matrix.length; i++) {
 			for (let j = 0; j < matrix[i].length; j++) {
 				ascii += matrix[i][j] === 1 ? '██' : '  ';
 			}
 			ascii += '\n';
 		}
-		
+
 		return ascii;
 	}
 
@@ -363,7 +384,7 @@ export class QrCodeGenerator implements INodeType {
 		let hash = 0;
 		for (let i = 0; i < str.length; i++) {
 			const char = str.charCodeAt(i);
-			hash = ((hash << 5) - hash) + char;
+			hash = (hash << 5) - hash + char;
 			hash = hash & hash; // Convert to 32-bit integer
 		}
 		return Math.abs(hash);
