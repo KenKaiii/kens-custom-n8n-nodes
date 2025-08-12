@@ -42,6 +42,7 @@ reflections.json
 debug-*.md
 test-*.js
 .claude/
+.qlty/
 
 # Temporary files
 *.tmp

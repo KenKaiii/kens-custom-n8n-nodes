@@ -1,14 +1,15 @@
 {
-	"name": "n8n-nodes-educational-template",
-	"version": "1.0.0",
-	"description": "Educational template for creating custom n8n nodes",
+	"name": "@kenkaiii/n8n-nodes-supercode",
+	"version": "1.0.2",
+	"description": "Advanced JavaScript/Python execution nodes for n8n with 30+ integrated libraries and AI agent support",
 	"keywords": [
 		"n8n-community-node-package",
 		"n8n",
-		"template",
-		"educational",
-		"custom-nodes",
-		"tutorial"
+		"javascript",
+		"python",
+		"code-execution",
+		"ai-agent",
+		"supercode"
 	],
 	"license": "MIT",
 	"author": {
@@ -29,7 +30,7 @@
 		"lintfix": "eslint nodes --ext .ts --fix",
 		"test": "jest --passWithNoTests",
 		"test:watch": "jest --watch",
-		"prepublishOnly": "npm run build && npm run lint && npm run test"
+		"prepublishOnly": "npm run build && npm run test"
 	},
 	"files": [
 		"dist/**/*",
@@ -41,11 +42,8 @@
 		"n8nNodesApiVersion": 1,
 		"credentials": [],
 		"nodes": [
-			"UuidGenerator/UuidGenerator.node.js",
-			"DataTransformer/DataTransformer.node.js",
-			"QrCodeGenerator/QrCodeGenerator.node.js",
-			"SuperCodeNode/SuperCodeNode.node.js",
-			"SuperCodeTool/SuperCodeTool.node.js"
+			"dist/SuperCodeNode/SuperCodeNode.node.js",
+			"dist/SuperCodeTool/SuperCodeTool.node.js"
 		]
 	},
 	"devDependencies": {

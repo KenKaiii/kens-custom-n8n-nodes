@@ -56,6 +56,10 @@ memories.json
 reflections.json
 debug-memory.md
 n8n_checklist.md
+*.tgz
+.claude/
+.qlty/
+eslint.config.js
 
 # Node modules (will be installed by npm)
 node_modules/

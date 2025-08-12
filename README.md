@@ -1,135 +1,295 @@
-# N8N Custom Nodes Educational Template
+```
+ ____  _   _ ____  _____ ____     ____ ___  ____  _____
+/ ___|| | | |  _ \| ____|  _ \   / ___/ _ \|  _ \| ____|
+\___ \| | | | |_) |  _| | |_) | | |  | | | | | | |  _|
+ ___) | |_| |  __/| |___|  _ <  | |__| |_| | |_| | |___
+|____/ \___/|_|   |_____|_| \_\  \____\___/|____/|_____|
 
-A comprehensive educational template for creating custom n8n nodes with advanced features.
-
-## Features
-
-### SuperCodeNode
-- **34+ JavaScript Libraries**: Execute code with comprehensive library support
-- **30+ Python Libraries**: Full Python execution environment
-- **VM-Safe Execution**: Secure sandboxed code execution
-- **Dual Language Support**: JavaScript and Python in separate editors
-- **Syntax Highlighting**: Proper syntax highlighting for both languages
-- **Library Documentation**: Built-in library reference and examples
-
-### SuperCodeTool (AI Agent Tool)
-- **Same functionality as SuperCodeNode** but designed for AI agents
-- **AI Agent Integration**: Available to Claude, ChatGPT, and other AI agents
-- **Tool-specific Configuration**: Optimized for AI agent workflows
-- **Custom Purple Lightning Icon**: Visual distinction from regular nodes
-
-## Quick Start
-
-### Installation
-
-1. **Build the nodes:**
-   ```bash
-   npm install
-   npm run build
-   ```
-
-2. **Start n8n with custom nodes:**
-   ```bash
-   N8N_CUSTOM_EXTENSIONS=/path/to/dist N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true n8n start
-   ```
-
-### Available Libraries
-
-#### JavaScript (34+ Libraries)
-- **Data Processing**: lodash, mathjs, dayjs, moment-timezone
-- **Validation**: joi, validator, libphonenumber-js
-- **Security**: bcrypt, crypto-js, jsonwebtoken, node-forge
-- **Web**: axios, cheerio
-- **Files**: archiver, pdf-lib, xlsx, sharp, jimp
-- **Blockchain**: ethers, web3
-- **Database**: knex
-- **Search**: fuse.js, natural
-- **Banking**: iban, currency.js
-- **Parsing**: csv-parse, xml2js, yaml, fast-xml-parser
-- **Templates**: handlebars
-- **Automation**: puppeteer-core
-- **Utilities**: uuid, qrcode
-
-#### Python (30+ Libraries)  
-- **Data Science**: pandas, numpy, scipy, matplotlib, seaborn
-- **Machine Learning**: scikit-learn, tensorflow, torch
-- **Web**: requests, beautifulsoup4, flask, fastapi
-- **Database**: sqlite3, psycopg2, sqlalchemy
-- **Files**: openpyxl, PyPDF2, pillow
-- **Utilities**: python-dateutil, pytz, regex
-- **And many more...
-
-## Documentation
-
-Comprehensive guides available in `/docs/`:
-
-- **[Setup Guide](./docs/01-setup-guide.md)** - Environment setup and installation
-- **[Node Creation Guide](./docs/02-node-creation-guide.md)** - Creating custom nodes
-- **[Testing Guide](./docs/03-testing-guide.md)** - Testing your nodes
-- **[Troubleshooting](./docs/04-troubleshooting.md)** - Common issues and solutions
-- **[Claude Assistant Guide](./docs/05-claude-assistant-guide.md)** - Working with Claude AI
-- **[AI Agent Tools](./docs/06-ai-agent-tools.md)** - Creating tools for AI agents
-
-## Usage Examples
-
-### SuperCodeNode (JavaScript)
-```javascript
-// Process data with lodash
-const _ = require('lodash');
-const result = _.groupBy(items, 'category');
-return result;
+by Ken Kai
 ```
 
-### SuperCodeNode (Python)
+# SuperCode for n8n
+
+Look, I got tired of writing the same data transformation logic over and over again in different n8n workflows. So I built this thing.
+
+**What it does:** Gives you JavaScript and Python execution directly in your n8n workflows, with 30+ libraries already loaded. No more "npm install this, pip install that" - it's all there.
+
+**What it's actually useful for:** See below. Real examples from real workflows I've built.
+
+## Install
+
+```bash
+npm install @kenkaiii/n8n-nodes-supercode
+```
+
+Or just go to Settings > Community Nodes in your n8n and install `@kenkaiii/n8n-nodes-supercode`
+
+## Real World Use Cases (Why You'd Want This)
+
+### 1. E-commerce Order Processing
+
+**The Problem:** You get orders from Shopify/WooCommerce and need to:
+
+- Calculate complex shipping costs based on weight/dimensions
+- Apply business rules for discounts
+- Format data for your fulfillment system
+
+**Before SuperCode:** Chain together 15+ nodes with Set nodes, IF nodes, math operations, etc.
+
+**With SuperCode:**
+
+```javascript
+// One node handles it all
+const orders = $input.all();
+const processed = orders.map((order) => {
+	const items = order.json.line_items;
+	const totalWeight = _.sumBy(items, 'weight');
+	const shippingCost = calculateShipping(totalWeight, order.json.shipping_address);
+
+	return {
+		order_id: order.json.id,
+		total_weight: totalWeight,
+		shipping_cost: shippingCost,
+		fulfillment_priority: totalWeight > 50 ? 'freight' : 'standard',
+		formatted_address: formatAddress(order.json.shipping_address),
+	};
+});
+
+return processed;
+```
+
+### 2. Customer Data Enrichment
+
+**The Problem:** You have customer emails and need to:
+
+- Validate email formats
+- Extract company domains
+- Enrich with additional data
+- Score leads based on multiple factors
+
+**With SuperCode:**
+
+```javascript
+const customers = $input.all();
+const enriched = customers.map((customer) => {
+	const email = customer.json.email;
+	const domain = email.split('@')[1];
+	const isBusinessEmail = !['gmail.com', 'yahoo.com', 'hotmail.com'].includes(domain);
+
+	// Lead scoring logic
+	let score = 0;
+	if (isBusinessEmail) score += 50;
+	if (customer.json.company) score += 30;
+	if (customer.json.phone) score += 20;
+
+	return {
+		...customer.json,
+		domain: domain,
+		is_business_email: isBusinessEmail,
+		lead_score: score,
+		segment: score > 70 ? 'hot' : score > 40 ? 'warm' : 'cold',
+	};
+});
+
+return enriched;
+```
+
+### 3. Financial Report Generation
+
+**The Problem:** You need to pull data from multiple sources (Stripe, QuickBooks, etc.) and create monthly reports with calculations that don't fit into simple n8n math operations.
+
+**With SuperCode:**
+
+```javascript
+const transactions = $input.all();
+const monthlyReport = {
+	total_revenue: _.sumBy(transactions, (t) => t.json.amount),
+	transaction_count: transactions.length,
+	average_transaction: _.meanBy(transactions, (t) => t.json.amount),
+	top_customers: _(transactions)
+		.groupBy('json.customer_id')
+		.map((txns, customerId) => ({
+			customer_id: customerId,
+			total_spent: _.sumBy(txns, 'json.amount'),
+		}))
+		.orderBy(['total_spent'], ['desc'])
+		.take(10)
+		.value(),
+	growth_rate: calculateGrowthRate(transactions),
+};
+
+return [{ json: monthlyReport }];
+```
+
+### 4. Inventory Management
+
+**The Problem:** You need to sync inventory across multiple platforms and apply business rules for reordering.
+
+**With SuperCode:**
+
+```javascript
+const inventory = $input.all();
+const updates = inventory.map((item) => {
+	const currentStock = item.json.quantity;
+	const salesVelocity = item.json.avg_daily_sales;
+	const leadTime = item.json.supplier_lead_time;
+
+	// Calculate reorder point using safety stock formula
+	const safetyStock = Math.ceil(salesVelocity * leadTime * 1.5);
+	const reorderPoint = safetyStock + salesVelocity * leadTime;
+
+	return {
+		sku: item.json.sku,
+		current_stock: currentStock,
+		reorder_point: reorderPoint,
+		needs_reorder: currentStock <= reorderPoint,
+		suggested_order_qty: currentStock <= reorderPoint ? Math.ceil(salesVelocity * 30) : 0, // 30 days worth
+		stock_status: getStockStatus(currentStock, reorderPoint),
+	};
+});
+
+return updates;
+```
+
+### 5. Content Processing & SEO
+
+**The Problem:** You're managing content across multiple platforms and need to optimize titles, extract keywords, and format for different channels.
+
+**With SuperCode:**
+
+```javascript
+const articles = $input.all();
+const processed = articles.map((article) => {
+	const content = article.json.content;
+	const title = article.json.title;
+
+	// Extract keywords (simple version)
+	const words = content.toLowerCase().split(/\s+/);
+	const wordFreq = _.countBy(words.filter((w) => w.length > 4));
+	const keywords = _.take(_.orderBy(_.toPairs(wordFreq), 1, 'desc').map(0), 10);
+
+	return {
+		id: article.json.id,
+		title: title,
+		seo_title: title.length > 60 ? title.substring(0, 57) + '...' : title,
+		meta_description: content.substring(0, 157) + '...',
+		keywords: keywords.join(', '),
+		word_count: words.length,
+		reading_time: Math.ceil(words.length / 200), // minutes
+		twitter_text: truncateForTwitter(title, content),
+	};
+});
+
+return processed;
+```
+
+## What Makes This Different
+
+**Pre-loaded Libraries:** No installation headaches. I've included the stuff you actually use:
+
+- lodash for data manipulation
+- dayjs for dates that don't suck
+- axios for HTTP requests
+- crypto for hashing/encryption
+- xlsx for Excel files
+- cheerio for HTML parsing
+- joi for validation
+- And 20+ more
+
+**Two Node Types:**
+
+- **SuperCode Node:** For your regular workflows
+- **SuperCode Tool:** Optimized for AI agents (Claude, ChatGPT, etc.)
+
+**Python Support:** Because sometimes JavaScript isn't the right tool:
+
 ```python
-# Analyze data with pandas
 import pandas as pd
-df = pd.DataFrame(items)
-result = df.groupby('category').sum()
+import numpy as np
+
+# Convert n8n data to DataFrame
+df = pd.DataFrame([item for item in input_data])
+
+# Do pandas magic
+result = df.groupby('category').agg({
+    'price': ['mean', 'sum', 'count'],
+    'quantity': 'sum'
+}).round(2)
+
 return result.to_dict()
 ```
 
-### SuperCodeTool (AI Agent)
-AI agents can automatically discover and use SuperCodeTool for:
-- Data processing and transformation
-- Complex calculations and analysis
-- File operations and parsing
-- Web scraping and API calls
-- Machine learning tasks
+## Performance & Safety
 
-## Environment Requirements
+- **VM Sandboxed:** Your code runs safely isolated
+- **Lazy Loading:** Libraries only load when you use them
+- **Memory Efficient:** Built-in monitoring and cleanup
+- **Error Handling:** Doesn't crash your workflows when code fails
 
-- **Node.js**: >= 20.18
-- **N8N**: Latest version
-- **Environment Variables**: 
-  - `N8N_CUSTOM_EXTENSIONS=/path/to/dist`
-  - `N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE=true` (for AI agent tools)
+## Common Patterns
 
-## Development
+**Data Validation:**
 
-### Scripts
-- `npm run build` - Build all nodes
-- `npm run dev` - Watch mode for development
-- `npm run lint` - Lint TypeScript files
-- `npm run test` - Run tests
-
-### Project Structure
-```
-├── nodes/                    # Node implementations
-│   ├── SuperCodeNode/       # Main SuperCode node
-│   ├── SuperCodeTool/       # AI agent tool version
-│   ├── DataTransformer/     # Data transformation node
-│   ├── QrCodeGenerator/     # QR code generation
-│   └── UuidGenerator/       # UUID generation
-├── docs/                    # Comprehensive documentation
-├── dist/                    # Built output
-└── package.json            # Dependencies and scripts
+```javascript
+const validItems = $input.all().filter((item) => {
+	const data = item.json;
+	return (
+		joi
+			.object({
+				email: joi.string().email().required(),
+				age: joi.number().min(18).max(120),
+				phone: joi.string().pattern(/^\+?[1-9]\d{1,14}$/),
+			})
+			.validate(data).error === undefined
+	);
+});
 ```
 
-## License
+**Batch Processing:**
 
-MIT - Feel free to use this template for your own n8n node development projects.
+```javascript
+const items = $input.all();
+const chunks = _.chunk(items, 100); // Process in batches of 100
 
-## Contributing
+return chunks.map((chunk) => ({
+	json: {
+		batch_size: chunk.length,
+		processed_at: dayjs().toISOString(),
+		results: chunk.map(processItem),
+	},
+}));
+```
 
-This is an educational template. Feel free to extend it with your own custom nodes and improvements.
+**File Processing:**
+
+```javascript
+// Parse CSV data
+const csvData = $input.first().json.file_content;
+const parsed = papa.parse(csvData, { header: true });
+
+return parsed.data.map((row) => ({ json: row }));
+```
+
+## When NOT to Use This
+
+- Simple transformations (use regular n8n nodes)
+- If you don't know JavaScript/Python
+- When you need real-time performance (this adds some overhead)
+- For workflows that barely process any data
+
+## AI Agent Integration
+
+If you're using Claude, ChatGPT, or other AI agents with n8n, the SuperCode Tool node lets them write and execute code directly in your workflows. Pretty neat for dynamic data processing.
+
+## Support
+
+Built this for myself, sharing it because others might find it useful. If you find bugs, let me know. If you want features, fork it and build them.
+
+MIT License - do whatever you want with it.
+
+Ken Kai  
+ken@kenkais.com
+
+---
+
+_P.S. - Yeah, I could have built separate nodes for each use case, but where's the fun in that? Sometimes you just want to write some damn code and get on with your day._
