@@ -11,7 +11,12 @@ import { createContext, runInContext } from 'vm';
 import { spawn } from 'child_process';
 
 class PythonExecutor {
-	async execute(code: string, items: INodeExecutionData[], timeout: number, context: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+	async execute(
+		code: string,
+		items: INodeExecutionData[],
+		timeout: number,
+		context: IExecuteFunctions,
+	): Promise<INodeExecutionData[][]> {
 		return new Promise((resolve, reject) => {
 			const pythonScript = `
 import json
@@ -28,7 +33,7 @@ import uuid
 import os
 
 # Input data from n8n
-input_data = json.loads('''${JSON.stringify(items.map(item => item.json))}''')
+input_data = json.loads('''${JSON.stringify(items.map((item) => item.json))}''')
 
 # Make input data available as variables
 data = input_data
@@ -36,7 +41,10 @@ items = input_data
 
 # User code execution
 try:
-${code.split('\n').map(line => '    ' + line).join('\n')}
+${code
+	.split('\n')
+	.map((line) => '    ' + line)
+	.join('\n')}
 except Exception as e:
     result = {"error": str(e), "type": type(e).__name__}
     print(json.dumps(result))
@@ -49,7 +57,7 @@ print(json.dumps(result))
 `;
 
 			const pythonProcess = spawn('python3', ['-c', pythonScript], {
-				timeout: timeout * 1000
+				timeout: timeout * 1000,
 			});
 
 			let output = '';
@@ -65,20 +73,19 @@ print(json.dumps(result))
 
 			pythonProcess.on('close', (code: number) => {
 				if (code !== 0) {
-					reject(new NodeOperationError(
-						context.getNode(), 
-						`Python execution failed: ${errorOutput || 'Unknown error'}`
-					));
+					reject(
+						new NodeOperationError(
+							context.getNode(),
+							`Python execution failed: ${errorOutput || 'Unknown error'}`,
+						),
+					);
 					return;
 				}
 
 				try {
 					const result = JSON.parse(output.trim());
 					if (result.error) {
-						reject(new NodeOperationError(
-							context.getNode(),
-							`Python error: ${result.error}`
-						));
+						reject(new NodeOperationError(context.getNode(), `Python error: ${result.error}`));
 						return;
 					}
 
@@ -88,18 +95,22 @@ print(json.dumps(result))
 						resolve([[{ json: result }]]);
 					}
 				} catch (parseError: any) {
-					reject(new NodeOperationError(
-						context.getNode(),
-						`Failed to parse Python output: ${parseError.message}`
-					));
+					reject(
+						new NodeOperationError(
+							context.getNode(),
+							`Failed to parse Python output: ${parseError.message}`,
+						),
+					);
 				}
 			});
 
 			pythonProcess.on('error', (error: any) => {
-				reject(new NodeOperationError(
-					context.getNode(),
-					`Failed to start Python process: ${error.message}`
-				));
+				reject(
+					new NodeOperationError(
+						context.getNode(),
+						`Failed to start Python process: ${error.message}`,
+					),
+				);
 			});
 		});
 	}
@@ -116,7 +127,19 @@ export class SuperCodeNode implements INodeType {
 		defaults: {
 			name: 'Super Code',
 		},
-		inputs: [{ displayName: '', type: NodeConnectionType.Main }],
+		inputs: `={{ 
+			((aiAgentMode) => {
+				const baseInputs = [{ displayName: '', type: '${NodeConnectionType.Main}' }];
+				if (aiAgentMode) {
+					baseInputs.push(
+						{ displayName: 'Chat Model', type: '${NodeConnectionType.AiLanguageModel}', required: false },
+						{ displayName: 'Memory', type: '${NodeConnectionType.AiMemory}', required: false },
+						{ displayName: 'Tools', type: '${NodeConnectionType.AiTool}', required: false, maxConnections: 10 }
+					);
+				}
+				return baseInputs;
+			})($parameter.aiAgentMode)
+		}}`,
 		outputs: [{ displayName: '', type: NodeConnectionType.Main }],
 		credentials: [],
 		properties: [
@@ -138,6 +161,13 @@ export class SuperCodeNode implements INodeType {
 				],
 				default: 'javascript',
 				description: 'Choose the programming language to execute',
+			},
+			{
+				displayName: 'AI Agent Mode',
+				name: 'aiAgentMode',
+				type: 'boolean',
+				default: false,
+				description: 'Enable AI Agent Mode with Chat Model, Memory, and Tools connections',
 			},
 			{
 				displayName: 'JavaScript Code',
@@ -271,7 +301,7 @@ result = {"message": "Hello from Super Code Python!"}
 		}
 
 		console.log('[SuperCode] 🚀 EXECUTION STARTING - JAVASCRIPT MODE - VM-SAFE VERSION');
-		
+
 		// Create enhanced sandbox with direct library loading (VM-compatible)
 		const createEnhancedSandbox = (items: INodeExecutionData[]) => {
 			console.log('[SuperCode] 🏗️ Creating enhanced sandbox with direct loading...');
@@ -322,29 +352,35 @@ result = {"message": "Hello from Super Code Python!"}
 			};
 
 			// VM-Safe Lazy Loading Pattern (fixes VM context getter incompatibility)
-			const createVmSafeLazyLoader = (hostObj: any, name: string, _libraryName: string, requirePath: string, property?: string) => {
+			const createVmSafeLazyLoader = (
+				hostObj: any,
+				name: string,
+				_libraryName: string,
+				requirePath: string,
+				property?: string,
+			) => {
 				let defined = false;
 				let cachedValue: any;
-				
+
 				Object.defineProperty(hostObj, name, {
-					get: function() {
+					get: function () {
 						if (!defined) {
 							console.log(`[SuperCode] 🔄 VM-Safe loading ${name} from ${requirePath}...`);
 							defined = true;
-							
+
 							try {
 								// Direct require() call for VM-Safe loading
 								const lib = require(requirePath);
 								cachedValue = property ? lib[property] : lib;
-								
+
 								// Redefine as value property for VM compatibility
 								Object.defineProperty(this, name, {
 									value: cachedValue,
 									writable: false,
 									configurable: true,
-									enumerable: true
+									enumerable: true,
 								});
-								
+
 								console.log(`[SuperCode] ✅ VM-Safe loaded ${name} successfully`);
 								return cachedValue;
 							} catch (error) {
@@ -355,7 +391,7 @@ result = {"message": "Hello from Super Code Python!"}
 						return this[name];
 					},
 					configurable: true,
-					enumerable: true
+					enumerable: true,
 				});
 			};
 
@@ -568,12 +604,15 @@ result = {"message": "Hello from Super Code Python!"}
 				Error,
 				require, // Add require to VM context for lazy loading
 			};
-			
-			console.log('[SuperCode] ✅ Sandbox created with getters:', Object.keys(sandbox).slice(0, 10));
-			
+
+			console.log(
+				'[SuperCode] ✅ Sandbox created with getters:',
+				Object.keys(sandbox).slice(0, 10),
+			);
+
 			// Apply VM-Safe Lazy Loading to fix VM context getter incompatibility
 			console.log('[SuperCode] 🔧 Applying VM-Safe lazy loading pattern...');
-			
+
 			// Remove existing getters and replace with VM-safe lazy loaders
 			const libraryMappings = [
 				// Core Data Libraries
@@ -588,62 +627,62 @@ result = {"message": "Hello from Super Code Python!"}
 				['Handlebars', 'handlebars', 'handlebars'],
 				['cheerio', 'cheerio', 'cheerio'],
 				['CryptoJS', 'crypto-js', 'crypto-js'],
-				
+
 				// Business-Critical Libraries
 				['XLSX', 'xlsx', 'xlsx'],
 				['pdfLib', 'pdf-lib', 'pdf-lib'],
 				['math', 'mathjs', 'mathjs'],
 				['xml2js', 'xml2js', 'xml2js'],
 				['YAML', 'yaml', 'yaml'],
-				
+
 				// Media Processing
 				['sharp', 'sharp', 'sharp'],
 				['Jimp', 'jimp', 'jimp'],
 				['QRCode', 'qrcode', 'qrcode'],
-				
+
 				// AI/NLP
 				['natural', 'natural', 'natural'],
-				
+
 				// File & Archive
 				['archiver', 'archiver', 'archiver'],
-				
+
 				// Web & Scraping
 				['puppeteer', 'puppeteer-core', 'puppeteer-core'],
-				
+
 				// Database & Security
 				['knex', 'knex', 'knex'],
 				['forge', 'node-forge', 'node-forge'],
 				['moment', 'moment-timezone', 'moment-timezone'],
-				
+
 				// Advanced XML
 				['XMLParser', 'fast-xml-parser', 'fast-xml-parser', 'XMLParser'],
-				
+
 				// Auth & Security
 				['jwt', 'jsonwebtoken', 'jsonwebtoken'],
 				['bcrypt', 'bcrypt', 'bcrypt'],
-				
+
 				// Blockchain & Crypto
 				['ethers', 'ethers', 'ethers'],
 				['web3', 'web3', 'web3'],
-				
+
 				// International Business
 				['phoneNumber', 'libphonenumber-js', 'libphonenumber-js'],
 				['currency', 'currency.js', 'currency.js'],
 				['iban', 'iban', 'iban'],
-				
+
 				// Advanced Search & Text
-				['fuzzy', 'fuse.js', 'fuse.js']
+				['fuzzy', 'fuse.js', 'fuse.js'],
 			];
-			
+
 			// Apply VM-safe lazy loading to each library
 			for (const [name, libraryName, requirePath, property] of libraryMappings) {
 				// Remove existing getter if it exists
 				delete (sandbox as any)[name];
-				
+
 				// Add VM-safe lazy loader
 				createVmSafeLazyLoader(sandbox, name, libraryName, requirePath, property);
 			}
-			
+
 			console.log('[SuperCode] ✅ VM-Safe lazy loading applied to all libraries');
 			return sandbox;
 		};
@@ -811,5 +850,4 @@ result = {"message": "Hello from Super Code Python!"}
 			);
 		}
 	}
-
 }
