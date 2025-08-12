@@ -11,7 +11,12 @@ import { createContext, runInContext } from 'vm';
 import { spawn } from 'child_process';
 
 class PythonExecutor {
-	async execute(code: string, items: INodeExecutionData[], timeout: number, context: IExecuteFunctions): Promise<INodeExecutionData[][]> {
+	async execute(
+		code: string,
+		items: INodeExecutionData[],
+		timeout: number,
+		context: IExecuteFunctions,
+	): Promise<INodeExecutionData[][]> {
 		return new Promise((resolve, reject) => {
 			const pythonScript = `
 import json
@@ -28,7 +33,7 @@ import uuid
 import os
 
 # Input data from n8n
-input_data = json.loads('''${JSON.stringify(items.map(item => item.json))}''')
+input_data = json.loads('''${JSON.stringify(items.map((item) => item.json))}''')
 
 # Make input data available as variables
 data = input_data
@@ -36,7 +41,10 @@ items = input_data
 
 # User code execution
 try:
-${code.split('\n').map(line => '    ' + line).join('\n')}
+${code
+	.split('\n')
+	.map((line) => '    ' + line)
+	.join('\n')}
 except Exception as e:
     result = {"error": str(e), "type": type(e).__name__}
     print(json.dumps(result))
@@ -49,7 +57,7 @@ print(json.dumps(result))
 `;
 
 			const pythonProcess = spawn('python3', ['-c', pythonScript], {
-				timeout: timeout * 1000
+				timeout: timeout * 1000,
 			});
 
 			let output = '';
@@ -65,20 +73,19 @@ print(json.dumps(result))
 
 			pythonProcess.on('close', (code: number) => {
 				if (code !== 0) {
-					reject(new NodeOperationError(
-						context.getNode(), 
-						`Python execution failed: ${errorOutput || 'Unknown error'}`
-					));
+					reject(
+						new NodeOperationError(
+							context.getNode(),
+							`Python execution failed: ${errorOutput || 'Unknown error'}`,
+						),
+					);
 					return;
 				}
 
 				try {
 					const result = JSON.parse(output.trim());
 					if (result.error) {
-						reject(new NodeOperationError(
-							context.getNode(),
-							`Python error: ${result.error}`
-						));
+						reject(new NodeOperationError(context.getNode(), `Python error: ${result.error}`));
 						return;
 					}
 
@@ -88,18 +95,22 @@ print(json.dumps(result))
 						resolve([[{ json: result }]]);
 					}
 				} catch (parseError: any) {
-					reject(new NodeOperationError(
-						context.getNode(),
-						`Failed to parse Python output: ${parseError.message}`
-					));
+					reject(
+						new NodeOperationError(
+							context.getNode(),
+							`Failed to parse Python output: ${parseError.message}`,
+						),
+					);
 				}
 			});
 
 			pythonProcess.on('error', (error: any) => {
-				reject(new NodeOperationError(
-					context.getNode(),
-					`Failed to start Python process: ${error.message}`
-				));
+				reject(
+					new NodeOperationError(
+						context.getNode(),
+						`Failed to start Python process: ${error.message}`,
+					),
+				);
 			});
 		});
 	}
@@ -109,7 +120,7 @@ export class SuperCodeTool implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Super Code Tool',
 		name: 'superCodeTool',
-		icon: 'file:supercodetool.svg',
+		icon: { light: 'file:supercode.svg', dark: 'file:supercode.svg' },
 		group: [],
 		version: 1,
 		description: 'AI Agent code execution tool with JavaScript/Python and 34+ enhanced libraries',
@@ -134,7 +145,8 @@ export class SuperCodeTool implements INodeType {
 					{
 						name: 'Python',
 						value: 'python',
-						description: 'Execute Python with 30+ popular libraries (pandas, requests, etc.) for AI agents',
+						description:
+							'Execute Python with 30+ popular libraries (pandas, requests, etc.) for AI agents',
 					},
 				],
 				default: 'javascript',
@@ -274,7 +286,7 @@ result = {"message": "AI Agent Tool Ready!", "agent": "super-code-tool", "langua
 		}
 
 		console.log('[SuperCodeTool] 🤖 AI AGENT TOOL STARTING - JAVASCRIPT MODE - VM-SAFE VERSION');
-		
+
 		// Create enhanced sandbox with direct library loading (VM-compatible) - COPIED FROM SUPERCODE NODE
 		const createEnhancedSandbox = (items: INodeExecutionData[]) => {
 			console.log('[SuperCodeTool] 🏗️ Creating enhanced sandbox for AI agents...');
@@ -322,38 +334,46 @@ result = {"message": "AI Agent Tool Ready!", "agent": "super-code-tool", "langua
 				);
 			};
 
-			const createVmSafeLazyLoader = (hostObj: any, name: string, _libraryName: string, requirePath: string, property?: string) => {
+			const createVmSafeLazyLoader = (
+				hostObj: any,
+				name: string,
+				_libraryName: string,
+				requirePath: string,
+				property?: string,
+			) => {
 				let defined = false;
 				let cachedValue: any;
-				
+
 				Object.defineProperty(hostObj, name, {
-					get: function() {
+					get: function () {
 						if (!defined) {
 							console.log(`[SuperCodeTool] 🔄 AI Agent loading ${name} from ${requirePath}...`);
 							defined = true;
-							
+
 							try {
 								const lib = require(requirePath);
 								cachedValue = property ? lib[property] : lib;
-								
+
 								Object.defineProperty(this, name, {
 									value: cachedValue,
 									writable: false,
 									configurable: true,
-									enumerable: true
+									enumerable: true,
 								});
-								
+
 								console.log(`[SuperCodeTool] ✅ AI Agent loaded ${name} successfully`);
 								return cachedValue;
 							} catch (error) {
-								console.log(`[SuperCodeTool] ❌ AI Agent loading failed for ${name}: ${error.message}`);
+								console.log(
+									`[SuperCodeTool] ❌ AI Agent loading failed for ${name}: ${error.message}`,
+								);
 								throw error;
 							}
 						}
 						return this[name];
 					},
 					configurable: true,
-					enumerable: true
+					enumerable: true,
 				});
 			};
 
@@ -485,13 +505,39 @@ result = {"message": "AI Agent Tool Ready!", "agent": "super-code-tool", "langua
 					},
 
 					getAvailableLibraries: () => [
-						'lodash (_)', 'axios', 'dayjs', 'joi', 'validator', 'uuid', 'csv-parse (csvParse)',
-						'handlebars (Handlebars)', 'cheerio', 'crypto-js (CryptoJS)', 'xlsx (XLSX)',
-						'pdf-lib (pdfLib)', 'mathjs (math)', 'xml2js', 'yaml (YAML)', 'sharp',
-						'jimp (Jimp)', 'qrcode (QRCode)', 'natural', 'archiver', 'puppeteer-core (puppeteer)',
-						'knex', 'node-forge (forge)', 'moment-timezone (moment)', 'fast-xml-parser (XMLParser)',
-						'jsonwebtoken (jwt)', 'bcrypt', 'ethers', 'web3', 'libphonenumber-js (phoneNumber)',
-						'currency.js (currency)', 'iban', 'fuse.js (fuzzy)'
+						'lodash (_)',
+						'axios',
+						'dayjs',
+						'joi',
+						'validator',
+						'uuid',
+						'csv-parse (csvParse)',
+						'handlebars (Handlebars)',
+						'cheerio',
+						'crypto-js (CryptoJS)',
+						'xlsx (XLSX)',
+						'pdf-lib (pdfLib)',
+						'mathjs (math)',
+						'xml2js',
+						'yaml (YAML)',
+						'sharp',
+						'jimp (Jimp)',
+						'qrcode (QRCode)',
+						'natural',
+						'archiver',
+						'puppeteer-core (puppeteer)',
+						'knex',
+						'node-forge (forge)',
+						'moment-timezone (moment)',
+						'fast-xml-parser (XMLParser)',
+						'jsonwebtoken (jwt)',
+						'bcrypt',
+						'ethers',
+						'web3',
+						'libphonenumber-js (phoneNumber)',
+						'currency.js (currency)',
+						'iban',
+						'fuse.js (fuzzy)',
 					],
 
 					isLibraryLoaded: (libraryName: string) => !!libraryCache[libraryName],
@@ -514,55 +560,58 @@ result = {"message": "AI Agent Tool Ready!", "agent": "super-code-tool", "langua
 				Error,
 				require,
 			};
-			
-		console.log('[SuperCodeTool] ✅ AI Agent sandbox created with getters:', Object.keys(sandbox).slice(0, 10));
-		console.log('[SuperCodeTool] 🔧 Applying VM-Safe lazy loading for AI agents...');
-		
-		const libraryMappings = [
-			['_', 'lodash', 'lodash'],
-			['axios', 'axios', 'axios'],
-			['dayjs', 'dayjs', 'dayjs'],
-			['joi', 'joi', 'joi'],
-			['Joi', 'joi', 'joi'],
-			['validator', 'validator', 'validator'],
-			['uuid', 'uuid', 'uuid', 'v4'],
-			['csvParse', 'csv-parse', 'csv-parse', 'parse'],
-			['Handlebars', 'handlebars', 'handlebars'],
-			['cheerio', 'cheerio', 'cheerio'],
-			['CryptoJS', 'crypto-js', 'crypto-js'],
-			['XLSX', 'xlsx', 'xlsx'],
-			['pdfLib', 'pdf-lib', 'pdf-lib'],
-			['math', 'mathjs', 'mathjs'],
-			['xml2js', 'xml2js', 'xml2js'],
-			['YAML', 'yaml', 'yaml'],
-			['sharp', 'sharp', 'sharp'],
-			['Jimp', 'jimp', 'jimp'],
-			['QRCode', 'qrcode', 'qrcode'],
-			['natural', 'natural', 'natural'],
-			['archiver', 'archiver', 'archiver'],
-			['puppeteer', 'puppeteer-core', 'puppeteer-core'],
-			['knex', 'knex', 'knex'],
-			['forge', 'node-forge', 'node-forge'],
-			['moment', 'moment-timezone', 'moment-timezone'],
-			['XMLParser', 'fast-xml-parser', 'fast-xml-parser', 'XMLParser'],
-			['jwt', 'jsonwebtoken', 'jsonwebtoken'],
-			['bcrypt', 'bcrypt', 'bcrypt'],
-			['ethers', 'ethers', 'ethers'],
-			['web3', 'web3', 'web3'],
-			['phoneNumber', 'libphonenumber-js', 'libphonenumber-js'],
-			['currency', 'currency.js', 'currency.js'],
-			['iban', 'iban', 'iban'],
-			['fuzzy', 'fuse.js', 'fuse.js']
-		];
-		
-		for (const [name, libraryName, requirePath, property] of libraryMappings) {
-			delete (sandbox as any)[name];
-			createVmSafeLazyLoader(sandbox, name, libraryName, requirePath, property);
-		}
-		
-		console.log('[SuperCodeTool] ✅ VM-Safe lazy loading applied for AI agents');
-		return sandbox;
-	};
+
+			console.log(
+				'[SuperCodeTool] ✅ AI Agent sandbox created with getters:',
+				Object.keys(sandbox).slice(0, 10),
+			);
+			console.log('[SuperCodeTool] 🔧 Applying VM-Safe lazy loading for AI agents...');
+
+			const libraryMappings = [
+				['_', 'lodash', 'lodash'],
+				['axios', 'axios', 'axios'],
+				['dayjs', 'dayjs', 'dayjs'],
+				['joi', 'joi', 'joi'],
+				['Joi', 'joi', 'joi'],
+				['validator', 'validator', 'validator'],
+				['uuid', 'uuid', 'uuid', 'v4'],
+				['csvParse', 'csv-parse', 'csv-parse', 'parse'],
+				['Handlebars', 'handlebars', 'handlebars'],
+				['cheerio', 'cheerio', 'cheerio'],
+				['CryptoJS', 'crypto-js', 'crypto-js'],
+				['XLSX', 'xlsx', 'xlsx'],
+				['pdfLib', 'pdf-lib', 'pdf-lib'],
+				['math', 'mathjs', 'mathjs'],
+				['xml2js', 'xml2js', 'xml2js'],
+				['YAML', 'yaml', 'yaml'],
+				['sharp', 'sharp', 'sharp'],
+				['Jimp', 'jimp', 'jimp'],
+				['QRCode', 'qrcode', 'qrcode'],
+				['natural', 'natural', 'natural'],
+				['archiver', 'archiver', 'archiver'],
+				['puppeteer', 'puppeteer-core', 'puppeteer-core'],
+				['knex', 'knex', 'knex'],
+				['forge', 'node-forge', 'node-forge'],
+				['moment', 'moment-timezone', 'moment-timezone'],
+				['XMLParser', 'fast-xml-parser', 'fast-xml-parser', 'XMLParser'],
+				['jwt', 'jsonwebtoken', 'jsonwebtoken'],
+				['bcrypt', 'bcrypt', 'bcrypt'],
+				['ethers', 'ethers', 'ethers'],
+				['web3', 'web3', 'web3'],
+				['phoneNumber', 'libphonenumber-js', 'libphonenumber-js'],
+				['currency', 'currency.js', 'currency.js'],
+				['iban', 'iban', 'iban'],
+				['fuzzy', 'fuse.js', 'fuse.js'],
+			];
+
+			for (const [name, libraryName, requirePath, property] of libraryMappings) {
+				delete (sandbox as any)[name];
+				createVmSafeLazyLoader(sandbox, name, libraryName, requirePath, property);
+			}
+
+			console.log('[SuperCodeTool] ✅ VM-Safe lazy loading applied for AI agents');
+			return sandbox;
+		};
 
 		try {
 			console.log('[SuperCodeTool] 🤖 AI AGENT EXECUTION STARTING - VM-SAFE VERSION LOADED');
@@ -718,5 +767,4 @@ result = {"message": "AI Agent Tool Ready!", "agent": "super-code-tool", "langua
 			);
 		}
 	}
-
 }

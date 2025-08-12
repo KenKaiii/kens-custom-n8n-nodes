@@ -126,7 +126,7 @@ export class SuperCodeNode implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'Super Code',
 		name: 'superCodeNodeVmSafe',
-		icon: 'file:supercode.svg',
+		icon: { light: 'file:supercode.svg', dark: 'file:supercode.svg' },
 		group: ['transform'],
 		version: 1,
 		description: 'Execute JavaScript/TypeScript with enhanced libraries and utilities',
@@ -160,6 +160,7 @@ export class SuperCodeNode implements INodeType {
 			})($parameter.aiConnections?.input, $parameter.aiAgentMode)
 		}}`,
 		outputs: [{ displayName: '', type: NodeConnectionType.Main }],
+		parameterPane: 'wide',
 		credentials: [],
 		properties: [
 			{
@@ -180,6 +181,120 @@ export class SuperCodeNode implements INodeType {
 				],
 				default: 'javascript',
 				description: 'Choose the programming language to execute',
+			},
+			{
+				displayName: 'JavaScript Code',
+				name: 'code',
+				type: 'string',
+				displayOptions: {
+					show: {
+						language: ['javascript'],
+					},
+				},
+				typeOptions: {
+					editor: 'jsEditor',
+				},
+				default: `// Available libraries: lodash (_), axios, dayjs, joi, validator, uuid, csvParse, Handlebars, cheerio, CryptoJS, XLSX, pdfLib, math, xml2js, YAML, sharp, Jimp, QRCode, natural, archiver, puppeteer, knex, forge, moment, XMLParser, jwt, bcrypt, ethers, web3, phoneNumber, currency, iban, fuzzy
+
+// 🤖 AI Agent Mode: Auto-populated AI variables (seamless UX!)
+const aiConnections = {
+    llm_available: !!llm,
+    memory_available: !!memory,
+    tools_available: !!tools
+};
+
+if (llm) {
+    // Language model is automatically available when connected
+    console.log('AI LLM available:', typeof llm, Object.keys(llm));
+    // Note: AI connections come as arrays, access actual LLM with llm[0]
+    const actualLLM = llm[0];
+    if (actualLLM) {
+        console.log('Actual LLM methods:', Object.getOwnPropertyNames(actualLLM));
+        aiConnections.llm_info = {
+            type: typeof llm,
+            keys: Object.keys(llm).slice(0, 5),
+            actual_llm_available: !!actualLLM,
+            actual_llm_methods: Object.getOwnPropertyNames(actualLLM).slice(0, 10)
+        };
+    }
+}
+
+if (memory) {
+    // Memory is automatically available when connected
+    console.log('AI Memory available:', typeof memory, Object.keys(memory));
+    aiConnections.memory_info = {
+        type: typeof memory,
+        keys: Object.keys(memory).slice(0, 5)
+    };
+}
+
+if (tools) {
+    // Tools are automatically available when connected
+    console.log('AI Tools available:', typeof tools, Object.keys(tools));
+    aiConnections.tools_info = {
+        type: typeof tools,
+        keys: Object.keys(tools).slice(0, 5)
+    };
+}
+
+// Your JavaScript code here
+return { 
+    result: 'Hello from Super Code!', 
+    ai_mode: !!llm,
+    ai_connections: aiConnections 
+};
+`,
+				description: 'JavaScript/TypeScript code with enhanced libraries and utilities',
+				noDataExpression: true,
+			},
+			{
+				displayName: 'Python Code',
+				name: 'code',
+				type: 'string',
+				displayOptions: {
+					show: {
+						language: ['python'],
+					},
+				},
+				typeOptions: {
+					editor: 'jsEditor',
+					editorLanguage: 'python',
+				},
+				default: `# 30+ Python libraries available: pandas, numpy, requests, datetime, json, sys, urllib, re, hashlib, base64, uuid, os, and many more
+# Pre-imported: pandas (pd), numpy (np), requests, datetime, json, sys, urllib.parse, re, hashlib, base64, uuid, os
+
+# 🤖 AI Agent Mode: Auto-populated AI variables (seamless UX!)
+ai_connections = {
+    "llm_available": llm is not None,
+    "memory_available": memory is not None,
+    "tools_available": tools is not None
+}
+
+if llm is not None:
+    # Language model is automatically available when connected
+    # Note: llm object structure depends on the connected AI model
+    # Uncomment to inspect: ai_connections["llm_type"] = type(llm).__name__
+    ai_connections["llm_type"] = type(llm).__name__
+
+if memory is not None:
+    # Memory is automatically available when connected
+    # Uncomment to inspect: ai_connections["memory_type"] = type(memory).__name__
+    ai_connections["memory_type"] = type(memory).__name__
+
+if tools is not None:
+    # Tools are automatically available when connected
+    # Uncomment to inspect: ai_connections["tools_type"] = type(tools).__name__
+    ai_connections["tools_type"] = type(tools).__name__
+
+# Your Python code here
+result = {
+    "message": "Hello from Super Code Python!", 
+    "ai_mode": llm is not None,
+    "ai_connections": ai_connections
+}
+`,
+				description: 'Python code with popular libraries and utilities',
+				noDataExpression: true,
 			},
 			{
 				displayName: 'AI Agent Mode',
@@ -269,195 +384,15 @@ export class SuperCodeNode implements INodeType {
 					},
 				],
 			},
-			{
-				displayName: 'JavaScript Code',
-				name: 'code',
-				type: 'string',
-				displayOptions: {
-					show: {
-						language: ['javascript'],
-					},
-				},
-				typeOptions: {
-					editor: 'codeNodeEditor',
-					editorLanguage: 'javaScript',
-					rows: 20,
-				},
-				default: `// Available libraries: lodash (_), axios, dayjs, joi, validator, uuid, csvParse, Handlebars, cheerio, CryptoJS, XLSX, pdfLib, math, xml2js, YAML, sharp, Jimp, QRCode, natural, archiver, puppeteer, knex, forge, moment, XMLParser, jwt, bcrypt, ethers, web3, phoneNumber, currency, iban, fuzzy
-
-// 🤖 AI Agent Mode: Auto-populated AI variables (seamless UX!)
-const aiConnections = {
-    llm_available: !!llm,
-    memory_available: !!memory,
-    tools_available: !!tools
-};
-
-if (llm) {
-    // Language model is automatically available when connected
-    console.log('AI LLM available:', typeof llm, Object.keys(llm));
-    // Note: AI connections come as arrays, access actual LLM with llm[0]
-    const actualLLM = llm[0];
-    if (actualLLM) {
-        console.log('Actual LLM methods:', Object.getOwnPropertyNames(actualLLM));
-        aiConnections.llm_info = {
-            type: typeof llm,
-            keys: Object.keys(llm).slice(0, 5),
-            actual_llm_available: !!actualLLM,
-            actual_llm_methods: Object.getOwnPropertyNames(actualLLM).slice(0, 10)
-        };
-    }
-}
-
-if (memory) {
-    // Memory is automatically available when connected
-    console.log('AI Memory available:', typeof memory, Object.keys(memory));
-    aiConnections.memory_info = {
-        type: typeof memory,
-        keys: Object.keys(memory).slice(0, 5)
-    };
-}
-
-if (tools) {
-    // Tools are automatically available when connected
-    console.log('AI Tools available:', typeof tools, Object.keys(tools));
-    aiConnections.tools_info = {
-        type: typeof tools,
-        keys: Object.keys(tools).slice(0, 5)
-    };
-}
-
-// Your JavaScript code here
-return { 
-    result: 'Hello from Super Code!', 
-    ai_mode: !!llm,
-    ai_connections: aiConnections 
-};
-`,
-				description: 'JavaScript/TypeScript code with enhanced libraries and utilities',
-				noDataExpression: true,
-			},
-			{
-				displayName: 'Python Code',
-				name: 'code',
-				type: 'string',
-				displayOptions: {
-					show: {
-						language: ['python'],
-					},
-				},
-				typeOptions: {
-					editor: 'codeNodeEditor',
-					editorLanguage: 'python',
-					rows: 20,
-				},
-				default: `# 30+ Python libraries available: pandas, numpy, requests, datetime, json, sys, urllib, re, hashlib, base64, uuid, os, and many more
-# Pre-imported: pandas (pd), numpy (np), requests, datetime, json, sys, urllib.parse, re, hashlib, base64, uuid, os
-
-# 🤖 AI Agent Mode: Auto-populated AI variables (seamless UX!)
-ai_connections = {
-    "llm_available": llm is not None,
-    "memory_available": memory is not None,
-    "tools_available": tools is not None
-}
-
-if llm is not None:
-    # Language model is automatically available when connected
-    # Note: llm object structure depends on the connected AI model
-    # Uncomment to inspect: ai_connections["llm_type"] = type(llm).__name__
-    ai_connections["llm_type"] = type(llm).__name__
-
-if memory is not None:
-    # Memory is automatically available when connected
-    # Uncomment to inspect: ai_connections["memory_type"] = type(memory).__name__
-    ai_connections["memory_type"] = type(memory).__name__
-
-if tools is not None:
-    # Tools are automatically available when connected
-    # Uncomment to inspect: ai_connections["tools_type"] = type(tools).__name__
-    ai_connections["tools_type"] = type(tools).__name__
-
-# Your Python code here
-result = {
-    "message": "Hello from Super Code Python!", 
-    "ai_mode": llm is not None,
-    "ai_connections": ai_connections
-}
-`,
-				description: 'Python code with popular libraries and utilities',
-				noDataExpression: true,
-			},
-			{
-				displayName: 'Advanced Settings',
-				name: 'advancedSettings',
-				type: 'boolean',
-				default: false,
-				description: 'Show advanced execution options (execution mode, timeout, memory limit)',
-			},
-			{
-				displayName: 'Execution Mode',
-				name: 'executionMode',
-				type: 'options',
-				displayOptions: {
-					show: {
-						advancedSettings: [true],
-					},
-				},
-				options: [
-					{
-						name: 'Run Once for All Items',
-						value: 'runOnceForAllItems',
-						description: 'Execute code once with access to all input items',
-					},
-					{
-						name: 'Run Once for Each Item',
-						value: 'runOnceForEachItem',
-						description: 'Execute code separately for each input item',
-					},
-				],
-				default: 'runOnceForAllItems',
-				description: 'How to execute the JavaScript code',
-			},
-			{
-				displayName: 'Timeout (seconds)',
-				name: 'timeout',
-				type: 'number',
-				displayOptions: {
-					show: {
-						advancedSettings: [true],
-					},
-				},
-				default: 30,
-				description: 'Maximum execution time in seconds',
-				typeOptions: {
-					minValue: 1,
-					maxValue: 300,
-				},
-			},
-			{
-				displayName: 'Memory Limit (MB)',
-				name: 'memoryLimit',
-				type: 'number',
-				displayOptions: {
-					show: {
-						advancedSettings: [true],
-					},
-				},
-				default: 128,
-				description: 'Maximum memory usage in MB',
-				typeOptions: {
-					minValue: 16,
-					maxValue: 512,
-				},
-			},
 		],
 	};
 
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const language = this.getNodeParameter('language', 0, 'javascript') as string;
-		const executionMode = this.getNodeParameter('executionMode', 0, 'runOnceForAllItems') as string;
+		const executionMode = 'runOnceForAllItems'; // Default execution mode
 		const code = this.getNodeParameter('code', 0) as string;
-		const timeout = this.getNodeParameter('timeout', 0, 30) as number;
+		const timeout = 30; // Default timeout in seconds
 
 		if (!code.trim()) {
 			throw new NodeOperationError(
