@@ -44,7 +44,8 @@
 			"UuidGenerator/UuidGenerator.node.js",
 			"DataTransformer/DataTransformer.node.js",
 			"QrCodeGenerator/QrCodeGenerator.node.js",
-			"SuperCodeNode/SuperCodeNode.node.js"
+			"SuperCodeNode/SuperCodeNode.node.js",
+			"SuperCodeTool/SuperCodeTool.node.js"
 		]
 	},
 	"devDependencies": {
