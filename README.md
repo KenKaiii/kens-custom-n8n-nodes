@@ -24,6 +24,22 @@ npm install @kenkaiii/n8n-nodes-supercode
 
 Or just go to Settings > Community Nodes in your n8n and install `@kenkaiii/n8n-nodes-supercode`
 
+### ⚠️ Troubleshooting: "joi is not defined" or Library Loading Errors
+
+If libraries aren't loading after installation, rebuild native dependencies:
+
+```bash
+# Navigate to the installed package
+cd ~/.n8n/nodes/node_modules/@kenkaiii/n8n-nodes-supercode
+
+# Rebuild native dependencies for your system
+npm rebuild
+
+# This fixes bcrypt, sharp, and other native bindings
+```
+
+This is required because some libraries (bcrypt, sharp) have native bindings that must be compiled for your specific system architecture (Linux, Mac, Docker, etc.)
+
 ## Real World Use Cases (Why You'd Want This)
 
 ### 1. E-commerce Order Processing
