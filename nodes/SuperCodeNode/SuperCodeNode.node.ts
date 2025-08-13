@@ -8,9 +8,10 @@ import {
 } from 'n8n-workflow';
 
 import { createContext, runInContext } from 'vm';
-import { spawn } from 'child_process';
-import * as path from 'path';
+// import { spawn } from 'child_process'; // Disabled for Python support
+// import * as path from 'path'; // Disabled for Python support
 
+/* Python execution disabled for server compatibility
 class PythonExecutor {
 	private static dependenciesChecked = false;
 
@@ -224,6 +225,7 @@ print(json.dumps(result))
 		});
 	}
 }
+*/ // End Python execution disabled comment
 
 export class SuperCodeNode implements INodeType {
 	description: INodeTypeDescription = {
@@ -506,6 +508,16 @@ result = {
 
 		// Handle Python execution
 		if (language === 'python') {
+			// Python support temporarily disabled - coming soon!
+			throw new NodeOperationError(
+				this.getNode(),
+				'🐍 Python execution is coming soon! Currently under development for broader server compatibility. Use JavaScript for now - 35 libraries available!',
+			);
+		}
+		
+		// Python code disabled for server compatibility
+		/* 
+		if (language === 'python') {
 			const aiAgentMode = this.getNodeParameter('aiAgentMode', 0, false) as boolean;
 			let aiConnections: { llm?: any; memory?: any; tools?: any } | undefined;
 
@@ -561,6 +573,7 @@ result = {
 			const pythonExecutor = new PythonExecutor();
 			return await pythonExecutor.execute(code, items, timeout, this, aiConnections);
 		}
+		*/
 
 		console.log('[SuperCode] 🚀 EXECUTION STARTING - JAVASCRIPT MODE - VM-SAFE VERSION');
 
