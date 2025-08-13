@@ -66,4 +66,35 @@ module.exports = {
 	// Blockchain
 	ethers: require('ethers'),
 	web3: require('web3'),
+
+	// Enhanced Libraries (v1.0.50)
+	// Better CSV handling
+	papaparse: require('papaparse'),
+	Papa: require('papaparse'), // Alternative name for convenience
+
+	// Advanced date/time
+	dateFns: require('date-fns'),
+	dateFnsTz: require('date-fns-tz'),
+
+	// String processing
+	stringSimilarity: require('string-similarity'),
+	slug: require('slug'),
+	pluralize: require('pluralize'),
+
+	// HTTP/API utilities
+	qs: require('qs'),
+	FormData: require('form-data'),
+
+	// Validation alternatives
+	Ajv: require('ajv'),
+	yup: require('yup'),
+
+	// File formats
+	ini: require('ini'),
+	toml: require('toml'),
+
+	// Utilities
+	nanoid: require('nanoid'),
+	ms: require('ms'),
+	bytes: require('bytes'),
 };
