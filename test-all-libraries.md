@@ -85,12 +85,8 @@ test('Papa', () => {
 
 test('dateFnsTz', () => {
   const date = new Date();
-  if (typeof dateFnsTz.zonedTimeToUtc === 'function') {
-    const utc = dateFnsTz.zonedTimeToUtc(date, 'UTC');
-    return dateFnsTz.format(utc, 'yyyy-MM-dd HH:mm:ss zzz', {timeZone: 'UTC'});
-  } else {
-    return 'date-fns-tz functions available: ' + Object.keys(dateFnsTz).slice(0,3).join(',');
-  }
+  const formatted = dateFnsTz.formatInTimeZone(date, 'UTC', 'yyyy-MM-dd HH:mm:ss');
+  return `UTC time: ${formatted}`;
 });
 
 test('stringSimilarity', () => {
