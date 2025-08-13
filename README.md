@@ -12,7 +12,7 @@ by Ken Kai
 
 Look, I got tired of writing the same data transformation logic over and over again in different n8n workflows. So I built this thing.
 
-**What it does:** Gives you JavaScript and Python execution directly in your n8n workflows, with 30+ libraries already loaded. No more "npm install this, pip install that" - it's all there.
+**What it does:** Gives you JavaScript and Python execution directly in your n8n workflows, with 41 JavaScript libraries already loaded. No more "npm install this, pip install that" - it's all there.
 
 **What it's actually useful for:** See below. Real examples from real workflows I've built.
 
@@ -24,21 +24,17 @@ npm install @kenkaiii/n8n-nodes-supercode
 
 Or just go to Settings > Community Nodes in your n8n and install `@kenkaiii/n8n-nodes-supercode`
 
-### ⚠️ Troubleshooting: "joi is not defined" or Library Loading Errors
+### ✅ v1.0.51: Dependency Issues Resolved!
 
-If libraries aren't loading after installation, rebuild native dependencies:
+**The "Cannot find module joi" issue has been completely fixed** in v1.0.51. The package now includes:
 
-```bash
-# Navigate to the installed package
-cd ~/.n8n/nodes/node_modules/@kenkaiii/n8n-nodes-supercode
+- **41 pure JavaScript libraries** - no native dependencies
+- **True one-click install** - works on all platforms instantly
+- **Zero compilation required** - no more npm rebuild needed
 
-# Rebuild native dependencies for your system
-npm rebuild
+If you're still on an older version, simply update to v1.0.51+ via n8n's Community Nodes interface.
 
-# This fixes bcrypt, sharp, and other native bindings
-```
-
-This is required because some libraries (bcrypt, sharp) have native bindings that must be compiled for your specific system architecture (Linux, Mac, Docker, etc.)
+**Technical details**: See [docs/08-dependency-resolution-fix.md](./docs/08-dependency-resolution-fix.md) for the complete technical breakdown of how we solved this.
 
 ## Real World Use Cases (Why You'd Want This)
 
