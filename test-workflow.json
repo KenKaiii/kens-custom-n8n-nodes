@@ -1,0 +1,23 @@
+{
+  "name": "Test SuperCode Python",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "python",
+        "pythonCode": "import pandas as pd\nimport numpy as np\nimport requests\n\nprint('🐍 Python dependencies test:')\nprint(f'pandas version: {pd.__version__}')\nprint(f'numpy version: {np.__version__}')\nprint(f'requests version: {requests.__version__}')\n\n# Test data processing\ndata = {'test': [1, 2, 3], 'values': [10, 20, 30]}\ndf = pd.DataFrame(data)\nprint(f'DataFrame created: {df.shape}')\n\nresult = {'success': True, 'packages_working': True, 'dataframe_rows': len(df)}\nprint(f'Result: {result}')"
+      },
+      "id": "test-supercode",
+      "name": "SuperCode Test",
+      "type": "@kenkaiii/n8n-nodes-supercode.superCodeNode",
+      "typeVersion": 1,
+      "position": [760, 300]
+    }
+  ],
+  "connections": {},
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "test-1.0"
+}

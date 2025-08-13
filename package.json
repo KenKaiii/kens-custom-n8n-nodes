@@ -1,7 +1,7 @@
 {
 	"name": "@kenkaiii/n8n-nodes-supercode",
-	"version": "1.0.3",
-	"description": "Advanced JavaScript/Python execution nodes for n8n with 30+ integrated libraries and AI agent support",
+	"version": "1.0.17",
+	"description": "Advanced JavaScript/Python execution nodes for n8n with 35+ JavaScript libraries and 38+ Python packages with AI agent support",
 	"keywords": [
 		"n8n-community-node-package",
 		"n8n",
@@ -21,9 +21,10 @@
 	},
 	"main": "index.js",
 	"scripts": {
-		"build": "rimraf dist && tsc && npm run build:icons && npm run flatten",
+		"build": "rimraf dist && tsc && npm run build:icons && npm run flatten && npm run webpack",
+		"webpack": "npx webpack --config webpack.config.js",
 		"build:icons": "gulp --gulpfile gulpfile.cjs build:icons",
-		"flatten": "cp -r dist/nodes/* dist/ && rm -rf dist/nodes && cp package.json index.js dist/",
+		"flatten": "cp -r dist/nodes/* dist/ && rm -rf dist/nodes && cp package.json index.js python-installer.py dist/",
 		"dev": "tsc --watch",
 		"format": "prettier nodes credentials --write",
 		"lint": "eslint nodes --ext .ts",
@@ -36,14 +37,15 @@
 		"dist/**/*",
 		"dist/",
 		"index.js",
+		"python-installer.py",
 		"LICENSE.md"
 	],
 	"n8n": {
 		"n8nNodesApiVersion": 1,
 		"credentials": [],
 		"nodes": [
-			"dist/SuperCodeNode/SuperCodeNode.node.js",
-			"dist/SuperCodeTool/SuperCodeTool.node.js"
+			"dist/SuperCodeNode/SuperCodeNode.node.bundled.js",
+			"dist/SuperCodeTool/SuperCodeTool.node.bundled.js"
 		]
 	},
 	"devDependencies": {
@@ -61,23 +63,9 @@
 		"prettier": "^3.4.2",
 		"rimraf": "^6.0.1",
 		"ts-jest": "^29.2.5",
-		"typescript": "^5.7.2"
-	},
-	"peerDependencies": {
-		"n8n-workflow": "*"
-	},
-	"jest": {
-		"preset": "ts-jest",
-		"testEnvironment": "node",
-		"testMatch": [
-			"**/*.test.ts"
-		],
-		"collectCoverageFrom": [
-			"nodes/**/*.ts",
-			"!nodes/**/*.d.ts"
-		]
-	},
-	"dependencies": {
+		"typescript": "^5.7.2",
+		"webpack": "^5.101.1",
+		"webpack-cli": "^6.0.1",
 		"archiver": "^7.0.1",
 		"axios": "^1.6.0",
 		"bcrypt": "^5.1.1",
@@ -111,5 +99,19 @@
 		"xlsx": "^0.18.5",
 		"xml2js": "^0.6.2",
 		"yaml": "^2.8.1"
+	},
+	"peerDependencies": {
+		"n8n-workflow": "*"
+	},
+	"jest": {
+		"preset": "ts-jest",
+		"testEnvironment": "node",
+		"testMatch": [
+			"**/*.test.ts"
+		],
+		"collectCoverageFrom": [
+			"nodes/**/*.ts",
+			"!nodes/**/*.d.ts"
+		]
 	}
 }

@@ -9,8 +9,64 @@ import {
 
 import { createContext, runInContext } from 'vm';
 import { spawn } from 'child_process';
+import * as path from 'path';
 
 class PythonExecutor {
+	private static dependenciesChecked = false;
+
+	private async ensurePythonDependencies(): Promise<void> {
+		if (PythonExecutor.dependenciesChecked) return;
+
+		console.log('[SuperCode] 🐍 Ensuring Python dependencies are available...');
+		
+		// Get the path to the python installer script
+		const installerPath = path.join(__dirname, '../../python-installer.py');
+		
+		return new Promise((resolve) => {
+			// Try different Python executables
+			const pythonPaths = ['python3', 'python', '/usr/bin/python3', '/usr/local/bin/python3', '/opt/homebrew/bin/python3'];
+			let pythonCmd = 'python3';
+			
+			// Find working Python executable
+			for (const path of pythonPaths) {
+				try {
+					const testResult = spawn(path, ['--version'], { timeout: 5000 });
+					if (testResult) {
+						pythonCmd = path;
+						break;
+					}
+				} catch (error) {
+					continue;
+				}
+			}
+			
+			console.log(`[SuperCode] 🐍 Using Python executable: ${pythonCmd}`);
+			const pythonProcess = spawn(pythonCmd, [installerPath], {
+				timeout: 300000, // 5 minutes for installations
+			});
+
+			pythonProcess.stdout.on('data', (data) => {
+				console.log(`[SuperCode] ${data.toString().trim()}`);
+			});
+
+			pythonProcess.stderr.on('data', (data) => {
+				console.log(`[SuperCode] ${data.toString().trim()}`);
+			});
+
+			pythonProcess.on('close', (code) => {
+				console.log(`[SuperCode] ✅ Python dependency check completed (exit code: ${code})`);
+				PythonExecutor.dependenciesChecked = true;
+				resolve();
+			});
+
+			pythonProcess.on('error', (error) => {
+				console.log(`[SuperCode] ⚠️ Python dependency check failed: ${error.message}`);
+				PythonExecutor.dependenciesChecked = true;
+				resolve(); // Continue even if check failed
+			});
+		});
+	}
+
 	async execute(
 		code: string,
 		items: INodeExecutionData[],
@@ -18,6 +74,9 @@ class PythonExecutor {
 		context: IExecuteFunctions,
 		aiConnections?: { llm?: any; memory?: any; tools?: any },
 	): Promise<INodeExecutionData[][]> {
+		// Ensure Python dependencies are installed before execution
+		await this.ensurePythonDependencies();
+
 		return new Promise((resolve, reject) => {
 			const pythonScript = `
 import json
@@ -62,7 +121,25 @@ if 'result' not in locals():
 print(json.dumps(result))
 `;
 
-			const pythonProcess = spawn('python3', ['-c', pythonScript], {
+			// Try different Python executables
+			const pythonPaths = ['python3', 'python', '/usr/bin/python3', '/usr/local/bin/python3', '/opt/homebrew/bin/python3'];
+			let pythonCmd = 'python3';
+			
+			// Find working Python executable
+			for (const path of pythonPaths) {
+				try {
+					const testResult = spawn(path, ['--version'], { timeout: 1000 });
+					if (testResult) {
+						pythonCmd = path;
+						break;
+					}
+				} catch (error) {
+					continue;
+				}
+			}
+			
+			console.log(`[SuperCode] 🐍 Executing Python with: ${pythonCmd}`);
+			const pythonProcess = spawn(pythonCmd, ['-c', pythonScript], {
 				timeout: timeout * 1000,
 			});
 
@@ -89,7 +166,33 @@ print(json.dumps(result))
 				}
 
 				try {
-					const result = JSON.parse(output.trim());
+					// DEBUG: Log exactly what Python is outputting
+					console.log(`[SuperCode] 🐍 Python raw output: "${output}"`);
+					console.log(`[SuperCode] 🐍 Python output length: ${output.length}`);
+					console.log(`[SuperCode] 🐍 Python output lines: ${output.split('\n').length}`);
+					
+					// Extract JSON from output (handle mixed output from auto-installer)
+					const lines = output.trim().split('\n');
+					let jsonLine = '';
+					
+					// Find the last line that looks like JSON
+					for (let i = lines.length - 1; i >= 0; i--) {
+						const line = lines[i].trim();
+						console.log(`[SuperCode] 🐍 Checking line ${i}: "${line}"`);
+						if (line.startsWith('{') || line.startsWith('[')) {
+							jsonLine = line;
+							console.log(`[SuperCode] 🐍 Found JSON line: "${jsonLine}"`);
+							break;
+						}
+					}
+					
+					if (!jsonLine) {
+						// Fallback: try to parse the whole output
+						jsonLine = output.trim();
+						console.log(`[SuperCode] 🐍 Using fallback whole output: "${jsonLine}"`);
+					}
+					
+					const result = JSON.parse(jsonLine);
 					if (result.error) {
 						reject(new NodeOperationError(context.getNode(), `Python error: ${result.error}`));
 						return;
@@ -531,8 +634,21 @@ result = {
 							defined = true;
 
 							try {
-								// Direct require() call for VM-Safe loading
-								const lib = require(requirePath);
+								// First try bundled libraries via dynamic path, then fallback to direct require
+								let lib;
+								try {
+									// Use absolute path since __dirname not available in VM context
+									const bundledPath = '/home/node/.n8n/nodes/node_modules/@kenkaiii/n8n-nodes-supercode/dist/bundled-libraries';
+									const bundledLibraries = require(bundledPath);
+									lib = bundledLibraries[name];
+									if (!lib) {
+										// Fallback to direct require for external libraries  
+										lib = require(requirePath);
+									}
+								} catch {
+									// Final fallback to direct require
+									lib = require(requirePath);
+								}
 								cachedValue = property ? lib[property] : lib;
 
 								// Redefine as value property for VM compatibility
@@ -792,7 +908,7 @@ result = {
 				['joi', 'joi', 'joi'],
 				['Joi', 'joi', 'joi'],
 				['validator', 'validator', 'validator'],
-				['uuid', 'uuid', 'uuid', 'v4'],
+				['uuid', 'uuid', 'uuid'],
 				['csvParse', 'csv-parse', 'csv-parse', 'parse'],
 				['Handlebars', 'handlebars', 'handlebars'],
 				['cheerio', 'cheerio', 'cheerio'],
@@ -853,6 +969,49 @@ result = {
 				createVmSafeLazyLoader(sandbox, name, libraryName, requirePath, property);
 			}
 
+			// 🔧 CRITICAL VM CONTEXT FIX: Pre-load ALL libraries as direct values
+			// This completely bypasses the problematic getter-based lazy loading for VM context
+			try {
+				console.log('[SuperCode] 🔧 Pre-loading ALL libraries as direct values for VM compatibility...');
+				const bundledPath = '/home/node/.n8n/nodes/node_modules/@kenkaiii/n8n-nodes-supercode/dist/bundled-libraries';
+				const bundledLibraries = require(bundledPath);
+				
+				let preloadedCount = 0;
+				let skippedCount = 0;
+				
+				// Pre-load ALL bundled libraries as direct values (skip getters completely)
+				for (const [libName, libValue] of Object.entries(bundledLibraries)) {
+					if (libValue && typeof libValue !== 'undefined') {
+						// Remove any existing getter and replace with direct value
+						delete (sandbox as any)[libName];
+						(sandbox as any)[libName] = libValue;
+						preloadedCount++;
+						console.log(`[SuperCode] ✅ Pre-loaded ${libName} as direct value`);
+					} else {
+						skippedCount++;
+						console.log(`[SuperCode] ⚠️ Skipped ${libName} (undefined/null)`);
+					}
+				}
+				
+				console.log(`[SuperCode] ✅ Pre-loading completed: ${preloadedCount} loaded, ${skippedCount} skipped`);
+			} catch (e) {
+				console.log('[SuperCode] ⚠️ Pre-loading failed:', (e as Error).message);
+				// Fallback: try to pre-load critical libraries individually
+				const criticalLibs = ['joi', 'Joi', 'pdfLib', 'math', 'Jimp', 'QRCode', 'currency', 'iban', 'ethers', 'natural', 'sharp', 'puppeteer', 'bcrypt', 'web3'];
+				for (const libName of criticalLibs) {
+					try {
+						const lib = require(libraryMappings.find(([name]) => name === libName)?.[2] || libName);
+						if (lib) {
+							delete (sandbox as any)[libName];
+							(sandbox as any)[libName] = lib;
+							console.log(`[SuperCode] ✅ Fallback loaded ${libName}`);
+						}
+					} catch (libError) {
+						console.log(`[SuperCode] ❌ Failed to fallback load ${libName}`);
+					}
+				}
+			}
+
 			console.log('[SuperCode] ✅ VM-Safe lazy loading applied to all libraries');
 
 			// 🤖 Auto-populate AI variables when AI Agent Mode is enabled
@@ -907,8 +1066,77 @@ result = {
 			return sandbox;
 		};
 
+		// 🔧 ULTRA-SIMPLE DIRECT INJECTION: No bundled files, just direct requires
+		const generateLibraryInjectionCode = (): string => {
+			console.log('[SuperCode] 🔧 Generating DIRECT REQUIRE injection code...');
+			
+			// Direct require mapping for all libraries - no bundle dependency
+			const libraryMappings = [
+				['joi', 'joi'],
+				['Joi', 'joi'], 
+				['pdfLib', 'pdf-lib'],
+				['math', 'mathjs'],
+				['Jimp', 'jimp'],
+				['QRCode', 'qrcode'],
+				['currency', 'currency.js'],
+				['iban', 'iban'],
+				['ethers', 'ethers'],
+				['natural', 'natural'],
+				['sharp', 'sharp'],
+				['puppeteer', 'puppeteer-core'],
+				['bcrypt', 'bcrypt'],
+				['web3', 'web3'],
+				// Add working libraries too for consistency
+				['_', 'lodash'],
+				['axios', 'axios'],
+				['dayjs', 'dayjs'],
+				['validator', 'validator'],
+				['uuid', 'uuid'],
+				['csvParse', 'csv-parse'],
+				['Handlebars', 'handlebars'],
+				['cheerio', 'cheerio'],
+				['CryptoJS', 'crypto-js'],
+				['XLSX', 'xlsx'],
+				['xml2js', 'xml2js'],
+				['YAML', 'yaml'],
+				['archiver', 'archiver'],
+				['knex', 'knex'],
+				['forge', 'node-forge'],
+				['moment', 'moment-timezone'],
+				['XMLParser', 'fast-xml-parser'],
+				['jwt', 'jsonwebtoken'],
+				['phoneNumber', 'libphonenumber-js'],
+				['fuzzy', 'fuse.js']
+			];
+			
+			let injectionCode = '';
+			let successCount = 0;
+			
+			for (const [varName, requirePath] of libraryMappings) {
+				try {
+					// Special handling for XMLParser
+					if (varName === 'XMLParser') {
+						injectionCode += `const ${varName} = require('${requirePath}').XMLParser;\n`;
+					} else if (varName === 'csvParse') {
+						injectionCode += `const ${varName} = require('${requirePath}').parse;\n`;
+					} else {
+						injectionCode += `const ${varName} = require('${requirePath}');\n`;
+					}
+					successCount++;
+					console.log(`[SuperCode] ✅ Added ${varName} -> ${requirePath}`);
+				} catch (e) {
+					console.log(`[SuperCode] ⚠️ Failed ${varName}: ${e.message}`);
+				}
+			}
+			
+			console.log(`[SuperCode] ✅ Direct injection code generated - ${successCount} libraries`);
+			return injectionCode;
+		};
+
 		try {
-			console.log('[SuperCode] 🚀 EXECUTION STARTING - VM-SAFE VERSION LOADED');
+			console.log('[SuperCode] 🚀 EXECUTION STARTING - DIRECT INJECTION VERSION');
+			const libraryInjectionCode = generateLibraryInjectionCode();
+			
 			if (executionMode === 'runOnceForAllItems') {
 				// Execute code once for all items
 				const sandbox = await createEnhancedSandbox(items);
@@ -929,6 +1157,9 @@ result = {
 								throw new Error('🤖 LLM-FRIENDLY ERROR [E010]\\n📍 Issue: Code execution timeout (${timeout}s)\\n💡 Fix: 1) Reduce data processing 2) Use async/await 3) Increase timeout in Advanced Settings');
 							}
 						};
+						
+						// 🚀 DIRECT LIBRARY INJECTION - bypasses ALL VM context issues
+						${libraryInjectionCode}
 						
 						// Enhanced async wrapper with better error handling
 						try {
@@ -1002,6 +1233,9 @@ result = {
 									throw new Error('🤖 LLM-FRIENDLY ERROR [E010]\\n📍 Issue: Code execution timeout (${timeout}s)\\n💡 Fix: 1) Reduce data processing 2) Use async/await 3) Increase timeout in Advanced Settings');
 								}
 							};
+							
+							// 🚀 DIRECT LIBRARY INJECTION - bypasses ALL VM context issues
+							${libraryInjectionCode}
 							
 							try {
 								${code}
