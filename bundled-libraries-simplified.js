@@ -46,17 +46,17 @@ module.exports = {
 	math: require('mathjs'),
 
 	// Text & Language, AI/NLP
-	natural: require('natural'),
+	// natural: require('natural'), // REMOVED: Native dependency
 	fuzzy: require('fuse.js'),
 
 	// Media Processing (additional)
-	sharp: require('sharp'),
+	// sharp: require('sharp'), // REMOVED: Native dependency
 
 	// Web Scraping & Automation
-	puppeteer: require('puppeteer-core'),
+	// puppeteer: require('puppeteer-core'), // REMOVED: Too large, requires Chrome
 
 	// Security & Hashing
-	bcrypt: require('bcrypt'),
+	bcrypt: require('bcryptjs'), // Pure JavaScript implementation
 
 	// Financial & Geographic
 	currency: require('currency.js'),

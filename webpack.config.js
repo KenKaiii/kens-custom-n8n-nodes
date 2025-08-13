@@ -16,11 +16,7 @@ module.exports = [
 			extensions: ['.js', '.ts'],
 		},
 		externals: {
-			// Only keep native modules that truly need to be external
-			sharp: 'commonjs sharp',
-			bcrypt: 'commonjs bcrypt',
-			'puppeteer-core': 'commonjs puppeteer-core',
-			natural: 'commonjs natural',
+			// No externals - everything is bundled
 		},
 		optimization: {
 			minimize: false,
