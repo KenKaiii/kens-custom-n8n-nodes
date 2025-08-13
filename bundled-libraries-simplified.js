@@ -17,7 +17,7 @@ module.exports = {
 	joi: require('joi'),
 	Joi: require('joi'),
 	validator: require('validator'),
-	uuid: require('uuid'),
+	uuid: require('uuid'), // Full uuid module with all methods
 
 	// Parsing & Processing
 	csvParse: require('csv-parse'),
@@ -57,6 +57,7 @@ module.exports = {
 
 	// Security & Hashing
 	bcrypt: require('bcryptjs'), // Pure JavaScript implementation
+	bcryptjs: require('bcryptjs'), // Alternative name
 
 	// Financial & Geographic
 	currency: require('currency.js'),
@@ -67,18 +68,25 @@ module.exports = {
 	ethers: require('ethers'),
 	web3: require('web3'),
 
-	// Enhanced Libraries (v1.0.50)
+	// Enhanced Libraries (v1.0.50) - Fixed for webpack bundling
 	// Better CSV handling
 	papaparse: require('papaparse'),
 	Papa: require('papaparse'), // Alternative name for convenience
 
-	// Advanced date/time
+	// Advanced date/time  
 	dateFns: require('date-fns'),
 	dateFnsTz: require('date-fns-tz'),
 
 	// String processing
 	stringSimilarity: require('string-similarity'),
-	slug: require('slug').default || require('slug'),
+	slug: (() => {
+		try {
+			const slugLib = require('slug');
+			return slugLib.default || slugLib;
+		} catch (e) {
+			return require('slug');
+		}
+	})(),
 	pluralize: require('pluralize'),
 
 	// HTTP/API utilities
@@ -94,7 +102,14 @@ module.exports = {
 	toml: require('toml'),
 
 	// Utilities
-	nanoid: require('nanoid'),
+	nanoid: (() => {
+		try {
+			const nanoidLib = require('nanoid');
+			return { nanoid: nanoidLib.nanoid || nanoidLib };
+		} catch (e) {
+			return require('nanoid');
+		}
+	})(),
 	ms: require('ms'),
 	bytes: require('bytes'),
 };

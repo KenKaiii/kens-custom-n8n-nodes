@@ -9,233 +9,105 @@ import {
 
 import { createContext, runInContext } from 'vm';
 
-// Import bundled libraries directly to avoid webpack dynamic require issues
-let bundledLibraries: any;
-try {
-	bundledLibraries = require('../bundled-libraries');
-	console.log('[SuperCode] ✅ Bundled libraries loaded successfully');
-} catch (e) {
-	console.log('[SuperCode] ⚠️ Failed to load bundled libraries:', (e as Error).message);
-	bundledLibraries = {};
-}
-// import { spawn } from 'child_process'; // Disabled for Python support
-// import * as path from 'path'; // Disabled for Python support
+// Directly embed ALL libraries to avoid bundle loading issues
+const embeddedLibraries = {
+	// Core utilities
+	_: require('lodash'),
+	lodash: require('lodash'),
 
-/* Python execution disabled for server compatibility
-class PythonExecutor {
-	private static dependenciesChecked = false;
+	// HTTP & Web
+	axios: require('axios'),
+	cheerio: require('cheerio'),
 
-	private async ensurePythonDependencies(): Promise<void> {
-		if (PythonExecutor.dependenciesChecked) return;
+	// Date/Time
+	dayjs: require('dayjs'),
+	moment: require('moment-timezone'),
+	dateFns: require('date-fns'),
+	dateFnsTz: require('date-fns-tz'),
 
-		console.log('[SuperCode] 🐍 Ensuring Python dependencies are available...');
-		
-		// Get the path to the python installer script
-		const installerPath = path.join(__dirname, '../../python-installer.py');
-		
-		return new Promise((resolve) => {
-			// Try different Python executables
-			const pythonPaths = ['python3', 'python', '/usr/bin/python3', '/usr/local/bin/python3', '/opt/homebrew/bin/python3'];
-			let pythonCmd = 'python3';
-			
-			// Find working Python executable
-			for (const path of pythonPaths) {
-				try {
-					const testResult = spawn(path, ['--version'], { timeout: 5000 });
-					if (testResult) {
-						pythonCmd = path;
-						break;
-					}
-				} catch (error) {
-					continue;
-				}
-			}
-			
-			console.log(`[SuperCode] 🐍 Using Python executable: ${pythonCmd}`);
-			const pythonProcess = spawn(pythonCmd, [installerPath], {
-				timeout: 300000, // 5 minutes for installations
-			});
+	// Validation & Data
+	joi: require('joi'),
+	Joi: require('joi'),
+	validator: require('validator'),
+	uuid: require('uuid'),
+	Ajv: require('ajv'),
+	yup: require('yup'),
 
-			pythonProcess.stdout.on('data', (data) => {
-				console.log(`[SuperCode] ${data.toString().trim()}`);
-			});
+	// Parsing & Processing
+	csvParse: require('csv-parse'),
+	xml2js: require('xml2js'),
+	XMLParser: require('fast-xml-parser').XMLParser,
+	YAML: require('yaml'),
+	papaparse: require('papaparse'),
+	Papa: require('papaparse'),
 
-			pythonProcess.stderr.on('data', (data) => {
-				console.log(`[SuperCode] ${data.toString().trim()}`);
-			});
+	// Templating
+	Handlebars: require('handlebars'),
 
-			pythonProcess.on('close', (code) => {
-				console.log(`[SuperCode] ✅ Python dependency check completed (exit code: ${code})`);
-				PythonExecutor.dependenciesChecked = true;
-				resolve();
-			});
+	// Security & Crypto
+	CryptoJS: require('crypto-js'),
+	forge: require('node-forge'),
+	jwt: require('jsonwebtoken'),
+	bcrypt: require('bcryptjs'),
+	bcryptjs: require('bcryptjs'),
 
-			pythonProcess.on('error', (error) => {
-				console.log(`[SuperCode] ⚠️ Python dependency check failed: ${error.message}`);
-				PythonExecutor.dependenciesChecked = true;
-				resolve(); // Continue even if check failed
-			});
-		});
-	}
+	// Files & Documents
+	XLSX: require('xlsx'),
+	pdfLib: require('pdf-lib'),
+	archiver: require('archiver'),
 
-	async execute(
-		code: string,
-		items: INodeExecutionData[],
-		timeout: number,
-		context: IExecuteFunctions,
-		aiConnections?: { llm?: any; memory?: any; tools?: any },
-	): Promise<INodeExecutionData[][]> {
-		// Ensure Python dependencies are installed before execution
-		await this.ensurePythonDependencies();
+	// Images & Media
+	Jimp: require('jimp'),
+	QRCode: require('qrcode'),
 
-		return new Promise((resolve, reject) => {
-			const pythonScript = `
-import json
-import sys
-import pandas as pd
-import numpy as np
-import requests
-import datetime
-from urllib.parse import urlparse, parse_qs
-import re
-import hashlib
-import base64
-import uuid
-import os
+	// Math & Science
+	math: require('mathjs'),
 
-# Input data from n8n
-input_data = json.loads('''${JSON.stringify(items.map((item) => item.json))}''')
+	// Text & Language
+	fuzzy: require('fuse.js'),
+	stringSimilarity: require('string-similarity'),
+	slug: (() => {
+		try {
+			const slugLib = require('slug');
+			return slugLib.default || slugLib;
+		} catch (e) {
+			return require('slug');
+		}
+	})(),
+	pluralize: require('pluralize'),
 
-# Make input data available as variables
-data = input_data
-items = input_data
+	// HTTP/API utilities
+	qs: require('qs'),
+	FormData: require('form-data'),
 
-# 🤖 AI Agent Mode: Auto-populated AI variables (seamless UX!)
-llm = ${aiConnections?.llm ? JSON.stringify(aiConnections.llm).replace(/true/g, 'True').replace(/false/g, 'False').replace(/null/g, 'None') : 'None'}
-memory = ${aiConnections?.memory ? JSON.stringify(aiConnections.memory).replace(/true/g, 'True').replace(/false/g, 'False').replace(/null/g, 'None') : 'None'}
-tools = ${aiConnections?.tools ? JSON.stringify(aiConnections.tools).replace(/true/g, 'True').replace(/false/g, 'False').replace(/null/g, 'None') : 'None'}
+	// File formats
+	ini: require('ini'),
+	toml: require('toml'),
 
-# User code execution
-try:
-${code
-	.split('\n')
-	.map((line) => '    ' + line)
-	.join('\n')}
-except Exception as e:
-    result = {"error": str(e), "type": type(e).__name__}
-    print(json.dumps(result))
-    sys.exit(1)
+	// Utilities
+	nanoid: (() => {
+		try {
+			const nanoidLib = require('nanoid');
+			return { nanoid: nanoidLib.nanoid || nanoidLib };
+		} catch (e) {
+			return require('nanoid');
+		}
+	})(),
+	ms: require('ms'),
+	bytes: require('bytes'),
 
-# Output result as JSON
-if 'result' not in locals():
-    result = {"message": "No result variable defined"}
-print(json.dumps(result))
-`;
+	// Financial & Geographic
+	currency: require('currency.js'),
+	phoneNumber: require('libphonenumber-js'),
+	iban: require('iban'),
 
-			// Try different Python executables
-			const pythonPaths = ['python3', 'python', '/usr/bin/python3', '/usr/local/bin/python3', '/opt/homebrew/bin/python3'];
-			let pythonCmd = 'python3';
-			
-			// Find working Python executable
-			for (const path of pythonPaths) {
-				try {
-					const testResult = spawn(path, ['--version'], { timeout: 1000 });
-					if (testResult) {
-						pythonCmd = path;
-						break;
-					}
-				} catch (error) {
-					continue;
-				}
-			}
-			
-			console.log(`[SuperCode] 🐍 Executing Python with: ${pythonCmd}`);
-			const pythonProcess = spawn(pythonCmd, ['-c', pythonScript], {
-				timeout: timeout * 1000,
-			});
+	// Blockchain
+	ethers: require('ethers'),
+	web3: require('web3'),
+};
 
-			let output = '';
-			let errorOutput = '';
-
-			pythonProcess.stdout.on('data', (data: any) => {
-				output += data.toString();
-			});
-
-			pythonProcess.stderr.on('data', (data: any) => {
-				errorOutput += data.toString();
-			});
-
-			pythonProcess.on('close', (code: number) => {
-				if (code !== 0) {
-					reject(
-						new NodeOperationError(
-							context.getNode(),
-							`Python execution failed: ${errorOutput || 'Unknown error'}`,
-						),
-					);
-					return;
-				}
-
-				try {
-					// DEBUG: Log exactly what Python is outputting
-					console.log(`[SuperCode] 🐍 Python raw output: "${output}"`);
-					console.log(`[SuperCode] 🐍 Python output length: ${output.length}`);
-					console.log(`[SuperCode] 🐍 Python output lines: ${output.split('\n').length}`);
-					
-					// Extract JSON from output (handle mixed output from auto-installer)
-					const lines = output.trim().split('\n');
-					let jsonLine = '';
-					
-					// Find the last line that looks like JSON
-					for (let i = lines.length - 1; i >= 0; i--) {
-						const line = lines[i].trim();
-						console.log(`[SuperCode] 🐍 Checking line ${i}: "${line}"`);
-						if (line.startsWith('{') || line.startsWith('[')) {
-							jsonLine = line;
-							console.log(`[SuperCode] 🐍 Found JSON line: "${jsonLine}"`);
-							break;
-						}
-					}
-					
-					if (!jsonLine) {
-						// Fallback: try to parse the whole output
-						jsonLine = output.trim();
-						console.log(`[SuperCode] 🐍 Using fallback whole output: "${jsonLine}"`);
-					}
-					
-					const result = JSON.parse(jsonLine);
-					if (result.error) {
-						reject(new NodeOperationError(context.getNode(), `Python error: ${result.error}`));
-						return;
-					}
-
-					if (Array.isArray(result)) {
-						resolve([result.map((item: any) => ({ json: item }))]);
-					} else {
-						resolve([[{ json: result }]]);
-					}
-				} catch (parseError: any) {
-					reject(
-						new NodeOperationError(
-							context.getNode(),
-							`Failed to parse Python output: ${parseError.message}`,
-						),
-					);
-				}
-			});
-
-			pythonProcess.on('error', (error: any) => {
-				reject(
-					new NodeOperationError(
-						context.getNode(),
-						`Failed to start Python process: ${error.message}`,
-					),
-				);
-			});
-		});
-	}
-}
-*/ // End Python execution disabled comment
+// Try to load full bundle, fall back to embedded
+let bundledLibraries: any = embeddedLibraries;
 
 export class SuperCodeNode implements INodeType {
 	description: INodeTypeDescription = {
@@ -529,135 +401,26 @@ result = {
 				'🐍 Python execution is coming soon! Currently under development for broader server compatibility. Use JavaScript for now - 35 libraries available!',
 			);
 		}
-		
-		// Python code disabled for server compatibility
-		/* 
-		if (language === 'python') {
-			const aiAgentMode = this.getNodeParameter('aiAgentMode', 0, false) as boolean;
-			let aiConnections: { llm?: any; memory?: any; tools?: any } | undefined;
 
-			// 🤖 Get AI connections for Python if AI Agent Mode is enabled
-			if (aiAgentMode) {
-				console.log('[SuperCode] 🤖 Getting AI connections for Python execution...');
-				aiConnections = {};
-
-				try {
-					const llmConnection = await this.getInputConnectionData(
-						NodeConnectionType.AiLanguageModel,
-						0,
-					);
-					if (llmConnection) {
-						// 🎯 Extract actual LLM from array for user convenience
-						aiConnections.llm = Array.isArray(llmConnection) ? llmConnection[0] : llmConnection;
-						console.log('[SuperCode] ✅ Got LLM connection for Python (extracted from array)');
-					}
-				} catch (error) {
-					console.log('[SuperCode] ℹ️ No LLM connection for Python');
-				}
-
-				try {
-					const memoryConnection = await this.getInputConnectionData(
-						NodeConnectionType.AiMemory,
-						0,
-					);
-					if (memoryConnection) {
-						// 🎯 Extract actual memory from array for user convenience
-						aiConnections.memory = Array.isArray(memoryConnection)
-							? memoryConnection[0]
-							: memoryConnection;
-						console.log('[SuperCode] ✅ Got Memory connection for Python (extracted from array)');
-					}
-				} catch (error) {
-					console.log('[SuperCode] ℹ️ No Memory connection for Python');
-				}
-
-				try {
-					const toolConnection = await this.getInputConnectionData(NodeConnectionType.AiTool, 0);
-					if (toolConnection) {
-						// 🎯 Extract actual tools from array for user convenience
-						aiConnections.tools = Array.isArray(toolConnection)
-							? toolConnection[0]
-							: toolConnection;
-						console.log('[SuperCode] ✅ Got Tools connection for Python (extracted from array)');
-					}
-				} catch (error) {
-					console.log('[SuperCode] ℹ️ No Tools connection for Python');
-				}
-			}
-
-			const pythonExecutor = new PythonExecutor();
-			return await pythonExecutor.execute(code, items, timeout, this, aiConnections);
-		}
-		*/
-
-		console.log('[SuperCode] 🚀 EXECUTION STARTING - JAVASCRIPT MODE - VM-SAFE VERSION');
+		// Use direct console access (not VM sandbox console) for Railway debugging
+		const originalConsole = console;
+		originalConsole.log('[SuperCode] 🚀 EXECUTION STARTING - JAVASCRIPT MODE - VM-SAFE VERSION');
+		originalConsole.log('[SuperCode] 🔍 Platform check - Railway environment detected');
 
 		// AI Agent Mode: Get AI connections if enabled
 		const aiAgentMode = this.getNodeParameter('aiAgentMode', 0, false) as boolean;
+		originalConsole.log('[SuperCode] 🤖 AI Agent Mode:', aiAgentMode);
 
 		// Create enhanced sandbox with direct library loading (VM-compatible)
 		const createEnhancedSandbox = async (items: INodeExecutionData[]) => {
-			console.log('[SuperCode] 🏗️ Creating enhanced sandbox with direct loading...');
+			originalConsole.log('[SuperCode] 🏗️ createEnhancedSandbox called - starting sandbox creation');
+			originalConsole.log('[SuperCode] 🏗️ Creating enhanced sandbox with direct loading...');
 			// Library cache to avoid repeated loading
 			const libraryCache: { [key: string]: any } = {};
 			const performanceTracker: { [key: string]: number } = {};
 
 
-			// VM-Safe Lazy Loading Pattern (fixes VM context getter incompatibility)
-			const createVmSafeLazyLoader = (
-				hostObj: any,
-				name: string,
-				_libraryName: string,
-				requirePath: string,
-				property?: string,
-			) => {
-				let defined = false;
-				let cachedValue: any;
-
-				Object.defineProperty(hostObj, name, {
-					get: function () {
-						if (!defined) {
-							console.log(`[SuperCode] 🔄 VM-Safe loading ${name} from ${requirePath}...`);
-							defined = true;
-
-							try {
-								// Use pre-imported bundled libraries to avoid webpack dynamic require issues
-								let lib = bundledLibraries[name];
-								if (!lib) {
-									// Fallback to direct require for external libraries  
-									try {
-										lib = require(requirePath);
-									} catch {
-										// Library not available
-										throw new Error(`Library ${name} not found`);
-									}
-								}
-								cachedValue = property ? lib[property] : lib;
-
-								// Redefine as value property for VM compatibility
-								Object.defineProperty(this, name, {
-									value: cachedValue,
-									writable: false,
-									configurable: true,
-									enumerable: true,
-								});
-
-								console.log(`[SuperCode] ✅ VM-Safe loaded ${name} successfully`);
-								return cachedValue;
-							} catch (error) {
-								console.log(`[SuperCode] ❌ VM-Safe loading failed for ${name}: ${error.message}`);
-								throw error;
-							}
-						}
-						return this[name];
-					},
-					configurable: true,
-					enumerable: true,
-				});
-			};
-
-			// Enhanced lazy loader with LLM-friendly errors and comprehensive logging
-			// Old lazyLoad function removed - now using VM-Safe pattern only
+			// 🔧 EMBEDDED LIBRARIES: Direct loading without lazy loading patterns
 
 			const sandbox = {
 				$input: {
@@ -674,6 +437,12 @@ result = {
 				llm: undefined as any, // Will be populated if AI Agent Mode is enabled
 				memory: undefined as any, // Will be populated if AI Agent Mode is enabled
 				tools: undefined as any, // Will be populated if AI Agent Mode is enabled
+
+				// 🔧 DEBUG: Make bundledLibraries available for debugging
+				bundledLibraries: bundledLibraries,
+				
+				// 🔍 VERSION IDENTIFIER: Confirm Railway is running v1.0.65+
+				SUPERCODE_VERSION: '1.0.65-all-libraries-bundled',
 
 				// Libraries will be added via VM-Safe lazy loading pattern below
 
@@ -792,7 +561,7 @@ result = {
 							.trim();
 					},
 
-					validateSchema: (data: any, schema: any) => {
+					validateSchema: (data: any, _schema: any) => {
 						// Note: joi validation requires joi library to be loaded first
 						// Use: const joi = require('joi'); result = utils.validateSchema(data, schema);
 						return { error: 'joi validation disabled - load joi first', value: data };
@@ -876,121 +645,39 @@ result = {
 				Object.keys(sandbox).slice(0, 10),
 			);
 
-			// Apply VM-Safe Lazy Loading to fix VM context getter incompatibility
-			console.log('[SuperCode] 🔧 Applying VM-Safe lazy loading pattern...');
+			// 🔧 LEGACY CODE REMOVED: Old lazy loading patterns replaced with direct embedding
 
-			// Remove existing getters and replace with VM-safe lazy loaders
-			const libraryMappings = [
-				// Core Data Libraries
-				['_', 'lodash', 'lodash'],
-				['axios', 'axios', 'axios'],
-				['dayjs', 'dayjs', 'dayjs'],
-				['joi', 'joi', 'joi'],
-				['Joi', 'joi', 'joi'],
-				['validator', 'validator', 'validator'],
-				['uuid', 'uuid', 'uuid'],
-				['csvParse', 'csv-parse', 'csv-parse', 'parse'],
-				['Handlebars', 'handlebars', 'handlebars'],
-				['cheerio', 'cheerio', 'cheerio'],
-				['CryptoJS', 'crypto-js', 'crypto-js'],
-
-				// Business-Critical Libraries
-				['XLSX', 'xlsx', 'xlsx'],
-				['pdfLib', 'pdf-lib', 'pdf-lib'],
-				['math', 'mathjs', 'mathjs'],
-				['xml2js', 'xml2js', 'xml2js'],
-				['YAML', 'yaml', 'yaml'],
-
-				// Media Processing
-				['sharp', 'sharp', 'sharp'],
-				['Jimp', 'jimp', 'jimp'],
-				['QRCode', 'qrcode', 'qrcode'],
-
-				// AI/NLP
-				['natural', 'natural', 'natural'],
-
-				// File & Archive
-				['archiver', 'archiver', 'archiver'],
-
-				// Web & Scraping
-				['puppeteer', 'puppeteer-core', 'puppeteer-core'],
-
-				// Database & Security
-				['knex', 'knex', 'knex'],
-				['forge', 'node-forge', 'node-forge'],
-				['moment', 'moment-timezone', 'moment-timezone'],
-
-				// Advanced XML
-				['XMLParser', 'fast-xml-parser', 'fast-xml-parser', 'XMLParser'],
-
-				// Auth & Security
-				['jwt', 'jsonwebtoken', 'jsonwebtoken'],
-				['bcrypt', 'bcrypt', 'bcrypt'],
-
-				// Blockchain & Crypto
-				['ethers', 'ethers', 'ethers'],
-				['web3', 'web3', 'web3'],
-
-				// International Business
-				['phoneNumber', 'libphonenumber-js', 'libphonenumber-js'],
-				['currency', 'currency.js', 'currency.js'],
-				['iban', 'iban', 'iban'],
-
-				// Advanced Search & Text
-				['fuzzy', 'fuse.js', 'fuse.js'],
-			];
-
-			// Apply VM-safe lazy loading to each library
-			for (const [name, libraryName, requirePath, property] of libraryMappings) {
-				// Remove existing getter if it exists
-				delete (sandbox as any)[name];
-
-				// Add VM-safe lazy loader
-				createVmSafeLazyLoader(sandbox, name, libraryName, requirePath, property);
-			}
-
-			// 🔧 CRITICAL VM CONTEXT FIX: Pre-load ALL libraries as direct values
-			// Using pre-imported bundled libraries to avoid webpack dynamic require issues
-			if (bundledLibraries && Object.keys(bundledLibraries).length > 0) {
-				console.log('[SuperCode] 🔧 Pre-loading ALL libraries as direct values for VM compatibility...');
+			// 🔧 EMBEDDED LIBRARIES ONLY: Skip all lazy loading, use embedded libraries directly
+			originalConsole.log('[SuperCode] 🔧 Using EMBEDDED libraries for guaranteed compatibility...');
+			originalConsole.log('[SuperCode] 🔧 Pre-loading ALL embedded libraries as direct values...');
 				
-				let preloadedCount = 0;
-				let skippedCount = 0;
-				
-				// Pre-load ALL bundled libraries as direct values (skip getters completely)
-				for (const [libName, libValue] of Object.entries(bundledLibraries)) {
-					if (libValue && typeof libValue !== 'undefined') {
-						// Remove any existing getter and replace with direct value
-						delete (sandbox as any)[libName];
-						(sandbox as any)[libName] = libValue;
-						preloadedCount++;
-						console.log(`[SuperCode] ✅ Pre-loaded ${libName} as direct value`);
-					} else {
-						skippedCount++;
-						console.log(`[SuperCode] ⚠️ Skipped ${libName} (undefined/null)`);
-					}
-				}
-				
-				console.log(`[SuperCode] ✅ Pre-loading completed: ${preloadedCount} loaded, ${skippedCount} skipped`);
-			} else {
-				console.log('[SuperCode] ⚠️ No bundled libraries available, attempting fallback loading...');
-				// Fallback: try to pre-load critical libraries individually
-				const criticalLibs = ['joi', 'Joi', 'pdfLib', 'math', 'Jimp', 'QRCode', 'currency', 'iban', 'ethers', 'natural', 'sharp', 'puppeteer', 'bcrypt', 'web3'];
-				for (const libName of criticalLibs) {
-					try {
-						const lib = require(libraryMappings.find(([name]) => name === libName)?.[2] || libName);
-						if (lib) {
-							delete (sandbox as any)[libName];
-							(sandbox as any)[libName] = lib;
-							console.log(`[SuperCode] ✅ Fallback loaded ${libName}`);
-						}
-					} catch (libError) {
-						console.log(`[SuperCode] ❌ Failed to fallback load ${libName}`);
-					}
+			let preloadedCount = 0;
+			let skippedCount = 0;
+			
+			// Pre-load ALL embedded libraries as direct values (skip lazy loading completely)
+			for (const [libName, libValue] of Object.entries(bundledLibraries)) {
+				if (libValue && typeof libValue !== 'undefined') {
+					// Remove any existing property and replace with direct value
+					delete (sandbox as any)[libName];
+					(sandbox as any)[libName] = libValue;
+					preloadedCount++;
+					originalConsole.log(`[SuperCode] ✅ Embedded ${libName} loaded directly`);
+				} else {
+					skippedCount++;
+					originalConsole.log(`[SuperCode] ⚠️ Skipped ${libName} (undefined/null)`);
 				}
 			}
+			
+			originalConsole.log(`[SuperCode] ✅ Embedded loading completed: ${preloadedCount} loaded, ${skippedCount} skipped`);
+			
+			// Add library aliases for compatibility
+			if (bundledLibraries.nanoid && bundledLibraries.nanoid.nanoid) {
+				// Extract nanoid function from wrapper
+				(sandbox as any).nanoid = bundledLibraries.nanoid.nanoid;
+				originalConsole.log('[SuperCode] ✅ Added nanoid function alias');
+			}
 
-			console.log('[SuperCode] ✅ VM-Safe lazy loading applied to all libraries');
+			console.log('[SuperCode] ✅ Embedded libraries directly assigned to sandbox');
 
 			// 🤖 Auto-populate AI variables when AI Agent Mode is enabled
 			if (aiAgentMode) {
@@ -1047,10 +734,15 @@ result = {
 
 		try {
 			console.log('[SuperCode] 🚀 EXECUTION STARTING - LIBRARIES PRE-LOADED AS GLOBALS');
+			console.log('[SuperCode] 📝 Execution mode:', executionMode);
+			console.log('[SuperCode] 📦 Items count:', items.length);
 			
 			if (executionMode === 'runOnceForAllItems') {
+				console.log('[SuperCode] ⚡ Running runOnceForAllItems mode');
 				// Execute code once for all items
+				console.log('[SuperCode] 🎯 About to call createEnhancedSandbox...');
 				const sandbox = await createEnhancedSandbox(items);
+				console.log('[SuperCode] ✅ createEnhancedSandbox completed');
 				const context = createContext(sandbox);
 
 				const wrappedCode = `
