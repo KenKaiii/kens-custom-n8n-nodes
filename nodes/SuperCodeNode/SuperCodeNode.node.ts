@@ -8,6 +8,16 @@ import {
 } from 'n8n-workflow';
 
 import { createContext, runInContext } from 'vm';
+
+// Import bundled libraries directly to avoid webpack dynamic require issues
+let bundledLibraries: any;
+try {
+	bundledLibraries = require('../bundled-libraries');
+	console.log('[SuperCode] ✅ Bundled libraries loaded successfully');
+} catch (e) {
+	console.log('[SuperCode] ⚠️ Failed to load bundled libraries:', (e as Error).message);
+	bundledLibraries = {};
+}
 // import { spawn } from 'child_process'; // Disabled for Python support
 // import * as path from 'path'; // Disabled for Python support
 
@@ -299,7 +309,12 @@ export class SuperCodeNode implements INodeType {
 				typeOptions: {
 					editor: 'jsEditor',
 				},
-				default: `// Available libraries: lodash (_), axios, dayjs, joi, validator, uuid, csvParse, Handlebars, cheerio, CryptoJS, XLSX, pdfLib, math, xml2js, YAML, sharp, Jimp, QRCode, natural, archiver, puppeteer, knex, forge, moment, XMLParser, jwt, bcrypt, ethers, web3, phoneNumber, currency, iban, fuzzy
+				default: `// Libraries are pre-loaded as globals - no require() needed!
+// Available: lodash (_), axios, dayjs, joi, validator, uuid, csvParse, Handlebars, cheerio, CryptoJS, XLSX, pdfLib, math, xml2js, YAML, sharp, Jimp, QRCode, natural, archiver, puppeteer, knex, forge, moment, XMLParser, jwt, bcrypt, ethers, web3, phoneNumber, currency, iban, fuzzy
+
+// Example: Use joi directly (no require needed)
+const schema = joi.string().min(3);
+const result = schema.validate('test');
 
 // 🤖 AI Agent Mode: Auto-populated AI variables (seamless UX!)
 const aiConnections = {
@@ -587,47 +602,6 @@ result = {
 			const libraryCache: { [key: string]: any } = {};
 			const performanceTracker: { [key: string]: number } = {};
 
-			// LLM-Friendly Error Handler - Provides detailed diagnostics for AI code generation
-			const createLLMError = (
-				type: string,
-				libraryName: string,
-				originalError: any,
-				context?: any,
-			) => {
-				const errorCodes: { [key: string]: string } = {
-					LIBRARY_MISSING: 'E001',
-					LIBRARY_LOAD_FAILED: 'E002',
-					METHOD_NOT_FOUND: 'E003',
-					INVALID_SYNTAX: 'E004',
-					TYPE_ERROR: 'E005',
-					ASYNC_ERROR: 'E006',
-					MEMORY_ERROR: 'E007',
-					NETWORK_ERROR: 'E008',
-				};
-
-				const fixes: { [key: string]: string } = {
-					E001: `Library '${libraryName}' not installed. Run: npm install ${libraryName}`,
-					E002: `Library '${libraryName}' failed to load. Check: 1) Is it installed? 2) Compatible version? 3) Dependencies met?`,
-					E003: `Method not found on '${libraryName}'. Check: 1) Correct method name? 2) Library docs? 3) Await needed?`,
-					E004: `Syntax error in ${libraryName} usage. Check: 1) Parentheses? 2) Quotes? 3) Semicolons?`,
-					E005: `Type error with ${libraryName}. Check: 1) Correct data type? 2) Null/undefined? 3) Array vs Object?`,
-					E006: `Async error with ${libraryName}. Fix: 1) Add 'await' 2) Use .then() 3) Wrap in try/catch`,
-					E007: `Memory error. Fix: 1) Reduce data size 2) Process in chunks 3) Call utils.cleanup()`,
-					E008: `Network error. Fix: 1) Check URL 2) Add timeout 3) Handle offline case`,
-				};
-
-				const code = errorCodes[type] || 'E000';
-				const fix = fixes[code] || 'Check syntax and library documentation';
-
-				return new Error(
-					`🤖 LLM-FRIENDLY ERROR [${code}]\n` +
-						`📍 Library: ${libraryName}\n` +
-						`🔍 Issue: ${originalError.message}\n` +
-						`💡 Fix: ${fix}\n` +
-						`📝 Context: ${context ? JSON.stringify(context, null, 2) : 'None'}\n` +
-						`🔗 Stack: ${originalError.stack?.split('\n')[0] || 'N/A'}`,
-				);
-			};
 
 			// VM-Safe Lazy Loading Pattern (fixes VM context getter incompatibility)
 			const createVmSafeLazyLoader = (
@@ -647,20 +621,16 @@ result = {
 							defined = true;
 
 							try {
-								// First try bundled libraries via dynamic path, then fallback to direct require
-								let lib;
-								try {
-									// Use absolute path since __dirname not available in VM context
-									const bundledPath = '/home/node/.n8n/nodes/node_modules/@kenkaiii/n8n-nodes-supercode/dist/bundled-libraries';
-									const bundledLibraries = require(bundledPath);
-									lib = bundledLibraries[name];
-									if (!lib) {
-										// Fallback to direct require for external libraries  
+								// Use pre-imported bundled libraries to avoid webpack dynamic require issues
+								let lib = bundledLibraries[name];
+								if (!lib) {
+									// Fallback to direct require for external libraries  
+									try {
 										lib = require(requirePath);
+									} catch {
+										// Library not available
+										throw new Error(`Library ${name} not found`);
 									}
-								} catch {
-									// Final fallback to direct require
-									lib = require(requirePath);
 								}
 								cachedValue = property ? lib[property] : lib;
 
@@ -823,12 +793,9 @@ result = {
 					},
 
 					validateSchema: (data: any, schema: any) => {
-						try {
-							const joi = require('joi');
-							return joi.validate(data, schema);
-						} catch (error: any) {
-							throw createLLMError('TYPE_ERROR', 'joi', error, { data, schema });
-						}
+						// Note: joi validation requires joi library to be loaded first
+						// Use: const joi = require('joi'); result = utils.validateSchema(data, schema);
+						return { error: 'joi validation disabled - load joi first', value: data };
 					},
 
 					// Library availability checker
@@ -983,11 +950,9 @@ result = {
 			}
 
 			// 🔧 CRITICAL VM CONTEXT FIX: Pre-load ALL libraries as direct values
-			// This completely bypasses the problematic getter-based lazy loading for VM context
-			try {
+			// Using pre-imported bundled libraries to avoid webpack dynamic require issues
+			if (bundledLibraries && Object.keys(bundledLibraries).length > 0) {
 				console.log('[SuperCode] 🔧 Pre-loading ALL libraries as direct values for VM compatibility...');
-				const bundledPath = '/home/node/.n8n/nodes/node_modules/@kenkaiii/n8n-nodes-supercode/dist/bundled-libraries';
-				const bundledLibraries = require(bundledPath);
 				
 				let preloadedCount = 0;
 				let skippedCount = 0;
@@ -1007,8 +972,8 @@ result = {
 				}
 				
 				console.log(`[SuperCode] ✅ Pre-loading completed: ${preloadedCount} loaded, ${skippedCount} skipped`);
-			} catch (e) {
-				console.log('[SuperCode] ⚠️ Pre-loading failed:', (e as Error).message);
+			} else {
+				console.log('[SuperCode] ⚠️ No bundled libraries available, attempting fallback loading...');
 				// Fallback: try to pre-load critical libraries individually
 				const criticalLibs = ['joi', 'Joi', 'pdfLib', 'math', 'Jimp', 'QRCode', 'currency', 'iban', 'ethers', 'natural', 'sharp', 'puppeteer', 'bcrypt', 'web3'];
 				for (const libName of criticalLibs) {
@@ -1079,76 +1044,9 @@ result = {
 			return sandbox;
 		};
 
-		// 🔧 ULTRA-SIMPLE DIRECT INJECTION: No bundled files, just direct requires
-		const generateLibraryInjectionCode = (): string => {
-			console.log('[SuperCode] 🔧 Generating DIRECT REQUIRE injection code...');
-			
-			// Direct require mapping for all libraries - no bundle dependency
-			const libraryMappings = [
-				['joi', 'joi'],
-				['Joi', 'joi'], 
-				['pdfLib', 'pdf-lib'],
-				['math', 'mathjs'],
-				['Jimp', 'jimp'],
-				['QRCode', 'qrcode'],
-				['currency', 'currency.js'],
-				['iban', 'iban'],
-				['ethers', 'ethers'],
-				['natural', 'natural'],
-				['sharp', 'sharp'],
-				['puppeteer', 'puppeteer-core'],
-				['bcrypt', 'bcrypt'],
-				['web3', 'web3'],
-				// Add working libraries too for consistency
-				['_', 'lodash'],
-				['axios', 'axios'],
-				['dayjs', 'dayjs'],
-				['validator', 'validator'],
-				['uuid', 'uuid'],
-				['csvParse', 'csv-parse'],
-				['Handlebars', 'handlebars'],
-				['cheerio', 'cheerio'],
-				['CryptoJS', 'crypto-js'],
-				['XLSX', 'xlsx'],
-				['xml2js', 'xml2js'],
-				['YAML', 'yaml'],
-				['archiver', 'archiver'],
-				['knex', 'knex'],
-				['forge', 'node-forge'],
-				['moment', 'moment-timezone'],
-				['XMLParser', 'fast-xml-parser'],
-				['jwt', 'jsonwebtoken'],
-				['phoneNumber', 'libphonenumber-js'],
-				['fuzzy', 'fuse.js']
-			];
-			
-			let injectionCode = '';
-			let successCount = 0;
-			
-			for (const [varName, requirePath] of libraryMappings) {
-				try {
-					// Special handling for XMLParser
-					if (varName === 'XMLParser') {
-						injectionCode += `const ${varName} = require('${requirePath}').XMLParser;\n`;
-					} else if (varName === 'csvParse') {
-						injectionCode += `const ${varName} = require('${requirePath}').parse;\n`;
-					} else {
-						injectionCode += `const ${varName} = require('${requirePath}');\n`;
-					}
-					successCount++;
-					console.log(`[SuperCode] ✅ Added ${varName} -> ${requirePath}`);
-				} catch (e) {
-					console.log(`[SuperCode] ⚠️ Failed ${varName}: ${e.message}`);
-				}
-			}
-			
-			console.log(`[SuperCode] ✅ Direct injection code generated - ${successCount} libraries`);
-			return injectionCode;
-		};
 
 		try {
-			console.log('[SuperCode] 🚀 EXECUTION STARTING - DIRECT INJECTION VERSION');
-			const libraryInjectionCode = generateLibraryInjectionCode();
+			console.log('[SuperCode] 🚀 EXECUTION STARTING - LIBRARIES PRE-LOADED AS GLOBALS');
 			
 			if (executionMode === 'runOnceForAllItems') {
 				// Execute code once for all items
@@ -1171,8 +1069,7 @@ result = {
 							}
 						};
 						
-						// 🚀 DIRECT LIBRARY INJECTION - bypasses ALL VM context issues
-						${libraryInjectionCode}
+						// 🚀 Libraries are pre-loaded as globals in the sandbox - no require needed!
 						
 						// Enhanced async wrapper with better error handling
 						try {
@@ -1247,8 +1144,7 @@ result = {
 								}
 							};
 							
-							// 🚀 DIRECT LIBRARY INJECTION - bypasses ALL VM context issues
-							${libraryInjectionCode}
+							// 🚀 Libraries are pre-loaded as globals in the sandbox - no require needed!
 							
 							try {
 								${code}

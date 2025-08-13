@@ -1,23 +1,56 @@
 {
-  "name": "Test SuperCode Python",
+  "name": "Test SuperCode Libraries",
   "nodes": [
     {
+      "parameters": {},
+      "id": "e8e4bb05-df24-4d77-8e21-b063f8c5f018",
+      "name": "When clicking \"Test workflow\"",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        540,
+        340
+      ]
+    },
+    {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "python",
-        "pythonCode": "import pandas as pd\nimport numpy as np\nimport requests\n\nprint('🐍 Python dependencies test:')\nprint(f'pandas version: {pd.__version__}')\nprint(f'numpy version: {np.__version__}')\nprint(f'requests version: {requests.__version__}')\n\n# Test data processing\ndata = {'test': [1, 2, 3], 'values': [10, 20, 30]}\ndf = pd.DataFrame(data)\nprint(f'DataFrame created: {df.shape}')\n\nresult = {'success': True, 'packages_working': True, 'dataframe_rows': len(df)}\nprint(f'Result: {result}')"
+        "language": "javascript",
+        "code": "// Test that libraries are available as globals\nconsole.log('[TEST] Testing library access...');\n\n// Test joi\nconst joiSchema = joi.string().min(3);\nconst joiResult = joiSchema.validate('test');\nconsole.log('[TEST] joi validation result:', joiResult);\n\n// Test lodash\nconst lodashResult = _.map([1, 2, 3], n => n * 2);\nconsole.log('[TEST] lodash map result:', lodashResult);\n\n// Test dayjs\nconst now = dayjs().format('YYYY-MM-DD');\nconsole.log('[TEST] dayjs date:', now);\n\n// Test uuid\nconst id = uuid.v4();\nconsole.log('[TEST] uuid:', id);\n\n// Test validator\nconst isEmail = validator.isEmail('test@example.com');\nconsole.log('[TEST] validator.isEmail:', isEmail);\n\nreturn [\n  {\n    json: {\n      success: true,\n      message: 'All libraries loaded successfully\!',\n      tests: {\n        joi: joiResult.error ? 'Failed' : 'Passed',\n        lodash: lodashResult.length === 3 ? 'Passed' : 'Failed',\n        dayjs: now ? 'Passed' : 'Failed',\n        uuid: id ? 'Passed' : 'Failed',\n        validator: isEmail ? 'Passed' : 'Failed'\n      }\n    }\n  }\n];"
       },
-      "id": "test-supercode",
-      "name": "SuperCode Test",
+      "id": "01e44bb9-b674-42ce-9ec9-cb00b887e9e6",
+      "name": "Super Code",
       "type": "@kenkaiii/n8n-nodes-supercode.superCodeNode",
       "typeVersion": 1,
-      "position": [760, 300]
+      "position": [
+        760,
+        340
+      ]
     }
   ],
-  "connections": {},
+  "pinData": {},
+  "connections": {
+    "When clicking \"Test workflow\"": {
+      "main": [
+        [
+          {
+            "node": "Super Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "test-1.0"
+  "versionId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "local-test"
+  },
+  "id": "test-supercode-libraries",
+  "tags": []
 }
+EOF < /dev/null
