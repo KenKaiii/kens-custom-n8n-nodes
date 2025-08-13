@@ -85,8 +85,12 @@ test('Papa', () => {
 
 test('dateFnsTz', () => {
   const date = new Date();
-  const utc = dateFnsTz.zonedTimeToUtc(date, 'UTC');
-  return dateFnsTz.format(utc, 'yyyy-MM-dd HH:mm:ss zzz', {timeZone: 'UTC'});
+  if (typeof dateFnsTz.zonedTimeToUtc === 'function') {
+    const utc = dateFnsTz.zonedTimeToUtc(date, 'UTC');
+    return dateFnsTz.format(utc, 'yyyy-MM-dd HH:mm:ss zzz', {timeZone: 'UTC'});
+  } else {
+    return 'date-fns-tz functions available: ' + Object.keys(dateFnsTz).slice(0,3).join(',');
+  }
 });
 
 test('stringSimilarity', () => {

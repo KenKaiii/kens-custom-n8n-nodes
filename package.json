@@ -1,6 +1,6 @@
 {
 	"name": "@kenkaiii/n8n-nodes-supercode",
-	"version": "1.0.50",
+	"version": "1.0.51",
 	"description": "Advanced JavaScript/Python execution nodes for n8n with 41 JavaScript libraries and 38+ Python packages with AI agent support",
 	"keywords": [
 		"n8n-community-node-package",

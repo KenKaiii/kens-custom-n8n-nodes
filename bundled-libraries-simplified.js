@@ -78,7 +78,7 @@ module.exports = {
 
 	// String processing
 	stringSimilarity: require('string-similarity'),
-	slug: require('slug'),
+	slug: require('slug').default || require('slug'),
 	pluralize: require('pluralize'),
 
 	// HTTP/API utilities
