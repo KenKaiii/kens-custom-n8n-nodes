@@ -2,68 +2,68 @@
 // Core JavaScript libraries bundled for n8n community nodes (simplified)
 module.exports = {
 	// Core utilities
-	_: require(/* webpackIgnore: true */ 'lodash'),
-	lodash: require(/* webpackIgnore: true */ 'lodash'),
+	_: require('lodash'),
+	lodash: require('lodash'),
 
 	// HTTP & Web
-	axios: require(/* webpackIgnore: true */ 'axios'),
-	cheerio: require(/* webpackIgnore: true */ 'cheerio'),
+	axios: require('axios'),
+	cheerio: require('cheerio'),
 
 	// Date/Time
-	dayjs: require(/* webpackIgnore: true */ 'dayjs'),
-	moment: require(/* webpackIgnore: true */ 'moment-timezone'),
+	dayjs: require('dayjs'),
+	moment: require('moment-timezone'),
 
 	// Validation & Data
-	joi: require(/* webpackIgnore: true */ 'joi'),
-	Joi: require(/* webpackIgnore: true */ 'joi'),
-	validator: require(/* webpackIgnore: true */ 'validator'),
-	uuid: require(/* webpackIgnore: true */ 'uuid'),
+	joi: require('joi'),
+	Joi: require('joi'),
+	validator: require('validator'),
+	uuid: require('uuid'),
 
 	// Parsing & Processing
-	csvParse: require(/* webpackIgnore: true */ 'csv-parse'),
-	xml2js: require(/* webpackIgnore: true */ 'xml2js'),
-	XMLParser: require(/* webpackIgnore: true */ 'fast-xml-parser').XMLParser,
-	YAML: require(/* webpackIgnore: true */ 'yaml'),
+	csvParse: require('csv-parse'),
+	xml2js: require('xml2js'),
+	XMLParser: require('fast-xml-parser').XMLParser,
+	YAML: require('yaml'),
 
 	// Templating
-	Handlebars: require(/* webpackIgnore: true */ 'handlebars'),
+	Handlebars: require('handlebars'),
 
 	// Security & Crypto
-	CryptoJS: require(/* webpackIgnore: true */ 'crypto-js'),
-	forge: require(/* webpackIgnore: true */ 'node-forge'),
-	jwt: require(/* webpackIgnore: true */ 'jsonwebtoken'),
+	CryptoJS: require('crypto-js'),
+	forge: require('node-forge'),
+	jwt: require('jsonwebtoken'),
 
 	// Files & Documents
-	XLSX: require(/* webpackIgnore: true */ 'xlsx'),
-	pdfLib: require(/* webpackIgnore: true */ 'pdf-lib'),
-	archiver: require(/* webpackIgnore: true */ 'archiver'),
+	XLSX: require('xlsx'),
+	pdfLib: require('pdf-lib'),
+	archiver: require('archiver'),
 
 	// Images & Media
-	Jimp: require(/* webpackIgnore: true */ 'jimp'),
-	QRCode: require(/* webpackIgnore: true */ 'qrcode'),
+	Jimp: require('jimp'),
+	QRCode: require('qrcode'),
 
 	// Math & Science
-	math: require(/* webpackIgnore: true */ 'mathjs'),
+	math: require('mathjs'),
 
 	// Text & Language, AI/NLP
-	natural: require(/* webpackIgnore: true */ 'natural'),
-	fuzzy: require(/* webpackIgnore: true */ 'fuse.js'),
+	natural: require('natural'),
+	fuzzy: require('fuse.js'),
 
 	// Media Processing (additional)
-	sharp: require(/* webpackIgnore: true */ 'sharp'),
+	sharp: require('sharp'),
 
 	// Web Scraping & Automation
-	puppeteer: require(/* webpackIgnore: true */ 'puppeteer-core'),
+	puppeteer: require('puppeteer-core'),
 
 	// Security & Hashing
-	bcrypt: require(/* webpackIgnore: true */ 'bcrypt'),
+	bcrypt: require('bcrypt'),
 
 	// Financial & Geographic
-	currency: require(/* webpackIgnore: true */ 'currency.js'),
-	phoneNumber: require(/* webpackIgnore: true */ 'libphonenumber-js'),
-	iban: require(/* webpackIgnore: true */ 'iban'),
+	currency: require('currency.js'),
+	phoneNumber: require('libphonenumber-js'),
+	iban: require('iban'),
 
 	// Blockchain
-	ethers: require(/* webpackIgnore: true */ 'ethers'),
-	web3: require(/* webpackIgnore: true */ 'web3'),
+	ethers: require('ethers'),
+	web3: require('web3'),
 };

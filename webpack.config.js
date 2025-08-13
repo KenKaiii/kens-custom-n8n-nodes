@@ -16,21 +16,11 @@ module.exports = [
 			extensions: ['.js', '.ts'],
 		},
 		externals: {
-			// Native modules that should be external
-			canvas: 'commonjs canvas',
+			// Only keep native modules that truly need to be external
 			sharp: 'commonjs sharp',
 			bcrypt: 'commonjs bcrypt',
 			'puppeteer-core': 'commonjs puppeteer-core',
 			natural: 'commonjs natural',
-			knex: 'commonjs knex',
-			sqlite3: 'commonjs sqlite3',
-			mysql: 'commonjs mysql',
-			mysql2: 'commonjs mysql2',
-			pg: 'commonjs pg',
-			oracledb: 'commonjs oracledb',
-			mssql: 'commonjs mssql',
-			'better-sqlite3': 'commonjs better-sqlite3',
-			tedious: 'commonjs tedious',
 		},
 		optimization: {
 			minimize: false,
