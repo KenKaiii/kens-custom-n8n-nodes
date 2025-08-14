@@ -3,6 +3,6 @@
 
 module.exports = {
 	description: {
-		packageName: 'n8n-nodes-educational-template',
+		packageName: '@kenkaiii/n8n-nodes-supercode',
 	},
 };

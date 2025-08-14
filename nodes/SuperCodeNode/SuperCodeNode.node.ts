@@ -70,7 +70,7 @@ const embeddedLibraries = {
 		try {
 			const slugLib = require('slug');
 			return slugLib.default || slugLib;
-		} catch (e) {
+		} catch (_e) {
 			return require('slug');
 		}
 	})(),
@@ -89,7 +89,7 @@ const embeddedLibraries = {
 		try {
 			const nanoidLib = require('nanoid');
 			return { nanoid: nanoidLib.nanoid || nanoidLib };
-		} catch (e) {
+		} catch (_e) {
 			return require('nanoid');
 		}
 	})(),
@@ -483,8 +483,8 @@ result = {
 						for (let i = 0; i < options.attempts; i++) {
 							try {
 								return await fn();
-							} catch (error) {
-								lastError = error;
+							} catch (_error) {
+								lastError = _error;
 								if (i < options.attempts - 1) {
 									await new Promise((resolve) =>
 										setTimeout(resolve, options.delay * Math.pow(2, i)),
@@ -694,7 +694,7 @@ result = {
 						sandbox.llm = Array.isArray(llmConnection) ? llmConnection[0] : llmConnection;
 						console.log('[SuperCode] ✅ Auto-populated llm variable (extracted from array)');
 					}
-				} catch (error) {
+				} catch (_error) {
 					console.log('[SuperCode] ℹ️ No Language Model connection found');
 				}
 
@@ -711,7 +711,7 @@ result = {
 							: memoryConnection;
 						console.log('[SuperCode] ✅ Auto-populated memory variable (extracted from array)');
 					}
-				} catch (error) {
+				} catch (_error) {
 					console.log('[SuperCode] ℹ️ No Memory connection found');
 				}
 
@@ -723,7 +723,7 @@ result = {
 						sandbox.tools = Array.isArray(toolConnection) ? toolConnection[0] : toolConnection;
 						console.log('[SuperCode] ✅ Auto-populated tools variable (extracted from array)');
 					}
-				} catch (error) {
+				} catch (_error) {
 					console.log('[SuperCode] ℹ️ No Tool connections found');
 				}
 			}
@@ -766,7 +766,7 @@ result = {
 						// Enhanced async wrapper with better error handling
 						try {
 							${code}
-						} catch (error) {
+						} catch (_error) {
 							// Categorize common errors for LLM assistance
 							if (error.name === 'TypeError') {
 								if (error.message.includes('undefined')) {
@@ -840,7 +840,7 @@ result = {
 							
 							try {
 								${code}
-							} catch (error) {
+							} catch (_error) {
 								if (error.name === 'TypeError') {
 									if (error.message.includes('undefined')) {
 										throw new Error('🤖 LLM-FRIENDLY ERROR [E005]\\n📍 Issue: ' + error.message + '\\n💡 Fix: Check if variable exists before using: if (variable) { ... }');
@@ -883,25 +883,25 @@ result = {
 								json: typeof result === 'object' && result !== null ? result : { data: result },
 							});
 						}
-					} catch (error) {
+					} catch (_error) {
 						if (this.continueOnFail()) {
 							results.push({
-								json: { error: error.message, originalData: items[i].json },
-								error,
+								json: { error: _error.message, originalData: items[i].json },
+								error: _error,
 								pairedItem: { item: i },
 							});
 						} else {
-							throw error;
+							throw _error;
 						}
 					}
 				}
 
 				return [results];
 			}
-		} catch (error) {
+		} catch (_error) {
 			throw new NodeOperationError(
 				this.getNode(),
-				`Code execution failed: ${error.message}\\n\\nStack trace:\\n${error.stack}`,
+				`Code execution failed: ${_error.message}\\n\\nStack trace:\\n${_error.stack}`,
 			);
 		}
 	}
