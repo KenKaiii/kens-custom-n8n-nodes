@@ -27,7 +27,6 @@ export class SuperCodeTool implements INodeType {
 		properties: [],
 	};
 
-	// eslint-disable-next-line no-unused-vars
 	async supplyData(this: ISupplyDataFunctions, _itemIndex: number): Promise<SupplyData> {
 		// Return the SuperCode tool
 		const tool = {
@@ -54,7 +53,6 @@ export class SuperCodeTool implements INodeType {
 		return { response: [tool] };
 	}
 
-	// eslint-disable-next-line no-unused-vars
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		// This node doesn't execute in the traditional sense
 		// It only supplies data (tools) via supplyData

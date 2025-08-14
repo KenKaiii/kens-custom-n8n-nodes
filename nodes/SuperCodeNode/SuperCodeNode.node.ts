@@ -9,6 +9,19 @@ import {
 
 import { createContext, runInContext } from 'vm';
 
+// Type definitions for better TypeScript support
+interface LibraryCache {
+	[key: string]: unknown;
+}
+
+interface PerformanceTracker {
+	[key: string]: number;
+}
+
+interface EmbeddedLibraries {
+	[key: string]: unknown;
+}
+
 // Directly embed ALL libraries to avoid bundle loading issues
 const embeddedLibraries = {
 	// Core utilities
@@ -107,7 +120,7 @@ const embeddedLibraries = {
 };
 
 // Try to load full bundle, fall back to embedded
-let bundledLibraries: any = embeddedLibraries;
+let bundledLibraries: EmbeddedLibraries = embeddedLibraries;
 
 export class SuperCodeNode implements INodeType {
 	description: INodeTypeDescription = {
@@ -413,12 +426,13 @@ result = {
 
 		// Create enhanced sandbox with direct library loading (VM-compatible)
 		const createEnhancedSandbox = async (items: INodeExecutionData[]) => {
-			originalConsole.log('[SuperCode] 🏗️ createEnhancedSandbox called - starting sandbox creation');
+			originalConsole.log(
+				'[SuperCode] 🏗️ createEnhancedSandbox called - starting sandbox creation',
+			);
 			originalConsole.log('[SuperCode] 🏗️ Creating enhanced sandbox with direct loading...');
 			// Library cache to avoid repeated loading
-			const libraryCache: { [key: string]: any } = {};
-			const performanceTracker: { [key: string]: number } = {};
-
+			const libraryCache: LibraryCache = {};
+			const performanceTracker: PerformanceTracker = {};
 
 			// 🔧 EMBEDDED LIBRARIES: Direct loading without lazy loading patterns
 
@@ -434,27 +448,27 @@ result = {
 				getInputConnectionData: aiAgentMode ? this.getInputConnectionData.bind(this) : undefined,
 
 				// 🎯 Auto-populated AI variables for seamless UX
-				llm: undefined as any, // Will be populated if AI Agent Mode is enabled
-				memory: undefined as any, // Will be populated if AI Agent Mode is enabled
-				tools: undefined as any, // Will be populated if AI Agent Mode is enabled
+				llm: undefined as unknown, // Will be populated if AI Agent Mode is enabled
+				memory: undefined as unknown, // Will be populated if AI Agent Mode is enabled
+				tools: undefined as unknown, // Will be populated if AI Agent Mode is enabled
 
 				// 🔧 DEBUG: Make bundledLibraries available for debugging
 				bundledLibraries: bundledLibraries,
-				
+
 				// 🔍 VERSION IDENTIFIER: Confirm Railway is running v1.0.65+
 				SUPERCODE_VERSION: '1.0.65-all-libraries-bundled',
 
 				// Libraries will be added via VM-Safe lazy loading pattern below
 
 				console: {
-					log: (...args: any[]) => console.log('[SuperCode]', ...args),
-					error: (...args: any[]) => console.error('[SuperCode]', ...args),
-					warn: (...args: any[]) => console.warn('[SuperCode]', ...args),
+					log: (...args: unknown[]) => console.log('[SuperCode]', ...args),
+					error: (...args: unknown[]) => console.error('[SuperCode]', ...args),
+					warn: (...args: unknown[]) => console.warn('[SuperCode]', ...args),
 				},
 				utils: {
 					now: () => new Date().toISOString(),
-					formatDate: (date: any, format?: any) => {
-						const d = new Date(date);
+					formatDate: (date: unknown, format?: unknown) => {
+						const d = new Date(date as string | number | Date);
 						return format ? d.toLocaleDateString() : d.toISOString();
 					},
 					isEmail: (email: string) => /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email),
@@ -466,12 +480,15 @@ result = {
 							return false;
 						}
 					},
-					flatten: (obj: any, prefix = '') => {
-						const flattened: any = {};
+					flatten: (obj: Record<string, unknown>, prefix = '') => {
+						const flattened: Record<string, unknown> = {};
 						for (const key in obj) {
 							const newKey = prefix ? `${prefix}.${key}` : key;
 							if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
-								Object.assign(flattened, sandbox.utils.flatten(obj[key], newKey));
+								Object.assign(
+									flattened,
+									sandbox.utils.flatten(obj[key] as Record<string, unknown>, newKey),
+								);
 							} else {
 								flattened[newKey] = obj[key];
 							}
@@ -561,7 +578,7 @@ result = {
 							.trim();
 					},
 
-					validateSchema: (data: any, _schema: any) => {
+					validateSchema: (data: unknown, _schema: unknown) => {
 						// Note: joi validation requires joi library to be loaded first
 						// Use: const joi = require('joi'); result = utils.validateSchema(data, schema);
 						return { error: 'joi validation disabled - load joi first', value: data };
@@ -648,18 +665,20 @@ result = {
 			// 🔧 LEGACY CODE REMOVED: Old lazy loading patterns replaced with direct embedding
 
 			// 🔧 EMBEDDED LIBRARIES ONLY: Skip all lazy loading, use embedded libraries directly
-			originalConsole.log('[SuperCode] 🔧 Using EMBEDDED libraries for guaranteed compatibility...');
+			originalConsole.log(
+				'[SuperCode] 🔧 Using EMBEDDED libraries for guaranteed compatibility...',
+			);
 			originalConsole.log('[SuperCode] 🔧 Pre-loading ALL embedded libraries as direct values...');
-				
+
 			let preloadedCount = 0;
 			let skippedCount = 0;
-			
+
 			// Pre-load ALL embedded libraries as direct values (skip lazy loading completely)
 			for (const [libName, libValue] of Object.entries(bundledLibraries)) {
 				if (libValue && typeof libValue !== 'undefined') {
 					// Remove any existing property and replace with direct value
-					delete (sandbox as any)[libName];
-					(sandbox as any)[libName] = libValue;
+					delete (sandbox as Record<string, unknown>)[libName];
+					(sandbox as Record<string, unknown>)[libName] = libValue;
 					preloadedCount++;
 					originalConsole.log(`[SuperCode] ✅ Embedded ${libName} loaded directly`);
 				} else {
@@ -667,13 +686,22 @@ result = {
 					originalConsole.log(`[SuperCode] ⚠️ Skipped ${libName} (undefined/null)`);
 				}
 			}
-			
-			originalConsole.log(`[SuperCode] ✅ Embedded loading completed: ${preloadedCount} loaded, ${skippedCount} skipped`);
-			
+
+			originalConsole.log(
+				`[SuperCode] ✅ Embedded loading completed: ${preloadedCount} loaded, ${skippedCount} skipped`,
+			);
+
 			// Add library aliases for compatibility
-			if (bundledLibraries.nanoid && bundledLibraries.nanoid.nanoid) {
+			if (
+				bundledLibraries.nanoid &&
+				typeof bundledLibraries.nanoid === 'object' &&
+				bundledLibraries.nanoid !== null &&
+				'nanoid' in bundledLibraries.nanoid
+			) {
 				// Extract nanoid function from wrapper
-				(sandbox as any).nanoid = bundledLibraries.nanoid.nanoid;
+				(sandbox as Record<string, unknown>).nanoid = (
+					bundledLibraries.nanoid as { nanoid: unknown }
+				).nanoid;
 				originalConsole.log('[SuperCode] ✅ Added nanoid function alias');
 			}
 
@@ -731,12 +759,11 @@ result = {
 			return sandbox;
 		};
 
-
 		try {
 			console.log('[SuperCode] 🚀 EXECUTION STARTING - LIBRARIES PRE-LOADED AS GLOBALS');
 			console.log('[SuperCode] 📝 Execution mode:', executionMode);
 			console.log('[SuperCode] 📦 Items count:', items.length);
-			
+
 			if (executionMode === 'runOnceForAllItems') {
 				console.log('[SuperCode] ⚡ Running runOnceForAllItems mode');
 				// Execute code once for all items
@@ -768,29 +795,29 @@ result = {
 							${code}
 						} catch (_error) {
 							// Categorize common errors for LLM assistance
-							if (error.name === 'TypeError') {
-								if (error.message.includes('undefined')) {
-									throw new Error('🤖 LLM-FRIENDLY ERROR [E005]\\n📍 Issue: ' + error.message + '\\n💡 Fix: Check if variable exists before using: if (variable) { ... }');
+							if (_error.name === 'TypeError') {
+								if (_error.message.includes('undefined')) {
+									throw new Error('🤖 LLM-FRIENDLY ERROR [E005]\\n📍 Issue: ' + _error.message + '\\n💡 Fix: Check if variable exists before using: if (variable) { ... }');
 								}
-								if (error.message.includes('not a function')) {
-									throw new Error('🤖 LLM-FRIENDLY ERROR [E003]\\n📍 Issue: ' + error.message + '\\n💡 Fix: 1) Check method name spelling 2) Ensure library is loaded 3) Check object has method');
+								if (_error.message.includes('not a function')) {
+									throw new Error('🤖 LLM-FRIENDLY ERROR [E003]\\n📍 Issue: ' + _error.message + '\\n💡 Fix: 1) Check method name spelling 2) Ensure library is loaded 3) Check object has method');
 								}
 							}
-							if (error.name === 'ReferenceError') {
+							if (_error.name === 'ReferenceError') {
 								// Don't intercept ReferenceErrors for known lazy-loaded libraries
 								const knownLibraries = ['_', 'axios', 'dayjs', 'joi', 'Joi', 'validator', 'uuid', 'csvParse', 'Handlebars', 'cheerio', 'CryptoJS', 'XLSX', 'pdfLib', 'math', 'xml2js', 'YAML', 'sharp', 'Jimp', 'QRCode', 'natural', 'archiver', 'puppeteer', 'knex', 'forge', 'moment', 'XMLParser', 'jwt', 'bcrypt', 'ethers', 'web3', 'phoneNumber', 'currency', 'iban', 'fuzzy'];
-								const isKnownLibrary = knownLibraries.some(lib => error.message.includes(lib + ' is not defined'));
+								const isKnownLibrary = knownLibraries.some(lib => _error.message.includes(lib + ' is not defined'));
 								if (!isKnownLibrary) {
-									throw new Error('🤖 LLM-FRIENDLY ERROR [E004]\\n📍 Issue: ' + error.message + '\\n💡 Fix: 1) Declare variable first 2) Check spelling 3) Import library if needed');
+									throw new Error('🤖 LLM-FRIENDLY ERROR [E004]\\n📍 Issue: ' + _error.message + '\\n💡 Fix: 1) Declare variable first 2) Check spelling 3) Import library if needed');
 								}
 								// Re-throw original error for known libraries to allow lazy loading
-								throw error;
+								throw _error;
 							}
-							if (error.message.includes('await')) {
-								throw new Error('🤖 LLM-FRIENDLY ERROR [E006]\\n📍 Issue: ' + error.message + '\\n💡 Fix: Add await before async operations: await axios.get(), await sharp().resize()');
+							if (_error.message.includes('await')) {
+								throw new Error('🤖 LLM-FRIENDLY ERROR [E006]\\n📍 Issue: ' + _error.message + '\\n💡 Fix: Add await before async operations: await axios.get(), await sharp().resize()');
 							}
 							// Re-throw with original stack for debugging
-							throw error;
+							throw _error;
 						}
 					})();
 				`;
@@ -841,28 +868,28 @@ result = {
 							try {
 								${code}
 							} catch (_error) {
-								if (error.name === 'TypeError') {
-									if (error.message.includes('undefined')) {
-										throw new Error('🤖 LLM-FRIENDLY ERROR [E005]\\n📍 Issue: ' + error.message + '\\n💡 Fix: Check if variable exists before using: if (variable) { ... }');
+								if (_error.name === 'TypeError') {
+									if (_error.message.includes('undefined')) {
+										throw new Error('🤖 LLM-FRIENDLY ERROR [E005]\\n📍 Issue: ' + _error.message + '\\n💡 Fix: Check if variable exists before using: if (variable) { ... }');
 									}
-									if (error.message.includes('not a function')) {
-										throw new Error('🤖 LLM-FRIENDLY ERROR [E003]\\n📍 Issue: ' + error.message + '\\n💡 Fix: 1) Check method name spelling 2) Ensure library is loaded 3) Check object has method');
+									if (_error.message.includes('not a function')) {
+										throw new Error('🤖 LLM-FRIENDLY ERROR [E003]\\n📍 Issue: ' + _error.message + '\\n💡 Fix: 1) Check method name spelling 2) Ensure library is loaded 3) Check object has method');
 									}
 								}
-								if (error.name === 'ReferenceError') {
+								if (_error.name === 'ReferenceError') {
 									// Don't intercept ReferenceErrors for known lazy-loaded libraries
 									const knownLibraries = ['_', 'axios', 'dayjs', 'joi', 'Joi', 'validator', 'uuid', 'csvParse', 'Handlebars', 'cheerio', 'CryptoJS', 'XLSX', 'pdfLib', 'math', 'xml2js', 'YAML', 'sharp', 'Jimp', 'QRCode', 'natural', 'archiver', 'puppeteer', 'knex', 'forge', 'moment', 'XMLParser', 'jwt', 'bcrypt', 'ethers', 'web3', 'phoneNumber', 'currency', 'iban', 'fuzzy'];
-									const isKnownLibrary = knownLibraries.some(lib => error.message.includes(lib + ' is not defined'));
+									const isKnownLibrary = knownLibraries.some(lib => _error.message.includes(lib + ' is not defined'));
 									if (!isKnownLibrary) {
-										throw new Error('🤖 LLM-FRIENDLY ERROR [E004]\\n📍 Issue: ' + error.message + '\\n💡 Fix: 1) Declare variable first 2) Check spelling 3) Import library if needed');
+										throw new Error('🤖 LLM-FRIENDLY ERROR [E004]\\n📍 Issue: ' + _error.message + '\\n💡 Fix: 1) Declare variable first 2) Check spelling 3) Import library if needed');
 									}
 									// Re-throw original error for known libraries to allow lazy loading
-									throw error;
+									throw _error;
 								}
-								if (error.message.includes('await')) {
-									throw new Error('🤖 LLM-FRIENDLY ERROR [E006]\\n📍 Issue: ' + error.message + '\\n💡 Fix: Add await before async operations: await axios.get(), await sharp().resize()');
+								if (_error.message.includes('await')) {
+									throw new Error('🤖 LLM-FRIENDLY ERROR [E006]\\n📍 Issue: ' + _error.message + '\\n💡 Fix: Add await before async operations: await axios.get(), await sharp().resize()');
 								}
-								throw error;
+								throw _error;
 							}
 						})();
 					`;
