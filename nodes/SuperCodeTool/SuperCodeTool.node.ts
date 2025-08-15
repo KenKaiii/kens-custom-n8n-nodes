@@ -10,6 +10,7 @@ import {
 } from 'n8n-workflow';
 
 import { createContext, runInContext } from 'vm';
+const { createSecureXLSXWrapper } = require('../security/xlsx-security-wrapper');
 
 // Type definitions for better TypeScript support
 interface LibraryCache {
@@ -27,7 +28,14 @@ const embeddedLibraries = {
 	lodash: require('lodash'),
 
 	// HTTP & Web
-	axios: require('axios'),
+	get axios() {
+		try {
+			return require('axios');
+		} catch (error) {
+			console.warn('[SuperCode] axios not available in this environment:', error.message);
+			return undefined;
+		}
+	},
 	cheerio: require('cheerio'),
 
 	// Date/Time
@@ -42,7 +50,14 @@ const embeddedLibraries = {
 	validator: require('validator'),
 	uuid: require('uuid'),
 	Ajv: require('ajv'),
-	yup: require('yup'),
+	get yup() {
+		try {
+			return require('yup');
+		} catch (error) {
+			console.warn('[SuperCode] yup not available in this environment:', error.message);
+			return undefined;
+		}
+	},
 
 	// Parsing & Processing
 	csvParse: require('csv-parse'),
@@ -57,22 +72,62 @@ const embeddedLibraries = {
 
 	// Security & Crypto
 	CryptoJS: require('crypto-js'),
-	forge: require('node-forge'),
+	get forge() {
+		try {
+			return require('node-forge');
+		} catch (error) {
+			console.warn('[SuperCode] node-forge not available in this environment:', error.message);
+			return undefined;
+		}
+	},
 	jwt: require('jsonwebtoken'),
 	bcrypt: require('bcryptjs'),
 	bcryptjs: require('bcryptjs'),
 
 	// Files & Documents
-	XLSX: require('xlsx'),
-	pdfLib: require('pdf-lib'),
-	archiver: require('archiver'),
+	XLSX: (() => {
+		const xlsx = require('xlsx');
+		// Use enhanced security wrapper to protect against CVE vulnerabilities
+		// Addresses GHSA-4r6h-8v6p-xvw6 (Prototype Pollution) and GHSA-5pgg-2g8v-p4x9 (ReDoS)
+		return createSecureXLSXWrapper(xlsx);
+	})(),
+	get pdfLib() {
+		try {
+			return require('pdf-lib');
+		} catch (error) {
+			console.warn('[SuperCode] pdf-lib not available in this environment:', error.message);
+			return undefined;
+		}
+	},
+	get archiver() {
+		try {
+			return require('archiver');
+		} catch (error) {
+			console.warn('[SuperCode] archiver not available in this environment:', error.message);
+			return undefined;
+		}
+	},
 
 	// Images & Media
-	Jimp: require('jimp'),
+	get Jimp() {
+		try {
+			return require('jimp');
+		} catch (error) {
+			console.warn('[SuperCode] jimp not available in this environment:', error.message);
+			return undefined;
+		}
+	},
 	QRCode: require('qrcode'),
 
 	// Math & Science
-	math: require('mathjs'),
+	get math() {
+		try {
+			return require('mathjs');
+		} catch (error) {
+			console.warn('[SuperCode] mathjs not available in this environment:', error.message);
+			return undefined;
+		}
+	},
 
 	// Text & Language
 	fuzzy: require('fuse.js'),
@@ -113,8 +168,48 @@ const embeddedLibraries = {
 	iban: require('iban'),
 
 	// Blockchain
-	ethers: require('ethers'),
-	web3: require('web3'),
+	get ethers() {
+		try {
+			return require('ethers');
+		} catch (error) {
+			console.warn('[SuperCode] ethers not available in this environment:', error.message);
+			return undefined;
+		}
+	},
+	get web3() {
+		try {
+			return require('web3');
+		} catch (error) {
+			console.warn('[SuperCode] web3 not available in this environment:', error.message);
+			return undefined;
+		}
+	},
+
+	// YouTube & Video Processing
+	get ytdl() {
+		try {
+			return require('@distube/ytdl-core');
+		} catch (error) {
+			console.warn('[SuperCode] @distube/ytdl-core not available in this environment:', error.message);
+			return undefined;
+		}
+	},
+	get ffmpeg() {
+		try {
+			return require('fluent-ffmpeg');
+		} catch (error) {
+			console.warn('[SuperCode] fluent-ffmpeg not available in this environment:', error.message);
+			return undefined;
+		}
+	},
+	get ffmpegStatic() {
+		try {
+			return require('ffmpeg-static');
+		} catch (error) {
+			console.warn('[SuperCode] ffmpeg-static not available in this environment:', error.message);
+			return undefined;
+		}
+	},
 };
 
 // Try to load full bundle, fall back to embedded
@@ -127,7 +222,7 @@ export class SuperCodeTool implements INodeType {
 		icon: { light: 'file:supercode.svg', dark: 'file:supercode.svg' },
 		group: [],
 		version: 1,
-		description: 'AI Agent code execution tool with JavaScript/Python and 41+ enhanced libraries',
+		description: 'AI Agent code execution tool with JavaScript/Python and 44+ enhanced libraries including YouTube/FFmpeg',
 		usableAsTool: true,
 		defaults: {
 			name: 'Super Code Tool',
@@ -145,7 +240,7 @@ export class SuperCodeTool implements INodeType {
 					{
 						name: 'JavaScript',
 						value: 'javascript',
-						description: 'Execute JavaScript/TypeScript with 41+ enhanced libraries',
+						description: 'Execute JavaScript/TypeScript with 44+ enhanced libraries including YouTube/FFmpeg',
 					},
 					{
 						name: 'Python',
@@ -169,7 +264,7 @@ export class SuperCodeTool implements INodeType {
 					editor: 'jsEditor',
 				},
 				default: `// Libraries are pre-loaded as globals - no require() needed!
-// Available: lodash (_), axios, dayjs, joi, validator, uuid, csvParse, Handlebars, cheerio, CryptoJS, XLSX, pdfLib, math, xml2js, YAML, Jimp, QRCode, archiver, knex, forge, moment, XMLParser, jwt, bcrypt, ethers, web3, phoneNumber, currency, iban, fuzzy
+// Available: lodash (_), axios, dayjs, joi, validator, uuid, csvParse, Handlebars, cheerio, CryptoJS, XLSX, pdfLib, math, xml2js, YAML, Jimp, QRCode, archiver, knex, forge, moment, XMLParser, jwt, bcrypt, ethers, web3, phoneNumber, currency, iban, fuzzy, ytdl, ffmpeg, ffmpegStatic
 
 // Example: Use joi directly (no require needed)
 const schema = joi.string().min(3);
@@ -289,6 +384,9 @@ result = {
 					'currency.js (currency)',
 					'iban',
 					'fuse.js (fuzzy)',
+					'@distube/ytdl-core (ytdl)',
+					'fluent-ffmpeg (ffmpeg)',
+					'ffmpeg-static (ffmpegStatic)',
 				],
 				isLibraryLoaded: (libraryName: string) => !!libraryCache[libraryName],
 				getLoadedLibraries: () => Object.keys(libraryCache),
@@ -315,7 +413,7 @@ result = {
 			Boolean,
 			RegExp,
 			Error,
-			require,
+			// SECURITY: require removed to prevent sandbox escape via require('child_process').exec()
 		};
 
 		// Load all embedded libraries directly

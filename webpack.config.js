@@ -21,6 +21,33 @@ module.exports = [
 		optimization: {
 			minimize: false,
 		},
+		ignoreWarnings: [
+			// Ignore missing optional WebSocket performance dependencies
+			{
+				module: /node_modules\/ws\/lib\/buffer-util\.js/,
+				message: /Can't resolve 'bufferutil'/,
+			},
+			{
+				module: /node_modules\/ws\/lib\/validation\.js/,
+				message: /Can't resolve 'utf-8-validate'/,
+			},
+			{
+				module: /node_modules\/ethers\/node_modules\/ws\/lib\/buffer-util\.js/,
+				message: /Can't resolve 'bufferutil'/,
+			},
+			{
+				module: /node_modules\/ethers\/node_modules\/ws\/lib\/validation\.js/,
+				message: /Can't resolve 'utf-8-validate'/,
+			},
+			// Suppress handlebars require.extensions warnings (non-critical)
+			{
+				message: /require\.extensions is not supported by webpack/,
+			},
+			// Suppress fluent-ffmpeg dynamic require warnings (expected behavior)
+			{
+				message: /Critical dependency: the request of a dependency is an expression/,
+			},
+		],
 	},
 	{
 		name: 'SuperCodeNode',
@@ -34,7 +61,22 @@ module.exports = [
 		},
 		externals: {
 			'n8n-workflow': 'n8n-workflow',
-			// ALL LIBRARY EXTERNALS REMOVED - Libraries will be bundled with embedded approach
+			// Exclude libraries that cause Node.js v24+ read-only property issues
+			'pdf-lib': 'pdf-lib',
+			'yup': 'yup', 
+			'zod': 'zod',
+			'jimp': 'jimp',
+			'web3': 'web3',
+			'ethers': 'ethers',
+			'@distube/ytdl-core': '@distube/ytdl-core',
+			'fluent-ffmpeg': 'fluent-ffmpeg',
+			'ffmpeg-static': 'ffmpeg-static',
+			'archiver': 'archiver',
+			'xlsx': 'xlsx',
+			'node-forge': 'node-forge',
+			'mathjs': 'mathjs',  // Exclude mathjs due to hasOwnProperty assignment error
+			'form-data': 'form-data',  // Exclude form-data due to FormData.prototype.toString assignment error
+			'axios': 'axios',  // Exclude axios due to AxiosURLSearchParams.prototype.toString assignment error
 		},
 		resolve: {
 			extensions: ['.js', '.ts'],
@@ -49,6 +91,33 @@ module.exports = [
 		optimization: {
 			minimize: false,
 		},
+		ignoreWarnings: [
+			// Ignore missing optional WebSocket performance dependencies
+			{
+				module: /node_modules\/ws\/lib\/buffer-util\.js/,
+				message: /Can't resolve 'bufferutil'/,
+			},
+			{
+				module: /node_modules\/ws\/lib\/validation\.js/,
+				message: /Can't resolve 'utf-8-validate'/,
+			},
+			{
+				module: /node_modules\/ethers\/node_modules\/ws\/lib\/buffer-util\.js/,
+				message: /Can't resolve 'bufferutil'/,
+			},
+			{
+				module: /node_modules\/ethers\/node_modules\/ws\/lib\/validation\.js/,
+				message: /Can't resolve 'utf-8-validate'/,
+			},
+			// Suppress handlebars require.extensions warnings (non-critical)
+			{
+				message: /require\.extensions is not supported by webpack/,
+			},
+			// Suppress fluent-ffmpeg dynamic require warnings (expected behavior)
+			{
+				message: /Critical dependency: the request of a dependency is an expression/,
+			},
+		],
 	},
 	{
 		name: 'SuperCodeTool',
@@ -62,6 +131,22 @@ module.exports = [
 		},
 		externals: {
 			'n8n-workflow': 'n8n-workflow',
+			// Exclude libraries that cause Node.js v24+ read-only property issues
+			'pdf-lib': 'pdf-lib',
+			'yup': 'yup', 
+			'zod': 'zod',
+			'jimp': 'jimp',
+			'web3': 'web3',
+			'ethers': 'ethers',
+			'@distube/ytdl-core': '@distube/ytdl-core',
+			'fluent-ffmpeg': 'fluent-ffmpeg',
+			'ffmpeg-static': 'ffmpeg-static',
+			'archiver': 'archiver',
+			'xlsx': 'xlsx',
+			'node-forge': 'node-forge',
+			'mathjs': 'mathjs',  // Exclude mathjs due to hasOwnProperty assignment error
+			'form-data': 'form-data',  // Exclude form-data due to FormData.prototype.toString assignment error
+			'axios': 'axios',  // Exclude axios due to AxiosURLSearchParams.prototype.toString assignment error
 		},
 		resolve: {
 			extensions: ['.js', '.ts'],
@@ -69,5 +154,32 @@ module.exports = [
 		optimization: {
 			minimize: false,
 		},
+		ignoreWarnings: [
+			// Ignore missing optional WebSocket performance dependencies
+			{
+				module: /node_modules\/ws\/lib\/buffer-util\.js/,
+				message: /Can't resolve 'bufferutil'/,
+			},
+			{
+				module: /node_modules\/ws\/lib\/validation\.js/,
+				message: /Can't resolve 'utf-8-validate'/,
+			},
+			{
+				module: /node_modules\/ethers\/node_modules\/ws\/lib\/buffer-util\.js/,
+				message: /Can't resolve 'bufferutil'/,
+			},
+			{
+				module: /node_modules\/ethers\/node_modules\/ws\/lib\/validation\.js/,
+				message: /Can't resolve 'utf-8-validate'/,
+			},
+			// Suppress handlebars require.extensions warnings (non-critical)
+			{
+				message: /require\.extensions is not supported by webpack/,
+			},
+			// Suppress fluent-ffmpeg dynamic require warnings (expected behavior)
+			{
+				message: /Critical dependency: the request of a dependency is an expression/,
+			},
+		],
 	},
 ];
