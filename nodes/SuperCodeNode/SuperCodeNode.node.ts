@@ -730,7 +730,7 @@ export class SuperCodeNode implements INodeType {
 
 	description: INodeTypeDescription = {
 		displayName: 'Super Code',
-		name: 'superCodeNode',
+		name: 'superCodeNodeVmSafe',
 		icon: { light: 'file:supercode.svg', dark: 'file:supercode.svg' },
 		group: ['transform'],
 		version: 1,
