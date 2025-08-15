@@ -21,10 +21,11 @@
 	},
 	"main": "index.js",
 	"scripts": {
-		"build": "rimraf dist && tsc && npm run build:icons && npm run flatten && npm run webpack",
+		"build": "rimraf dist && tsc && npm run build:icons && npm run flatten && npm run webpack && npm run copy-bundled",
 		"webpack": "npx webpack --config webpack.config.js",
 		"build:icons": "gulp --gulpfile gulpfile.cjs build:icons",
 		"flatten": "cp -r dist/nodes/* dist/ && rm -rf dist/nodes && cp package.json index.js python-installer.py dist/ && cp -r security dist/",
+		"copy-bundled": "cp dist/SuperCodeNode/SuperCodeNode.node.bundled.js dist/ && cp dist/SuperCodeTool/SuperCodeTool.node.bundled.js dist/",
 		"dev": "tsc --watch",
 		"format": "prettier nodes credentials --write",
 		"lint": "eslint nodes --ext .ts",
