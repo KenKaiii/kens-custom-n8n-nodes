@@ -1029,11 +1029,8 @@ result = {
 		const aiAgentMode = this.getNodeParameter('aiAgentMode', 0, false) as boolean;
 		originalConsole.log('[SuperCode] 🤖 AI Agent Mode:', aiAgentMode);
 
-		// Get node instance to access class methods
-		const nodeInstance = this.getNode() as unknown as SuperCodeNode;
-
-		// Create enhanced sandbox factory
-		const createEnhancedSandbox = nodeInstance.createSandboxFactory(
+		// Create enhanced sandbox factory using this instance
+		const createEnhancedSandbox = this.createSandboxFactory(
 			aiAgentMode,
 			originalConsole,
 			this,
@@ -1046,9 +1043,9 @@ result = {
 
 			// Execute based on mode
 			if (executionMode === 'runOnceForAllItems') {
-				return await nodeInstance.executeCodeBatch(items, code, timeout, createEnhancedSandbox);
+				return await this.executeCodeBatch(items, code, timeout, createEnhancedSandbox);
 			} else {
-				return await nodeInstance.executeCodePerItem(
+				return await this.executeCodePerItem(
 					items,
 					code,
 					timeout,
