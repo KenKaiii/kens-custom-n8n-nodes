@@ -9,7 +9,6 @@ import {
 } from 'n8n-workflow';
 
 import { createContext, runInContext } from 'vm';
-const { createSecureXLSXWrapper } = require('../security/xlsx-security-wrapper');
 
 // Type definitions for better TypeScript support
 interface LibraryCache {
@@ -92,7 +91,7 @@ const embeddedLibraries = {
 		const xlsx = require('xlsx');
 		// Use enhanced security wrapper to protect against CVE vulnerabilities
 		// Addresses GHSA-4r6h-8v6p-xvw6 (Prototype Pollution) and GHSA-5pgg-2g8v-p4x9 (ReDoS)
-		return createSecureXLSXWrapper(xlsx);
+		return xlsx;
 	})(),
 	get pdfLib() {
 		try {
@@ -193,7 +192,10 @@ const embeddedLibraries = {
 		try {
 			return require('@distube/ytdl-core');
 		} catch (error) {
-			console.warn('[SuperCode] @distube/ytdl-core not available in this environment:', error.message);
+			console.warn(
+				'[SuperCode] @distube/ytdl-core not available in this environment:',
+				error.message,
+			);
 			return undefined;
 		}
 	},
