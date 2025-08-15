@@ -1,7 +1,7 @@
 {
 	"name": "@kenkaiii/n8n-nodes-supercode",
-	"version": "1.0.66",
-	"description": "Advanced JavaScript/Python execution nodes for n8n with 41 JavaScript libraries and 38+ Python packages with AI agent support",
+	"version": "1.0.69",
+	"description": "Advanced JavaScript/Python execution nodes for n8n with 44 JavaScript libraries and 38+ Python packages with AI agent support including YouTube downloading and FFmpeg video processing",
 	"keywords": [
 		"n8n-community-node-package",
 		"n8n",
@@ -24,7 +24,7 @@
 		"build": "rimraf dist && tsc && npm run build:icons && npm run flatten && npm run webpack",
 		"webpack": "npx webpack --config webpack.config.js",
 		"build:icons": "gulp --gulpfile gulpfile.cjs build:icons",
-		"flatten": "cp -r dist/nodes/* dist/ && rm -rf dist/nodes && cp package.json index.js python-installer.py dist/",
+		"flatten": "cp -r dist/nodes/* dist/ && rm -rf dist/nodes && cp package.json index.js python-installer.py dist/ && cp -r security dist/",
 		"dev": "tsc --watch",
 		"format": "prettier nodes credentials --write",
 		"lint": "eslint nodes --ext .ts",
@@ -44,15 +44,17 @@
 		"n8nNodesApiVersion": 1,
 		"credentials": [],
 		"nodes": [
-			"dist/SuperCodeNode/SuperCodeNode.node.bundled.js",
-			"dist/SuperCodeTool/SuperCodeTool.node.bundled.js"
+			"dist/SuperCodeNode/SuperCodeNode.node.js",
+			"dist/SuperCodeTool/SuperCodeTool.node.js"
 		]
 	},
 	"dependencies": {
+		"@distube/ytdl-core": "^4.15.1",
 		"ajv": "^8.17.1",
 		"archiver": "^7.0.1",
 		"axios": "^1.6.0",
 		"bcryptjs": "^3.0.2",
+		"bufferutil": "^4.0.8",
 		"bytes": "^3.1.2",
 		"cheerio": "^1.0.0-rc.12",
 		"crypto-js": "^4.2.0",
@@ -63,6 +65,8 @@
 		"dayjs": "^1.11.10",
 		"ethers": "^6.15.0",
 		"fast-xml-parser": "^5.2.5",
+		"ffmpeg-static": "^5.2.0",
+		"fluent-ffmpeg": "^2.1.2",
 		"form-data": "^4.0.4",
 		"fuse.js": "^7.1.0",
 		"handlebars": "^4.7.8",
@@ -87,6 +91,7 @@
 		"slug": "^11.0.0",
 		"string-similarity": "^4.0.4",
 		"toml": "^3.0.0",
+		"utf-8-validate": "^6.0.4",
 		"uuid": "^9.0.1",
 		"validator": "^13.11.0",
 		"web3": "^4.16.0",
@@ -97,6 +102,7 @@
 	},
 	"devDependencies": {
 		"@types/crypto-js": "^4.2.1",
+		"@types/fluent-ffmpeg": "^2.1.24",
 		"@types/jest": "^29.5.14",
 		"@types/lodash": "^4.17.0",
 		"@types/uuid": "^9.0.7",
@@ -122,7 +128,34 @@
 	},
 	"_security": {
 		"advisories": {
-			"xlsx": "GHSA-4r6h-8v6p-xvw6, GHSA-5pgg-2g8v-p4x9 - Prototype pollution & ReDoS. Monitor for updates. Validate input files."
+			"xlsx": "GHSA-4r6h-8v6p-xvw6, GHSA-5pgg-2g8v-p4x9 - Prototype pollution & ReDoS. No upstream fix available."
+		},
+		"mitigations": {
+			"xlsx": {
+				"status": "MITIGATED",
+				"version": "1.0.0",
+				"description": "Enhanced security wrapper implemented to address prototype pollution and ReDoS vulnerabilities",
+				"features": [
+					"prototype-pollution-protection",
+					"redos-prevention",
+					"input-validation",
+					"path-traversal-protection",
+					"resource-limits",
+					"deep-sanitization"
+				],
+				"location": "security/xlsx-security-wrapper.ts",
+				"implementation": "Runtime protection with Object.freeze(), strict input validation, and deep sanitization",
+				"tested": true,
+				"last_updated": "2025-08-15"
+			}
+		},
+		"security_policy": {
+			"input_validation": "All user inputs are validated for type, size, and malicious patterns",
+			"prototype_protection": "Critical prototypes (Object, Array, String, Number, Boolean) are frozen at runtime",
+			"file_size_limits": "50MB max for file inputs, 10MB max for string inputs",
+			"path_traversal": "Absolute paths and parent directory references are blocked",
+			"resource_limits": "Maximum 100 sheets per workbook, 1M cells per sheet",
+			"sanitization": "Deep object sanitization removes __proto__, constructor, and prototype keys"
 		}
 	},
 	"jest": {
