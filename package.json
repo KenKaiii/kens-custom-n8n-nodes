@@ -44,8 +44,8 @@
 		"n8nNodesApiVersion": 1,
 		"credentials": [],
 		"nodes": [
-			"dist/SuperCodeNode/SuperCodeNode.node.js",
-			"dist/SuperCodeTool/SuperCodeTool.node.js"
+			"dist/SuperCodeNode/SuperCodeNode.node.bundled.js",
+			"dist/SuperCodeTool/SuperCodeTool.node.bundled.js"
 		]
 	},
 	"dependencies": {
