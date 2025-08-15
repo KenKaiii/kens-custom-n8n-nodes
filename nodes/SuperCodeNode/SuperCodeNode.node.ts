@@ -586,7 +586,7 @@ export class SuperCodeNode implements INodeType {
 	}
 
 	// Helper method to execute code in batch mode (runOnceForAllItems)
-	private async executeCodeBatch(
+	public async executeCodeBatch(
 		items: INodeExecutionData[],
 		code: string,
 		timeout: number,
@@ -607,7 +607,7 @@ export class SuperCodeNode implements INodeType {
 	}
 
 	// Helper method to execute code for each item individually
-	private async executeCodePerItem(
+	public async executeCodePerItem(
 		items: INodeExecutionData[],
 		code: string,
 		timeout: number,
@@ -645,7 +645,7 @@ export class SuperCodeNode implements INodeType {
 	}
 
 	// Helper method to create a sandbox factory function
-	private createSandboxFactory(
+	public createSandboxFactory(
 		aiAgentMode: boolean,
 		originalConsole: typeof console,
 		executionContext: IExecuteFunctions,
@@ -1029,8 +1029,9 @@ result = {
 		const aiAgentMode = this.getNodeParameter('aiAgentMode', 0, false) as boolean;
 		originalConsole.log('[SuperCode] 🤖 AI Agent Mode:', aiAgentMode);
 
-		// Create enhanced sandbox factory using this instance
-		const createEnhancedSandbox = this.createSandboxFactory(
+		// Create enhanced sandbox factory
+		const superCodeNode = new SuperCodeNode();
+		const createEnhancedSandbox = superCodeNode.createSandboxFactory(
 			aiAgentMode,
 			originalConsole,
 			this,
@@ -1043,9 +1044,9 @@ result = {
 
 			// Execute based on mode
 			if (executionMode === 'runOnceForAllItems') {
-				return await this.executeCodeBatch(items, code, timeout, createEnhancedSandbox);
+				return await superCodeNode.executeCodeBatch(items, code, timeout, createEnhancedSandbox);
 			} else {
-				return await this.executeCodePerItem(
+				return await superCodeNode.executeCodePerItem(
 					items,
 					code,
 					timeout,
