@@ -1,6 +1,6 @@
 {
 	"name": "@kenkaiii/n8n-nodes-supercode",
-	"version": "1.0.79",
+	"version": "1.0.80",
 	"description": "Advanced JavaScript/Python execution nodes for n8n with 44 JavaScript libraries and 38+ Python packages with AI agent support including YouTube downloading and FFmpeg video processing",
 	"keywords": [
 		"n8n-community-node-package",
@@ -21,8 +21,12 @@
 	},
 	"main": "index.js",
 	"scripts": {
-		"build": "rimraf dist && tsc && npm run build:icons && npm run flatten && npm run webpack && npm run copy-bundled",
+		"build": "rimraf dist && tsc && npm run build:icons && npm run flatten && npm run webpack:all && npm run copy-bundled",
 		"webpack": "npx webpack --config webpack.config.js",
+		"webpack:v16": "npx webpack --config webpack.v16.config.js",
+		"webpack:v18": "npx webpack --config webpack.v18.config.js",
+		"webpack:v20": "npx webpack --config webpack.v20.config.js",
+		"webpack:all": "npm run webpack && npm run webpack:v16 && npm run webpack:v18 && npm run webpack:v20",
 		"build:icons": "gulp --gulpfile gulpfile.cjs build:icons",
 		"flatten": "cp -r dist/nodes/* dist/ && rm -rf dist/nodes && cp package.json index.js python-installer.py dist/ && cp -r security dist/",
 		"copy-bundled": "cp dist/SuperCodeNode/SuperCodeNode.node.bundled.js dist/ && cp dist/SuperCodeTool/SuperCodeTool.node.bundled.js dist/ && cp dist/SuperCodeNode/supercode.svg dist/ && cp dist/SuperCodeTool/supercode.svg dist/",
@@ -32,11 +36,13 @@
 		"lintfix": "eslint nodes --ext .ts --fix",
 		"test": "jest --passWithNoTests",
 		"test:watch": "jest --watch",
+		"postinstall": "node scripts/environment-setup.js",
 		"prepublishOnly": "npm run build && npm run test"
 	},
 	"files": [
 		"dist/**/*",
 		"dist/",
+		"scripts/",
 		"index.js",
 		"python-installer.py",
 		"LICENSE.md"
