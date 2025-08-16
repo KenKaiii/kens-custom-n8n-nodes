@@ -1,0 +1,48 @@
+{
+	"campaigns": [
+		{
+			"subject": "New Product Launch - Don't Miss Out!",
+			"content": "Hi there! We're excited to announce our latest product launch. Check it out at https://company.com/new-product and get 20% off with code LAUNCH20. Visit our blog at https://company.com/blog for more details.",
+			"senderEmail": "marketing@company.com",
+			"senderName": "Marketing Team",
+			"sendDate": "2024-01-25T10:00:00Z",
+			"targetAudience": "customers",
+			"campaignType": "product_launch"
+		},
+		{
+			"subject": "Weekly Newsletter #42",
+			"content": "This week's highlights include new features, customer stories, and upcoming events. Stay connected with us at https://company.com/newsletter for weekly updates.",
+			"senderEmail": "newsletter@company.com",
+			"senderName": "Newsletter Team",
+			"sendDate": "2024-01-28T14:00:00Z",
+			"targetAudience": "subscribers",
+			"campaignType": "newsletter"
+		}
+	],
+	"subscribers": [
+		{
+			"email": "john.doe@customer.com",
+			"name": "John Doe",
+			"subscribedAt": "2023-06-15T00:00:00Z",
+			"status": "active",
+			"preferences": ["product_updates", "newsletters"],
+			"source": "website"
+		},
+		{
+			"email": "jane.smith@business.com",
+			"name": "Jane Smith",
+			"subscribedAt": "2023-12-01T00:00:00Z",
+			"status": "active",
+			"preferences": ["newsletters"],
+			"source": "social_media"
+		},
+		{
+			"email": "invalid-email",
+			"name": "Invalid User",
+			"subscribedAt": "2024-01-01T00:00:00Z",
+			"status": "pending",
+			"preferences": ["product_updates"],
+			"source": "api"
+		}
+	]
+}

@@ -1,0 +1,44 @@
+{
+	"transactions": [
+		{
+			"customerEmail": "john.normal@company.com",
+			"amount": 250.50,
+			"paymentMethod": "credit_card",
+			"timestamp": "2024-01-16T14:30:00Z",
+			"ipAddress": "192.168.1.100",
+			"userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+			"deviceId": "device_12345",
+			"customerName": "John Normal"
+		},
+		{
+			"customerEmail": "suspicious@fake.com",
+			"amount": 15000,
+			"paymentMethod": "crypto",
+			"timestamp": "2024-01-16T02:15:00Z",
+			"ipAddress": "invalid-ip",
+			"userAgent": "Suspicious Bot/1.0",
+			"deviceId": "device_67890",
+			"customerName": "Fake User"
+		},
+		{
+			"customerEmail": "legitimate@business.com",
+			"amount": 8500,
+			"paymentMethod": "bank_transfer",
+			"timestamp": "2024-01-16T10:45:00Z",
+			"ipAddress": "203.45.67.89",
+			"userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15",
+			"deviceId": "device_54321",
+			"customerName": "Business User"
+		},
+		{
+			"customerEmail": "weekend@trader.com",
+			"amount": 3500,
+			"paymentMethod": "wire_transfer",
+			"timestamp": "2024-01-14T22:30:00Z",
+			"ipAddress": "45.67.89.123",
+			"userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)",
+			"deviceId": "device_98765",
+			"customerName": "Weekend Trader"
+		}
+	]
+}

@@ -161,7 +161,14 @@ const embeddedLibraries = {
 			return require('nanoid');
 		}
 	})(),
-	ms: require('ms'),
+	get ms() {
+		try {
+			return require('ms');
+		} catch (error) {
+			console.warn('[SuperCode] ms not available in this environment:', error.message);
+			return undefined;
+		}
+	},
 	bytes: require('bytes'),
 
 	// Financial & Geographic
@@ -415,42 +422,63 @@ export class SuperCodeNode implements INodeType {
 	// Helper method to load embedded libraries into the sandbox
 	private loadEmbeddedLibraries(sandbox: Record<string, unknown>, originalConsole: typeof console) {
 		originalConsole.log('[SuperCode] 🔧 Using EMBEDDED libraries for guaranteed compatibility...');
-		originalConsole.log('[SuperCode] 🔧 Pre-loading ALL embedded libraries as direct values...');
+		originalConsole.log('[SuperCode] 🔧 Pre-evaluating ALL embedded libraries as direct values...');
 
 		let preloadedCount = 0;
 		let skippedCount = 0;
 
-		// Pre-load ALL embedded libraries as direct values (skip lazy loading completely)
+		// Pre-evaluate ALL embedded libraries to avoid require() calls in VM context
 		for (const [libName, libValue] of Object.entries(bundledLibraries)) {
-			if (libValue && typeof libValue !== 'undefined') {
-				// Remove any existing property and replace with direct value
-				delete sandbox[libName];
-				sandbox[libName] = libValue;
-				preloadedCount++;
-				originalConsole.log(`[SuperCode] ✅ Embedded ${libName} loaded directly`);
-			} else {
+			try {
+				// Evaluate getters and require() calls outside VM context
+				const evaluatedValue =
+					typeof libValue === 'function' && libValue.name === ''
+						? libValue() // Execute getter functions
+						: libValue; // Use direct values
+
+				if (evaluatedValue && typeof evaluatedValue !== 'undefined') {
+					// Remove any existing property and replace with evaluated value
+					delete sandbox[libName];
+					sandbox[libName] = evaluatedValue;
+					preloadedCount++;
+					originalConsole.log(`[SuperCode] ✅ Embedded ${libName} pre-evaluated and loaded`);
+				} else {
+					skippedCount++;
+					originalConsole.log(
+						`[SuperCode] ⚠️ Skipped ${libName} (undefined/null after evaluation)`,
+					);
+				}
+			} catch (error) {
 				skippedCount++;
-				originalConsole.log(`[SuperCode] ⚠️ Skipped ${libName} (undefined/null)`);
+				originalConsole.log(`[SuperCode] ⚠️ Failed to pre-evaluate ${libName}:`, error.message);
 			}
 		}
 
 		originalConsole.log(
-			`[SuperCode] ✅ Embedded loading completed: ${preloadedCount} loaded, ${skippedCount} skipped`,
+			`[SuperCode] ✅ Embedded pre-evaluation completed: ${preloadedCount} loaded, ${skippedCount} skipped`,
 		);
 
-		// Add library aliases for compatibility
-		if (
-			bundledLibraries.nanoid &&
-			typeof bundledLibraries.nanoid === 'object' &&
-			bundledLibraries.nanoid !== null &&
-			'nanoid' in bundledLibraries.nanoid
-		) {
-			// Extract nanoid function from wrapper
-			sandbox.nanoid = (bundledLibraries.nanoid as { nanoid: unknown }).nanoid;
-			originalConsole.log('[SuperCode] ✅ Added nanoid function alias');
+		// Add library aliases for compatibility (with pre-evaluation)
+		try {
+			const nanoidLib = bundledLibraries.nanoid;
+			const evaluatedNanoid =
+				typeof nanoidLib === 'function' && nanoidLib.name === '' ? nanoidLib() : nanoidLib;
+
+			if (
+				evaluatedNanoid &&
+				typeof evaluatedNanoid === 'object' &&
+				evaluatedNanoid !== null &&
+				'nanoid' in evaluatedNanoid
+			) {
+				// Extract nanoid function from wrapper
+				sandbox.nanoid = (evaluatedNanoid as { nanoid: unknown }).nanoid;
+				originalConsole.log('[SuperCode] ✅ Added nanoid function alias');
+			}
+		} catch (error) {
+			originalConsole.log('[SuperCode] ⚠️ Failed to set nanoid alias:', error.message);
 		}
 
-		console.log('[SuperCode] ✅ Embedded libraries directly assigned to sandbox');
+		console.log('[SuperCode] ✅ Embedded libraries pre-evaluated and assigned to sandbox');
 	}
 
 	// Helper method to populate AI variables when AI Agent Mode is enabled
@@ -801,12 +829,10 @@ export class SuperCodeNode implements INodeType {
 				typeOptions: {
 					editor: 'jsEditor',
 				},
-				default: `// Libraries are pre-loaded as globals - no require() needed!
-// Available: lodash (_), axios, dayjs, joi, validator, uuid, csvParse, Handlebars, cheerio, CryptoJS, XLSX, pdfLib, math, xml2js, YAML, Jimp, QRCode, archiver, knex, forge, moment, XMLParser, jwt, bcrypt, ethers, web3, phoneNumber, currency, iban, fuzzy, ytdl, ffmpeg, ffmpegStatic
+				default: `// SuperCode Node by Ken Kai - 49+ JavaScript Libraries Available
+// Available: _, lodash, axios, cheerio, dayjs, moment, dateFns, dateFnsTz, joi, Joi, validator, uuid, Ajv, yup, csvParse, xml2js, XMLParser, YAML, papaparse, Papa, Handlebars, CryptoJS, forge, jwt, bcrypt, bcryptjs, XLSX, pdfLib, archiver, Jimp, QRCode, math, fuzzy, stringSimilarity, slug, pluralize, qs, FormData, ini, toml, nanoid, bytes, phoneNumber, iban, ethers, web3, ytdl, ffmpeg, ffmpegStatic, utils
 
-// Example: Use joi directly (no require needed)
-const schema = joi.string().min(3);
-const result = schema.validate('test');
+const data = $input.first().json;
 
 // 🤖 AI Agent Mode: Auto-populated AI variables (enable AI Agent Mode to use these!)
 const aiConnections = {
@@ -999,6 +1025,45 @@ result = {
 		],
 	};
 
+	// Helper method to pre-evaluate embedded libraries for simplified execution
+	private static preEvaluateEmbeddedLibraries(): {
+		evaluatedLibraries: Record<string, unknown>;
+		loadedCount: number;
+		skippedCount: number;
+	} {
+		console.log('[SuperCode] 🔧 Pre-evaluating embedded libraries...');
+		const evaluatedLibraries: Record<string, unknown> = {};
+		let loadedCount = 0;
+		let skippedCount = 0;
+
+		for (const [libName, libValue] of Object.entries(embeddedLibraries)) {
+			try {
+				// Evaluate getters and require() calls outside VM context
+				const evaluatedValue =
+					typeof libValue === 'function' && libValue.name === ''
+						? libValue() // Execute getter functions
+						: libValue; // Use direct values
+
+				if (evaluatedValue !== undefined && evaluatedValue !== null) {
+					evaluatedLibraries[libName] = evaluatedValue;
+					loadedCount++;
+					console.log(`[SuperCode] ✅ Pre-loaded ${libName}`);
+				} else {
+					skippedCount++;
+					console.log(`[SuperCode] ⚠️ Skipped ${libName} (undefined/null)`);
+				}
+			} catch (error) {
+				skippedCount++;
+				console.log(`[SuperCode] ⚠️ Failed to load ${libName}:`, error.message);
+			}
+		}
+
+		console.log(
+			`[SuperCode] ✅ Pre-evaluation completed: ${loadedCount} loaded, ${skippedCount} skipped`,
+		);
+		return { evaluatedLibraries, loadedCount, skippedCount };
+	}
+
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const language = this.getNodeParameter('language', 0, 'javascript') as string;
@@ -1034,7 +1099,18 @@ result = {
 			console.log('[SuperCode] 📝 Execution mode:', executionMode);
 			console.log('[SuperCode] 📦 Items count:', items.length);
 
-			// Simple inline execution to avoid instance creation issues
+			// Pre-evaluate all embedded libraries using helper method
+			const { evaluatedLibraries } = SuperCodeNode.preEvaluateEmbeddedLibraries();
+
+			// Create library cache and performance tracker for utils support
+			const libraryCache: LibraryCache = {};
+			const performanceTracker: PerformanceTracker = {};
+			Object.assign(libraryCache, evaluatedLibraries);
+
+			// Create SuperCode node instance to access helper methods
+			const superCodeNode = new SuperCodeNode();
+
+			// Create sandbox with all necessary objects
 			const sandbox = {
 				$input: {
 					all: () => items,
@@ -1042,12 +1118,13 @@ result = {
 					last: () => items[items.length - 1],
 					json: items.length === 1 ? items[0].json : items.map((item) => item.json),
 				},
-				...embeddedLibraries,
+				...evaluatedLibraries,
 				console: {
 					log: (...args: unknown[]) => console.log('[SuperCode]', ...args),
 					error: (...args: unknown[]) => console.error('[SuperCode]', ...args),
 					warn: (...args: unknown[]) => console.warn('[SuperCode]', ...args),
 				},
+				utils: superCodeNode.createSandboxUtils(libraryCache, performanceTracker),
 				setTimeout,
 				clearTimeout,
 				setInterval,
@@ -1064,6 +1141,13 @@ result = {
 				RegExp,
 				Error,
 			};
+
+			// Populate AI variables if AI Agent Mode is enabled
+			await superCodeNode.populateAIVariables(
+				sandbox as Record<string, unknown>,
+				aiAgentMode,
+				this,
+			);
 
 			const context = createContext(sandbox as Record<string, unknown>);
 			const wrappedCode = `
@@ -1083,14 +1167,18 @@ result = {
 			if (Array.isArray(result)) {
 				return [
 					result.map((item: unknown) => ({
-						json: (typeof item === 'object' && item !== null ? item : { data: item }) as IDataObject,
+						json: (typeof item === 'object' && item !== null
+							? item
+							: { data: item }) as IDataObject,
 					})),
 				];
 			} else if (result !== undefined) {
 				return [
 					[
 						{
-							json: (typeof result === 'object' && result !== null ? result : { data: result }) as IDataObject,
+							json: (typeof result === 'object' && result !== null
+								? result
+								: { data: result }) as IDataObject,
 						},
 					],
 				];

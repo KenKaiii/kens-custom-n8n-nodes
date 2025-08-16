@@ -1,0 +1,68 @@
+{
+	"projects": [
+		{
+			"name": "Website Redesign",
+			"description": "Complete redesign of company website with modern UI/UX",
+			"manager": "Alice Johnson",
+			"startDate": "2024-01-01",
+			"endDate": "2024-03-31",
+			"budget": 50000,
+			"status": "active",
+			"priority": "high",
+			"tasks": [
+				{
+					"name": "Design Mockups",
+					"assignee": "John Designer",
+					"assigneeEmail": "john@company.com",
+					"dueDate": "2024-01-31",
+					"status": "completed",
+					"priority": "high"
+				},
+				{
+					"name": "Frontend Development",
+					"assignee": "Jane Developer",
+					"assigneeEmail": "jane@company.com",
+					"dueDate": "2024-02-28",
+					"status": "in_progress",
+					"priority": "high"
+				},
+				{
+					"name": "Content Migration",
+					"assignee": "Mike Content",
+					"assigneeEmail": "mike@company.com",
+					"dueDate": "2024-03-15",
+					"status": "pending",
+					"priority": "medium"
+				}
+			]
+		},
+		{
+			"name": "Mobile App Development",
+			"description": "iOS and Android mobile application",
+			"manager": "Bob Wilson",
+			"startDate": "2024-02-01",
+			"endDate": "2024-06-30",
+			"budget": 80000,
+			"status": "active",
+			"priority": "medium",
+			"tasks": [
+				{
+					"name": "Requirements Analysis",
+					"assignee": "Sarah Analyst",
+					"assigneeEmail": "sarah@company.com",
+					"dueDate": "2024-02-15",
+					"status": "completed",
+					"priority": "high"
+				},
+				{
+					"name": "UI/UX Design",
+					"assignee": "Tom Designer",
+					"assigneeEmail": "tom@company.com",
+					"dueDate": "2024-03-01",
+					"status": "in_progress",
+					"priority": "high"
+				}
+			]
+		}
+	]
+}

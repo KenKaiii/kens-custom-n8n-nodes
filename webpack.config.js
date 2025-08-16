@@ -3,53 +3,6 @@ const path = require('path');
 
 module.exports = [
 	{
-		name: 'BundledLibraries',
-		target: 'node',
-		mode: 'production',
-		entry: './bundled-libraries-simplified.js',
-		output: {
-			path: path.resolve(__dirname, 'dist'),
-			filename: 'bundled-libraries.js',
-			libraryTarget: 'commonjs2',
-		},
-		resolve: {
-			extensions: ['.js', '.ts'],
-		},
-		externals: {
-			// No externals - everything is bundled
-		},
-		optimization: {
-			minimize: false,
-		},
-		ignoreWarnings: [
-			// Ignore missing optional WebSocket performance dependencies
-			{
-				module: /node_modules\/ws\/lib\/buffer-util\.js/,
-				message: /Can't resolve 'bufferutil'/,
-			},
-			{
-				module: /node_modules\/ws\/lib\/validation\.js/,
-				message: /Can't resolve 'utf-8-validate'/,
-			},
-			{
-				module: /node_modules\/ethers\/node_modules\/ws\/lib\/buffer-util\.js/,
-				message: /Can't resolve 'bufferutil'/,
-			},
-			{
-				module: /node_modules\/ethers\/node_modules\/ws\/lib\/validation\.js/,
-				message: /Can't resolve 'utf-8-validate'/,
-			},
-			// Suppress handlebars require.extensions warnings (non-critical)
-			{
-				message: /require\.extensions is not supported by webpack/,
-			},
-			// Suppress fluent-ffmpeg dynamic require warnings (expected behavior)
-			{
-				message: /Critical dependency: the request of a dependency is an expression/,
-			},
-		],
-	},
-	{
 		name: 'SuperCodeNode',
 		target: 'node',
 		mode: 'production',

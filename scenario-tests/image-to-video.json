@@ -1,0 +1,42 @@
+{
+	"imageJobs": [
+		{
+			"title": "Product Demo Slideshow",
+			"description": "Convert product screenshots into promotional video",
+			"imageUrls": [
+				"https://picsum.photos/1920/1080?random=1",
+				"https://picsum.photos/1920/1080?random=2",
+				"https://picsum.photos/1920/1080?random=3",
+				"https://picsum.photos/1920/1080?random=4",
+				"https://picsum.photos/1920/1080?random=5"
+			],
+			"frameDuration": 3,
+			"outputFormat": "mp4",
+			"quality": "high",
+			"fps": 1,
+			"resolution": "1920x1080",
+			"backgroundMusicUrl": "https://audio.company.com/background.mp3",
+			"transitionType": "fade",
+			"transitionDuration": 0.5,
+			"createdAt": "2024-01-16T10:00:00Z"
+		},
+		{
+			"title": "Social Media Story",
+			"description": "Instagram story from image collection",
+			"imageUrls": [
+				"https://picsum.photos/1080/1920?random=6",
+				"https://picsum.photos/1080/1920?random=7",
+				"https://picsum.photos/1080/1920?random=8"
+			],
+			"frameDuration": 2,
+			"outputFormat": "mp4",
+			"quality": "medium",
+			"fps": 1,
+			"resolution": "1080x1920",
+			"backgroundMusicUrl": null,
+			"transitionType": "slide",
+			"transitionDuration": 0.3,
+			"createdAt": "2024-01-16T14:30:00Z"
+		}
+	]
+}

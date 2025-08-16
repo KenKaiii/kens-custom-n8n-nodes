@@ -1,0 +1,53 @@
+{
+	"analytics": [
+		{
+			"date": "2024-01-15",
+			"sessions": 1250,
+			"pageviews": 3500,
+			"bounces": 450,
+			"conversions": 35,
+			"totalDuration": 875000,
+			"newUsers": 320,
+			"returningUsers": 930
+		},
+		{
+			"date": "2024-01-16",
+			"sessions": 1180,
+			"pageviews": 3200,
+			"bounces": 425,
+			"conversions": 28,
+			"totalDuration": 820000,
+			"newUsers": 290,
+			"returningUsers": 890
+		}
+	],
+	"sessions": [
+		{
+			"userId": "user_123",
+			"startTime": "2024-01-15T09:30:00Z",
+			"endTime": "2024-01-15T09:45:00Z",
+			"pagesVisited": 5,
+			"source": "organic",
+			"device": "desktop",
+			"converted": true
+		},
+		{
+			"userId": "user_456",
+			"startTime": "2024-01-15T14:20:00Z",
+			"endTime": "2024-01-15T14:25:00Z",
+			"pagesVisited": 2,
+			"source": "social",
+			"device": "mobile",
+			"converted": false
+		},
+		{
+			"userId": "user_789",
+			"startTime": "2024-01-16T11:15:00Z",
+			"endTime": "2024-01-16T11:35:00Z",
+			"pagesVisited": 8,
+			"source": "direct",
+			"device": "tablet",
+			"converted": true
+		}
+	]
+}

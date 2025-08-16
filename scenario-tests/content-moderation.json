@@ -1,0 +1,40 @@
+{
+	"posts": [
+		{
+			"username": "john_user",
+			"userEmail": "john@social.com",
+			"content": "Great product! Really love the new features. Check out my review at https://myblog.com/review",
+			"createdAt": "2024-01-16T10:30:00Z",
+			"reportCount": 0,
+			"likes": 15,
+			"shares": 3
+		},
+		{
+			"username": "suspicious_user",
+			"userEmail": "fake@spam.com",
+			"content": "AMAZING DEAL! Click here: https://scam-site.com https://another-scam.com https://fake-deals.com BUY NOW!",
+			"createdAt": "2024-01-16T14:20:00Z",
+			"reportCount": 3,
+			"likes": 1,
+			"shares": 0
+		},
+		{
+			"username": "normal_user",
+			"userEmail": "user@company.com",
+			"content": "Has anyone tried the new update? I'm having some issues with the login process. Any tips would be appreciated!",
+			"createdAt": "2024-01-16T16:45:00Z",
+			"reportCount": 0,
+			"likes": 8,
+			"shares": 2
+		},
+		{
+			"username": "bad_actor",
+			"userEmail": "invalid-email",
+			"content": "This is spam content with banned words and fake promises. Don't trust this scam!",
+			"createdAt": "2024-01-15T09:15:00Z",
+			"reportCount": 5,
+			"likes": 0,
+			"shares": 0
+		}
+	]
+}

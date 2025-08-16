@@ -1,0 +1,62 @@
+{
+	"trades": [
+		{
+			"symbol": "AAPL",
+			"type": "buy",
+			"entryPrice": 185.50,
+			"exitPrice": 192.30,
+			"amount": 10000,
+			"portfolioValue": 150000,
+			"timestamp": "2024-01-15T09:30:00Z",
+			"strategy": "momentum",
+			"maxDrawdown": 2.1
+		},
+		{
+			"symbol": "TSLA",
+			"type": "sell",
+			"entryPrice": 245.80,
+			"exitPrice": 238.90,
+			"amount": 15000,
+			"portfolioValue": 150000,
+			"timestamp": "2024-01-15T14:45:00Z",
+			"strategy": "mean_reversion",
+			"maxDrawdown": 3.5
+		},
+		{
+			"symbol": "NVDA",
+			"type": "buy",
+			"entryPrice": 720.15,
+			"exitPrice": 745.60,
+			"amount": 8000,
+			"portfolioValue": 150000,
+			"timestamp": "2024-01-16T10:15:00Z",
+			"strategy": "breakout",
+			"maxDrawdown": 1.2
+		},
+		{
+			"symbol": "BTC-USD",
+			"type": "buy",
+			"entryPrice": 42500,
+			"exitPrice": 44200,
+			"amount": 25000,
+			"portfolioValue": 150000,
+			"timestamp": "2024-01-16T16:20:00Z",
+			"strategy": "swing",
+			"maxDrawdown": 4.8
+		}
+	],
+	"marketData": [
+		{
+			"symbol": "AAPL",
+			"price": 192.30,
+			"volume": 45000000,
+			"volatility": 0.25
+		},
+		{
+			"symbol": "TSLA", 
+			"price": 238.90,
+			"volume": 85000000,
+			"volatility": 0.45
+		}
+	]
+}

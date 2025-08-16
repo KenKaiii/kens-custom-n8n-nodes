@@ -1,0 +1,19 @@
+{
+	"pdfRequests": [
+		{
+			"fileName": "invoice_2024_001.pdf",
+			"requestedAt": "2024-01-16T10:00:00Z",
+			"pdfContent": "INVOICE #INV-2024-001\n\nBill To:\nJohn Smith\njohn.smith@company.com\nPhone: +1-555-0123\n\nServices:\nConsulting Services: $5,000.00\nDevelopment Work: $12,500.00\nProject Management: $2,500.00\n\nSubtotal: $20,000.00\nTax: $1,600.00\nTotal: $21,600.00\n\nDue Date: 02/15/2024\nPayment Terms: Net 30\n\nCONFIDENTIAL DOCUMENT"
+		},
+		{
+			"fileName": "contact_list_export.pdf",
+			"requestedAt": "2024-01-16T11:30:00Z",
+			"pdfContent": "COMPANY CONTACT DIRECTORY\n\nSales Team:\nAlice Johnson - alice.johnson@sales.com - (555) 123-4567\nBob Wilson - bob.wilson@sales.com - +1-555-234-5678\n\nMarketing:\nSarah Davis - sarah@marketing.com - 555.345.6789\nMike Chen - mike.chen@marketing.com\n\nExecutive:\nCEO: David Lee - david.lee@company.com - +1 (555) 456-7890\nCFO: Lisa Brown - lisa.brown@company.com\n\nLast Updated: 01/15/2024\nTotal Employees: 247"
+		},
+		{
+			"fileName": "financial_report_q4.pdf",
+			"requestedAt": "2024-01-16T14:15:00Z",
+			"pdfContent": "Q4 2023 FINANCIAL REPORT\n\nRevenue: $2,450,000.00\nExpenses: $1,890,000.00\nNet Profit: $560,000.00\n\nKey Metrics:\n- Customer Acquisition Cost: $125.50\n- Lifetime Value: $2,100.00\n- Monthly Recurring Revenue: $485,000.00\n\nContact: finance@company.com\nReport Date: 12/31/2023\nNext Review: 03/31/2024\n\nCONFIDENTIAL - Internal Use Only"
+		}
+	]
+}

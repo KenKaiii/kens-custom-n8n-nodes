@@ -1,0 +1,56 @@
+{
+	"qrRequests": [
+		{
+			"type": "url",
+			"url": "https://company.com/special-offer",
+			"size": 256,
+			"darkColor": "#000000",
+			"lightColor": "#FFFFFF",
+			"errorCorrection": "M",
+			"trackScans": true,
+			"expectedUsage": "Marketing campaign"
+		},
+		{
+			"type": "vcard",
+			"name": "John Smith",
+			"company": "Tech Solutions Inc",
+			"phone": "+1-555-0123",
+			"email": "john.smith@company.com",
+			"website": "https://techsolutions.com",
+			"size": 300,
+			"darkColor": "#1E40AF",
+			"lightColor": "#FFFFFF",
+			"errorCorrection": "H"
+		},
+		{
+			"type": "wifi",
+			"ssid": "Company_Guest_WiFi",
+			"password": "SecureGuest2024!",
+			"security": "WPA",
+			"hidden": "false",
+			"size": 200,
+			"darkColor": "#059669",
+			"lightColor": "#FFFFFF",
+			"errorCorrection": "L"
+		},
+		{
+			"type": "email",
+			"email": "support@company.com",
+			"subject": "Product Inquiry",
+			"body": "Hello, I would like to learn more about your products.",
+			"size": 256,
+			"darkColor": "#DC2626",
+			"lightColor": "#FFFFFF",
+			"errorCorrection": "M"
+		},
+		{
+			"type": "sms",
+			"phone": "+1-555-SUPPORT",
+			"message": "Hello, I need help with my order",
+			"size": 200,
+			"darkColor": "#7C3AED",
+			"lightColor": "#FFFFFF",
+			"errorCorrection": "M"
+		}
+	]
+}

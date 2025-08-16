@@ -1,0 +1,37 @@
+{
+	"videoJobs": [
+		{
+			"inputUrl": "https://sample-videos.com/zip/10/mp4/SampleVideo_720x480_1mb.mp4",
+			"outputFormat": "mp4",
+			"operations": ["compress", "generate_thumbnail", "extract_audio"],
+			"durationSeconds": 120,
+			"fileSizeMB": 15.5,
+			"resolution": "720x480",
+			"createdAt": "2024-01-16T10:00:00Z",
+			"priority": "high",
+			"watermarkText": "© Company 2024"
+		},
+		{
+			"inputUrl": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+			"outputFormat": "webm",
+			"operations": ["convert", "compress", "add_watermark"],
+			"durationSeconds": 300,
+			"fileSizeMB": 45.2,
+			"resolution": "1920x1080",
+			"createdAt": "2024-01-16T11:30:00Z",
+			"priority": "normal",
+			"watermarkText": "Processed by SuperCode"
+		},
+		{
+			"inputUrl": "https://test-videos.co.uk/vids/mp4/mp4/SampleVideo_360x240_1mb.mp4",
+			"outputFormat": "gif",
+			"operations": ["convert", "compress"],
+			"durationSeconds": 60,
+			"fileSizeMB": 8.1,
+			"resolution": "360x240",
+			"createdAt": "2024-01-16T14:15:00Z",
+			"priority": "low",
+			"watermarkText": null
+		}
+	]
+}

@@ -1,0 +1,58 @@
+{
+	"contentRequests": [
+		{
+			"type": "blog_post",
+			"title": "Artificial Intelligence Revolution in Modern Business Operations",
+			"description": "Explore how AI is transforming business processes, increasing efficiency, and driving innovation across industries in 2024.",
+			"keywords": [
+				"artificial intelligence",
+				"business automation",
+				"digital transformation",
+				"machine learning",
+				"productivity"
+			],
+			"industry": "technology",
+			"targetAudience": "business executives",
+			"urgency": "normal"
+		},
+		{
+			"type": "product_description",
+			"productName": "SuperCode Analytics Pro",
+			"title": "Advanced Data Processing Platform for Enterprise Solutions",
+			"description": "Transform your data processing capabilities with our enterprise-grade analytics platform featuring real-time insights and automated reporting.",
+			"tagline": "Enterprise Data Processing Redefined",
+			"keywords": [
+				"data analytics",
+				"enterprise software",
+				"business intelligence",
+				"automation",
+				"reporting"
+			],
+			"features": [
+				"Real-time Processing",
+				"Advanced Analytics",
+				"Custom Dashboards",
+				"API Integration",
+				"Scalable Architecture"
+			],
+			"price": "$299/month",
+			"targetAudience": "data analysts and business intelligence teams",
+			"urgency": "high"
+		},
+		{
+			"type": "blog_post",
+			"title": "Cryptocurrency Investment Strategies for Portfolio Diversification",
+			"description": "Learn advanced strategies for cryptocurrency portfolio management, risk assessment, and maximizing returns in volatile markets.",
+			"keywords": [
+				"cryptocurrency",
+				"portfolio management",
+				"investment strategy",
+				"blockchain",
+				"financial planning"
+			],
+			"industry": "finance",
+			"targetAudience": "investors",
+			"urgency": "normal"
+		}
+	]
+}

@@ -1,0 +1,52 @@
+{
+	"tickets": [
+		{
+			"subject": "Login Issues - Cannot Access Account",
+			"description": "Customer unable to login to their account. Password reset attempts failed. Customer tried multiple browsers and cleared cache. Issue started yesterday morning.",
+			"customerName": "John Smith",
+			"customerEmail": "john.smith@customer.com",
+			"priority": "high",
+			"category": "technical",
+			"status": "open",
+			"createdAt": "2024-01-15T09:30:00Z",
+			"assignedTo": "Tech Support Team",
+			"attachments": ["screenshot1.png", "error_log.txt"]
+		},
+		{
+			"subject": "Billing Question",
+			"description": "Question about invoice charges",
+			"customerName": "Jane Doe",
+			"customerEmail": "jane.doe@business.com",
+			"priority": "medium",
+			"category": "billing",
+			"status": "open",
+			"createdAt": "2024-01-16T14:20:00Z",
+			"assignedTo": "Billing Team",
+			"attachments": []
+		},
+		{
+			"subject": "Critical System Outage",
+			"description": "Production system is completely down. All users affected. Revenue impact significant. Need immediate assistance.",
+			"customerName": "Mike Wilson",
+			"customerEmail": "mike.wilson@enterprise.com",
+			"priority": "critical",
+			"category": "technical",
+			"status": "open",
+			"createdAt": "2024-01-16T16:45:00Z",
+			"assignedTo": "Senior Engineer",
+			"attachments": ["system_logs.zip"]
+		},
+		{
+			"subject": "Feature Request - Export Function",
+			"description": "Would like to export data to CSV format",
+			"customerName": "Sarah Davis",
+			"customerEmail": "sarah@company.com",
+			"priority": "low",
+			"category": "feature_request",
+			"status": "closed",
+			"createdAt": "2024-01-10T11:00:00Z",
+			"assignedTo": "Product Team",
+			"attachments": []
+		}
+	]
+}

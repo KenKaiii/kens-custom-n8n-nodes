@@ -1,0 +1,52 @@
+{
+	"employees": [
+		{
+			"name": "John Smith",
+			"email": "john.smith@company.com",
+			"phone": "+1-555-0123",
+			"department": "Engineering",
+			"position": "Senior Developer",
+			"hireDate": "2020-03-15",
+			"salary": 95000,
+			"employeeNumber": "EMP001",
+			"manager": "Alice Johnson",
+			"terminationDate": null
+		},
+		{
+			"name": "Jane Doe",
+			"email": "jane.doe@company.com",
+			"phone": "+1-555-0456",
+			"department": "Marketing",
+			"position": "Marketing Manager",
+			"hireDate": "2021-08-22",
+			"salary": 75000,
+			"employeeNumber": "EMP002",
+			"manager": "Bob Wilson",
+			"terminationDate": null
+		},
+		{
+			"name": "Mike Chen",
+			"email": "mike.chen@company.com",
+			"phone": "+1-555-0789",
+			"department": "Sales",
+			"position": "Sales Representative",
+			"hireDate": "2023-11-01",
+			"salary": 65000,
+			"employeeNumber": "EMP003",
+			"manager": "Sarah Davis",
+			"terminationDate": null
+		},
+		{
+			"name": "Lisa Brown",
+			"email": "lisa.brown@company.com",
+			"phone": null,
+			"department": "HR",
+			"position": "HR Specialist",
+			"hireDate": "2019-01-10",
+			"salary": 70000,
+			"employeeNumber": "EMP004",
+			"manager": "David Lee",
+			"terminationDate": null
+		}
+	]
+}

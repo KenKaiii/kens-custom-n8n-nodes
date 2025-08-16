@@ -1,0 +1,56 @@
+{
+	"leads": [
+		{
+			"contactName": "John Smith",
+			"email": "john.smith@techcorp.com",
+			"phone": "+1-555-0123",
+			"company": "TechCorp Inc",
+			"companySize": "enterprise",
+			"budget": 75000,
+			"timeframe": "immediate",
+			"source": "website",
+			"stage": "qualified",
+			"createdAt": "2024-01-10T00:00:00Z",
+			"notes": "Interested in enterprise solution"
+		},
+		{
+			"contactName": "Jane Doe",
+			"email": "jane.doe@startup.io",
+			"phone": "+1-555-0456",
+			"company": "Startup IO",
+			"companySize": "small",
+			"budget": 15000,
+			"timeframe": "1-3_months",
+			"source": "referral",
+			"stage": "contacted",
+			"createdAt": "2024-01-12T00:00:00Z",
+			"notes": "Budget conscious, needs basic features"
+		},
+		{
+			"contactName": "Mike Wilson",
+			"email": "mike.wilson@mediumcorp.com",
+			"phone": "+1-555-0789",
+			"company": "Medium Corp",
+			"companySize": "medium",
+			"budget": 35000,
+			"timeframe": "3-6_months",
+			"source": "linkedin",
+			"stage": "new",
+			"createdAt": "2024-01-15T00:00:00Z",
+			"notes": "Initial inquiry about pricing"
+		},
+		{
+			"contactName": "Sarah Davis",
+			"email": "sarah@bigcompany.com",
+			"phone": null,
+			"company": "Big Company Ltd",
+			"companySize": "enterprise",
+			"budget": 120000,
+			"timeframe": "immediate",
+			"source": "cold_outreach",
+			"stage": "closed_won",
+			"createdAt": "2023-12-01T00:00:00Z",
+			"notes": "Closed deal - enterprise package"
+		}
+	]
+}

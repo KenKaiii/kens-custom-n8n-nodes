@@ -1,0 +1,24 @@
+{
+	"socialPosts": [
+		{
+			"platform": "LinkedIn",
+			"content": "🚀 Excited to share our latest product update! #innovation #technology",
+			"scheduledTime": "2024-01-20T09:00:00Z",
+			"targetAudience": "professionals",
+			"hashtags": ["#innovation", "#technology", "#product"],
+			"mediaUrl": "https://company.com/product-image.jpg"
+		},
+		{
+			"platform": "Twitter",
+			"content": "Check out our new feature! Perfect for developers 👩‍💻 #coding #dev",
+			"scheduledTime": "2024-01-20T14:30:00Z",
+			"targetAudience": "developers",
+			"hashtags": ["#coding", "#dev", "#feature"],
+			"mediaUrl": "https://company.com/feature-demo.gif"
+		}
+	],
+	"performanceData": [
+		{ "platform": "LinkedIn", "post_id": "post_123", "likes": 245, "shares": 12, "comments": 8 },
+		{ "platform": "Twitter", "post_id": "tweet_456", "likes": 156, "shares": 24, "comments": 5 }
+	]
+}

@@ -1,0 +1,60 @@
+{
+	"portfolio": [
+		{
+			"symbol": "BTC",
+			"name": "Bitcoin",
+			"quantity": 0.5,
+			"purchasePrice": 35000,
+			"currentPrice": 42000,
+			"purchaseDate": "2023-06-15T00:00:00Z",
+			"walletAddress": "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+		},
+		{
+			"symbol": "ETH",
+			"name": "Ethereum",
+			"quantity": 2.5,
+			"purchasePrice": 2200,
+			"currentPrice": 2800,
+			"purchaseDate": "2023-08-20T00:00:00Z",
+			"walletAddress": "0x742d35cc6775657d65c8e6e6d3c1e3ce8c6e8d23"
+		},
+		{
+			"symbol": "ADA",
+			"name": "Cardano",
+			"quantity": 1000,
+			"purchasePrice": 0.45,
+			"currentPrice": 0.38,
+			"purchaseDate": "2023-10-10T00:00:00Z",
+			"walletAddress": "addr1qx2kd28nq8ac2szlgpcp9p8d8c2w8n3k6n8k8n3k6n8k8n3k6"
+		}
+	],
+	"transactions": [
+		{
+			"hash": "tx_abc123def456",
+			"symbol": "BTC",
+			"type": "buy",
+			"amount": 0.5,
+			"priceUSD": 35000,
+			"timestamp": "2023-06-15T10:30:00Z",
+			"fee": 25.50
+		},
+		{
+			"hash": "tx_def456ghi789",
+			"symbol": "ETH",
+			"type": "buy",
+			"amount": 2.5,
+			"priceUSD": 2200,
+			"timestamp": "2023-08-20T14:20:00Z",
+			"fee": 15.75
+		},
+		{
+			"hash": "tx_ghi789jkl012",
+			"symbol": "ADA",
+			"type": "buy",
+			"amount": 1000,
+			"priceUSD": 0.45,
+			"timestamp": "2023-10-10T09:15:00Z",
+			"fee": 2.25
+		}
+	]
+}
