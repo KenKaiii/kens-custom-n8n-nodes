@@ -808,14 +808,14 @@ export class SuperCodeNode implements INodeType {
 const schema = joi.string().min(3);
 const result = schema.validate('test');
 
-// 🤖 AI Agent Mode: Auto-populated AI variables (seamless UX!)
+// 🤖 AI Agent Mode: Auto-populated AI variables (enable AI Agent Mode to use these!)
 const aiConnections = {
-    llm_available: !!llm,
-    memory_available: !!memory,
-    tools_available: !!tools
+    llm_available: typeof llm !== 'undefined' && !!llm,
+    memory_available: typeof memory !== 'undefined' && !!memory,
+    tools_available: typeof tools !== 'undefined' && !!tools
 };
 
-if (llm) {
+if (typeof llm !== 'undefined' && llm) {
     // Language model is automatically available when connected
     console.log('AI LLM available:', typeof llm, Object.keys(llm));
     // Note: AI connections come as arrays, access actual LLM with llm[0]
@@ -831,7 +831,7 @@ if (llm) {
     }
 }
 
-if (memory) {
+if (typeof memory !== 'undefined' && memory) {
     // Memory is automatically available when connected
     console.log('AI Memory available:', typeof memory, Object.keys(memory));
     aiConnections.memory_info = {
@@ -840,7 +840,7 @@ if (memory) {
     };
 }
 
-if (tools) {
+if (typeof tools !== 'undefined' && tools) {
     // Tools are automatically available when connected
     console.log('AI Tools available:', typeof tools, Object.keys(tools));
     aiConnections.tools_info = {
@@ -852,7 +852,7 @@ if (tools) {
 // Your JavaScript code here
 return { 
     result: 'Hello from Super Code!', 
-    ai_mode: !!llm,
+    ai_mode: typeof llm !== 'undefined' && !!llm,
     ai_connections: aiConnections 
 };
 `,
@@ -1029,30 +1029,73 @@ result = {
 		const aiAgentMode = this.getNodeParameter('aiAgentMode', 0, false) as boolean;
 		originalConsole.log('[SuperCode] 🤖 AI Agent Mode:', aiAgentMode);
 
-		// Create enhanced sandbox factory
-		const superCodeNode = new SuperCodeNode();
-		const createEnhancedSandbox = superCodeNode.createSandboxFactory(
-			aiAgentMode,
-			originalConsole,
-			this,
-		);
-
 		try {
 			console.log('[SuperCode] 🚀 EXECUTION STARTING - LIBRARIES PRE-LOADED AS GLOBALS');
 			console.log('[SuperCode] 📝 Execution mode:', executionMode);
 			console.log('[SuperCode] 📦 Items count:', items.length);
 
-			// Execute based on mode
-			if (executionMode === 'runOnceForAllItems') {
-				return await superCodeNode.executeCodeBatch(items, code, timeout, createEnhancedSandbox);
+			// Simple inline execution to avoid instance creation issues
+			const sandbox = {
+				$input: {
+					all: () => items,
+					first: () => items[0],
+					last: () => items[items.length - 1],
+					json: items.length === 1 ? items[0].json : items.map((item) => item.json),
+				},
+				...embeddedLibraries,
+				console: {
+					log: (...args: unknown[]) => console.log('[SuperCode]', ...args),
+					error: (...args: unknown[]) => console.error('[SuperCode]', ...args),
+					warn: (...args: unknown[]) => console.warn('[SuperCode]', ...args),
+				},
+				setTimeout,
+				clearTimeout,
+				setInterval,
+				clearInterval,
+				Promise,
+				JSON,
+				Date,
+				Math,
+				Object,
+				Array,
+				String,
+				Number,
+				Boolean,
+				RegExp,
+				Error,
+			};
+
+			const context = createContext(sandbox as Record<string, unknown>);
+			const wrappedCode = `
+				(async function() {
+					try {
+						${code}
+					} catch (_error) {
+						throw _error;
+					}
+				})();
+			`;
+
+			const result = await runInContext(wrappedCode, context, {
+				timeout: timeout * 1000,
+			});
+
+			if (Array.isArray(result)) {
+				return [
+					result.map((item: unknown) => ({
+						json: (typeof item === 'object' && item !== null ? item : { data: item }) as IDataObject,
+					})),
+				];
+			} else if (result !== undefined) {
+				return [
+					[
+						{
+							json: (typeof result === 'object' && result !== null ? result : { data: result }) as IDataObject,
+						},
+					],
+				];
 			} else {
-				return await superCodeNode.executeCodePerItem(
-					items,
-					code,
-					timeout,
-					createEnhancedSandbox,
-					this,
-				);
+				return [[]];
 			}
 		} catch (_error) {
 			throw new NodeOperationError(
