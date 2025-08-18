@@ -161,11 +161,48 @@ const embeddedLibraries = {
 			return require('nanoid');
 		}
 	})(),
-	ms: require('ms'),
+	get ms() {
+		try {
+			const msLib = require('ms');
+			return msLib;
+		} catch (error) {
+			// Fallback ms implementation for basic time conversion
+			console.warn('[SuperCode] ms library not available, using fallback implementation');
+			return (val: unknown) => {
+				if (typeof val === 'string') {
+					const units: Record<string, number> = { 
+						ms: 1, s: 1000, sec: 1000, m: 60000, min: 60000, 
+						h: 3600000, hr: 3600000, d: 86400000, day: 86400000,
+						w: 604800000, week: 604800000
+					};
+					const match = val.match(/^(\d+(?:\.\d+)?)\s*([a-z]+)$/i);
+					return match ? parseFloat(match[1]) * (units[match[2].toLowerCase()] || 1) : NaN;
+				}
+				// Convert milliseconds to string
+				if (typeof val === 'number') {
+					const units = [
+						{ name: 'd', value: 86400000 },
+						{ name: 'h', value: 3600000 },
+						{ name: 'm', value: 60000 },
+						{ name: 's', value: 1000 },
+						{ name: 'ms', value: 1 }
+					];
+					for (const unit of units) {
+						if (val >= unit.value) {
+							const count = Math.floor(val / unit.value);
+							return count + unit.name;
+						}
+					}
+					return val + 'ms';
+				}
+				return val;
+			};
+		}
+	},
 	bytes: require('bytes'),
 
 	// Financial & Geographic
-	currency: require('currency.js'),
+	currency: require('currency.js').default,
 	phoneNumber: require('libphonenumber-js'),
 	iban: require('iban'),
 

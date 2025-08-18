@@ -102,7 +102,7 @@ const libraryTests = [
 		name: 'nanoid',
 		test: () => typeof nanoid.nanoid === 'function' || typeof nanoid === 'function',
 	},
-	{ name: 'ms', test: () => ms && ms('1h') === 3600000 },
+	{ name: 'ms', test: () => typeof ms === 'function' && ms('1h') === 3600000 },
 	{ name: 'bytes', test: () => typeof bytes === 'function' },
 
 	// Financial & Geographic
