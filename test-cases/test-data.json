@@ -1,0 +1,33 @@
+{
+	"customers": [
+		{
+			"name": "John Doe",
+			"email": "john.doe@example.com",
+			"joinDate": "2024-01-15",
+			"value": 1500.5
+		},
+		{
+			"name": "Jane Smith",
+			"email": "jane.smith@example.com",
+			"joinDate": "2024-02-20",
+			"value": 2500.75
+		},
+		{
+			"name": "Bob Johnson",
+			"email": "bob@company.org",
+			"joinDate": "2024-03-10",
+			"value": 750.25
+		},
+		{
+			"name": "Invalid Email User",
+			"email": "not-an-email",
+			"joinDate": "2024-04-01",
+			"value": 500
+		}
+	],
+	"config": {
+		"currency": "USD",
+		"timezone": "America/New_York",
+		"reportFormat": "excel"
+	}
+}

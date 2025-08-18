@@ -114,7 +114,7 @@ module.exports = [
 			},
 			{
 				module: /node_modules\/ws\/lib\/validation\.js/,
-				message: /Can't resolve 'utf-3-validate'/,
+				message: /Can't resolve 'utf-8-validate'/,
 			},
 			{
 				message: /require\.extensions is not supported by webpack/,

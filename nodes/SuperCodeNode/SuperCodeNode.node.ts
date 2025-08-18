@@ -161,14 +161,7 @@ const embeddedLibraries = {
 			return require('nanoid');
 		}
 	})(),
-	get ms() {
-		try {
-			return require('ms');
-		} catch (error) {
-			console.warn('[SuperCode] ms not available in this environment:', error.message);
-			return undefined;
-		}
-	},
+	ms: require('ms'),
 	bytes: require('bytes'),
 
 	// Financial & Geographic
@@ -688,8 +681,15 @@ export class SuperCodeNode implements INodeType {
 			const libraryCache: LibraryCache = {};
 			const performanceTracker: PerformanceTracker = {};
 
-			// Create the base sandbox structure
+			// Create the base sandbox structure with n8n workflow context
 			const sandbox = {
+				// 🔗 n8n WORKFLOW CONTEXT: Add core workflow data proxy and methods FIRST
+				...executionContext.getWorkflowDataProxy(0),
+				$getNodeParameter: executionContext.getNodeParameter.bind(executionContext),
+				$getWorkflowStaticData: executionContext.getWorkflowStaticData.bind(executionContext),
+				helpers: executionContext.helpers,
+
+				// 📦 OVERRIDE: Enhanced $input with additional convenience methods
 				$input: {
 					all: () => items,
 					first: () => items[0],
@@ -734,6 +734,11 @@ export class SuperCodeNode implements INodeType {
 				Boolean,
 				RegExp,
 				Error,
+
+				// 🎯 Node.js globals for full compatibility with standard Code node
+				global,
+				Buffer,
+
 				// SECURITY: require removed to prevent sandbox escape via require('child_process').exec()
 			};
 
@@ -832,54 +837,42 @@ export class SuperCodeNode implements INodeType {
 				default: `// SuperCode Node by Ken Kai - 49+ JavaScript Libraries Available
 // Available: _, lodash, axios, cheerio, dayjs, moment, dateFns, dateFnsTz, joi, Joi, validator, uuid, Ajv, yup, csvParse, xml2js, XMLParser, YAML, papaparse, Papa, Handlebars, CryptoJS, forge, jwt, bcrypt, bcryptjs, XLSX, pdfLib, archiver, Jimp, QRCode, math, fuzzy, stringSimilarity, slug, pluralize, qs, FormData, ini, toml, nanoid, bytes, phoneNumber, iban, ethers, web3, ytdl, ffmpeg, ffmpegStatic, utils
 
+// 🔄 EXECUTION MODE SUPPORT:
+// - "Run Once for All Items": Access all items via $input.all() or items variable
+// - "Run Once for Each Item": Access current item via $input.item or item variable
+
+// For "Run Once for All Items" mode:
+if (typeof items !== 'undefined') {
+    console.log('Running in "Run Once for All Items" mode');
+    console.log('Total items:', items.length);
+    // Process all items together
+    const allData = items.map(item => item.json);
+    return { 
+        mode: 'runOnceForAllItems',
+        totalItems: items.length,
+        firstItem: allData[0],
+        result: 'Processed all items together'
+    };
+}
+
+// For "Run Once for Each Item" mode:
+if (typeof item !== 'undefined') {
+    console.log('Running in "Run Once for Each Item" mode');
+    console.log('Current item:', item.json);
+    // Process single item
+    return { 
+        mode: 'runOnceForEachItem',
+        currentItem: item.json,
+        result: 'Processed individual item'
+    };
+}
+
+// Fallback (shouldn't happen)
 const data = $input.first().json;
-
-// 🤖 AI Agent Mode: Auto-populated AI variables (enable AI Agent Mode to use these!)
-const aiConnections = {
-    llm_available: typeof llm !== 'undefined' && !!llm,
-    memory_available: typeof memory !== 'undefined' && !!memory,
-    tools_available: typeof tools !== 'undefined' && !!tools
-};
-
-if (typeof llm !== 'undefined' && llm) {
-    // Language model is automatically available when connected
-    console.log('AI LLM available:', typeof llm, Object.keys(llm));
-    // Note: AI connections come as arrays, access actual LLM with llm[0]
-    const actualLLM = llm[0];
-    if (actualLLM) {
-        console.log('Actual LLM methods:', Object.getOwnPropertyNames(actualLLM));
-        aiConnections.llm_info = {
-            type: typeof llm,
-            keys: Object.keys(llm).slice(0, 5),
-            actual_llm_available: !!actualLLM,
-            actual_llm_methods: Object.getOwnPropertyNames(actualLLM).slice(0, 10)
-        };
-    }
-}
-
-if (typeof memory !== 'undefined' && memory) {
-    // Memory is automatically available when connected
-    console.log('AI Memory available:', typeof memory, Object.keys(memory));
-    aiConnections.memory_info = {
-        type: typeof memory,
-        keys: Object.keys(memory).slice(0, 5)
-    };
-}
-
-if (typeof tools !== 'undefined' && tools) {
-    // Tools are automatically available when connected
-    console.log('AI Tools available:', typeof tools, Object.keys(tools));
-    aiConnections.tools_info = {
-        type: typeof tools,
-        keys: Object.keys(tools).slice(0, 5)
-    };
-}
-
-// Your JavaScript code here
 return { 
-    result: 'Hello from Super Code!', 
-    ai_mode: typeof llm !== 'undefined' && !!llm,
-    ai_connections: aiConnections 
+    result: 'Hello from Super Code!',
+    fallback: true,
+    data
 };
 `,
 				description: 'JavaScript/TypeScript code with enhanced libraries and utilities',
@@ -933,6 +926,26 @@ result = {
 `,
 				description: 'Python code with popular libraries and utilities',
 				noDataExpression: true,
+			},
+			{
+				displayName: 'Mode',
+				name: 'mode',
+				type: 'options',
+				options: [
+					{
+						name: 'Run Once for All Items',
+						value: 'runOnceForAllItems',
+						description: 'Run the code only once with all input items accessible via $input.all()',
+					},
+					{
+						name: 'Run Once for Each Item',
+						value: 'runOnceForEachItem',
+						description:
+							'Run the code for each input item separately, with only current item accessible via $input.item',
+					},
+				],
+				default: 'runOnceForAllItems',
+				description: 'Whether to run code once for all items or once for each item',
 			},
 			{
 				displayName: 'AI Agent Mode',
@@ -1025,49 +1038,10 @@ result = {
 		],
 	};
 
-	// Helper method to pre-evaluate embedded libraries for simplified execution
-	private static preEvaluateEmbeddedLibraries(): {
-		evaluatedLibraries: Record<string, unknown>;
-		loadedCount: number;
-		skippedCount: number;
-	} {
-		console.log('[SuperCode] 🔧 Pre-evaluating embedded libraries...');
-		const evaluatedLibraries: Record<string, unknown> = {};
-		let loadedCount = 0;
-		let skippedCount = 0;
-
-		for (const [libName, libValue] of Object.entries(embeddedLibraries)) {
-			try {
-				// Evaluate getters and require() calls outside VM context
-				const evaluatedValue =
-					typeof libValue === 'function' && libValue.name === ''
-						? libValue() // Execute getter functions
-						: libValue; // Use direct values
-
-				if (evaluatedValue !== undefined && evaluatedValue !== null) {
-					evaluatedLibraries[libName] = evaluatedValue;
-					loadedCount++;
-					console.log(`[SuperCode] ✅ Pre-loaded ${libName}`);
-				} else {
-					skippedCount++;
-					console.log(`[SuperCode] ⚠️ Skipped ${libName} (undefined/null)`);
-				}
-			} catch (error) {
-				skippedCount++;
-				console.log(`[SuperCode] ⚠️ Failed to load ${libName}:`, error.message);
-			}
-		}
-
-		console.log(
-			`[SuperCode] ✅ Pre-evaluation completed: ${loadedCount} loaded, ${skippedCount} skipped`,
-		);
-		return { evaluatedLibraries, loadedCount, skippedCount };
-	}
-
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
 		const language = this.getNodeParameter('language', 0, 'javascript') as string;
-		const executionMode = 'runOnceForAllItems'; // Default execution mode
+		const executionMode = this.getNodeParameter('mode', 0, 'runOnceForAllItems') as string;
 		const code = this.getNodeParameter('code', 0) as string;
 		const timeout = 30; // Default timeout in seconds
 
@@ -1099,91 +1073,76 @@ result = {
 			console.log('[SuperCode] 📝 Execution mode:', executionMode);
 			console.log('[SuperCode] 📦 Items count:', items.length);
 
-			// Pre-evaluate all embedded libraries using helper method
-			const { evaluatedLibraries } = SuperCodeNode.preEvaluateEmbeddedLibraries();
-
-			// Create library cache and performance tracker for utils support
-			const libraryCache: LibraryCache = {};
-			const performanceTracker: PerformanceTracker = {};
-			Object.assign(libraryCache, evaluatedLibraries);
-
 			// Create SuperCode node instance to access helper methods
 			const superCodeNode = new SuperCodeNode();
 
-			// Create sandbox with all necessary objects
-			const sandbox = {
-				$input: {
-					all: () => items,
-					first: () => items[0],
-					last: () => items[items.length - 1],
-					json: items.length === 1 ? items[0].json : items.map((item) => item.json),
-				},
-				...evaluatedLibraries,
-				console: {
-					log: (...args: unknown[]) => console.log('[SuperCode]', ...args),
-					error: (...args: unknown[]) => console.error('[SuperCode]', ...args),
-					warn: (...args: unknown[]) => console.warn('[SuperCode]', ...args),
-				},
-				utils: superCodeNode.createSandboxUtils(libraryCache, performanceTracker),
-				setTimeout,
-				clearTimeout,
-				setInterval,
-				clearInterval,
-				Promise,
-				JSON,
-				Date,
-				Math,
-				Object,
-				Array,
-				String,
-				Number,
-				Boolean,
-				RegExp,
-				Error,
-			};
-
-			// Populate AI variables if AI Agent Mode is enabled
-			await superCodeNode.populateAIVariables(
-				sandbox as Record<string, unknown>,
+			// Create sandbox factory function
+			const createEnhancedSandbox = superCodeNode.createSandboxFactory(
 				aiAgentMode,
+				originalConsole,
 				this,
 			);
 
-			const context = createContext(sandbox as Record<string, unknown>);
-			const wrappedCode = `
-				(async function() {
-					try {
-						${code}
-					} catch (_error) {
-						throw _error;
-					}
-				})();
-			`;
-
-			const result = await runInContext(wrappedCode, context, {
-				timeout: timeout * 1000,
-			});
-
-			if (Array.isArray(result)) {
-				return [
-					result.map((item: unknown) => ({
-						json: (typeof item === 'object' && item !== null
-							? item
-							: { data: item }) as IDataObject,
-					})),
-				];
-			} else if (result !== undefined) {
-				return [
-					[
-						{
-							json: (typeof result === 'object' && result !== null
-								? result
-								: { data: result }) as IDataObject,
+			// Helper function to create sandbox for runOnceForAllItems mode
+			const createSandboxForAllItems = (
+				baseSandboxFactory: (items: INodeExecutionData[]) => Promise<unknown>,
+			) => {
+				return async (items: INodeExecutionData[]) => {
+					const baseSandbox = await baseSandboxFactory(items);
+					// In runOnceForAllItems mode, provide access to all items
+					return {
+						...(baseSandbox as Record<string, unknown>),
+						items: items, // Standard n8n Code node compatibility
+						$input: {
+							all: () => items,
+							first: () => items[0],
+							last: () => items[items.length - 1],
+							json: items.length === 1 ? items[0].json : items.map((item) => item.json),
 						},
-					],
-				];
+					};
+				};
+			};
+
+			// Helper function to create sandbox for runOnceForEachItem mode
+			const createSandboxForEachItem = (
+				baseSandboxFactory: (items: INodeExecutionData[]) => Promise<unknown>,
+			) => {
+				return async (items: INodeExecutionData[]) => {
+					const baseSandbox = await baseSandboxFactory(items);
+					// In runOnceForEachItem mode, provide access to single item
+					const currentItem = items[0]; // executeCodePerItem passes single item array
+					return {
+						...(baseSandbox as Record<string, unknown>),
+						item: currentItem, // Standard n8n Code node compatibility
+						$input: {
+							all: () => [currentItem],
+							first: () => currentItem,
+							last: () => currentItem,
+							item: currentItem, // Additional convenience accessor
+							json: currentItem.json,
+						},
+					};
+				};
+			};
+
+			// Execute based on the selected mode
+			if (executionMode === 'runOnceForEachItem') {
+				console.log('[SuperCode] ⚡ Running runOnceForEachItem mode');
+				return await superCodeNode.executeCodePerItem(
+					items,
+					code,
+					timeout,
+					createSandboxForEachItem(createEnhancedSandbox),
+					this,
+				);
 			} else {
-				return [[]];
+				console.log('[SuperCode] ⚡ Running runOnceForAllItems mode');
+				return await superCodeNode.executeCodeBatch(
+					items,
+					code,
+					timeout,
+					createSandboxForAllItems(createEnhancedSandbox),
+				);
 			}
 		} catch (_error) {
 			throw new NodeOperationError(
