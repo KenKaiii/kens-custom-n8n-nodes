@@ -534,11 +534,20 @@ export class SuperCodeNode implements INodeType {
 		// Pre-evaluate ALL embedded libraries to avoid require() calls in VM context
 		for (const [libName, libValue] of Object.entries(bundledLibraries)) {
 			try {
-				// Evaluate getters and require() calls outside VM context
-				const evaluatedValue =
-					typeof libValue === 'function' && libValue.name === ''
-						? libValue() // Execute getter functions
-						: libValue; // Use direct values
+				// Check if this is a getter property descriptor
+				const descriptor = Object.getOwnPropertyDescriptor(bundledLibraries, libName);
+				let evaluatedValue;
+				
+				if (descriptor && descriptor.get) {
+					// This is a getter - call it to get the actual value
+					evaluatedValue = descriptor.get();
+				} else if (typeof libValue === 'function' && libValue.name === '') {
+					// This is an anonymous function (legacy check)
+					evaluatedValue = libValue();
+				} else {
+					// Use direct value
+					evaluatedValue = libValue;
+				}
 
 				if (evaluatedValue && typeof evaluatedValue !== 'undefined') {
 					// Remove any existing property and replace with evaluated value
@@ -564,9 +573,16 @@ export class SuperCodeNode implements INodeType {
 
 		// Add library aliases for compatibility (with pre-evaluation)
 		try {
-			const nanoidLib = bundledLibraries.nanoid;
-			const evaluatedNanoid =
-				typeof nanoidLib === 'function' && nanoidLib.name === '' ? nanoidLib() : nanoidLib;
+			const nanoidDescriptor = Object.getOwnPropertyDescriptor(bundledLibraries, 'nanoid');
+			let evaluatedNanoid;
+			
+			if (nanoidDescriptor && nanoidDescriptor.get) {
+				evaluatedNanoid = nanoidDescriptor.get();
+			} else {
+				const nanoidLib = bundledLibraries.nanoid;
+				evaluatedNanoid =
+					typeof nanoidLib === 'function' && nanoidLib.name === '' ? nanoidLib() : nanoidLib;
+			}
 
 			if (
 				evaluatedNanoid &&
