@@ -209,6 +209,32 @@ const embeddedLibraries = {
 			return undefined;
 		}
 	},
+
+	// Natural Language Processing & Text Analysis
+	// Language detection library - detects 187 languages
+	franc: require('franc-min'),
+	// Natural language processing library
+	compromise: require('compromise'),
+
+	// Async Control Flow
+	// Retry failed promises with exponential backoff
+	pRetry: require('p-retry'),
+	// Run multiple promise-returning & async functions with limited concurrency
+	pLimit: require('p-limit'),
+
+	// Text Processing & Conversion
+	// Convert HTML to plain text
+	htmlToText: require('html-to-text'),
+	// Markdown parser and compiler
+	marked: require('marked'),
+
+	// Data Comparison
+	// Deep diff & patch for JSON objects
+	jsonDiff: require('json-diff-ts'),
+
+	// Data Operations
+	// Parse and manipulate cron expressions
+	cronParser: require('cron-parser'),
 };
 
 // Try to load full bundle, fall back to embedded

@@ -252,6 +252,24 @@ const embeddedLibraries = {
 			return undefined;
 		}
 	},
+
+	// Natural Language Processing & Text Analysis
+	franc: require('franc-min'),
+	compromise: require('compromise'),
+
+	// Async Control Flow  
+	pRetry: require('p-retry'),
+	pLimit: require('p-limit'),
+
+	// Text Processing & Conversion
+	htmlToText: require('html-to-text'),
+	marked: require('marked'),
+
+	// Data Comparison
+	jsonDiff: require('json-diff-ts'),
+
+	// Data Operations
+	cronParser: require('cron-parser'),
 };
 
 // Try to load full bundle, fall back to embedded

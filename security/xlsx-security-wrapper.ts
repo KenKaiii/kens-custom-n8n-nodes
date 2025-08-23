@@ -123,6 +123,9 @@ function sanitizeOptions(opts: unknown): unknown {
 		const parsed = JSON.parse(jsonString);
 		return deepSanitize(parsed);
 	} catch (error) {
+		if (error instanceof ApplicationError) {
+			throw error;
+		}
 		throw new ApplicationError('XLSX Security: Invalid options object');
 	}
 }
@@ -131,6 +134,11 @@ function sanitizeOptions(opts: unknown): unknown {
 function validateFilename(filename: string): void {
 	if (!filename || typeof filename !== 'string') {
 		throw new ApplicationError('XLSX Security: Valid filename required');
+	}
+
+	// Null byte injection protection (check first as it's most critical)
+	if (filename.includes('\0')) {
+		throw new ApplicationError('XLSX Security: Null bytes not allowed in filename');
 	}
 
 	// Path traversal protection
@@ -143,21 +151,16 @@ function validateFilename(filename: string): void {
 		throw new ApplicationError('XLSX Security: Absolute paths not allowed');
 	}
 
-	// File extension validation
-	const allowedExtensions = ['.xlsx', '.xls', '.xlsm', '.xlsb', '.csv'];
-	const hasValidExtension = allowedExtensions.some(ext => filename.toLowerCase().endsWith(ext));
-	if (!hasValidExtension) {
-		throw new ApplicationError('XLSX Security: Invalid file extension');
-	}
-
 	// Length limit
 	if (filename.length > 255) {
 		throw new ApplicationError('XLSX Security: Filename too long');
 	}
 
-	// Null byte injection protection
-	if (filename.includes('\0')) {
-		throw new ApplicationError('XLSX Security: Null bytes not allowed in filename');
+	// File extension validation
+	const allowedExtensions = ['.xlsx', '.xls', '.xlsm', '.xlsb', '.csv'];
+	const hasValidExtension = allowedExtensions.some(ext => filename.toLowerCase().endsWith(ext));
+	if (!hasValidExtension) {
+		throw new ApplicationError('XLSX Security: Invalid file extension');
 	}
 }
 

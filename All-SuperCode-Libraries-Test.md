@@ -1,6 +1,7 @@
-# SuperCode All Libraries Test - Complete
+# SuperCode All Libraries Test - Complete (v1.4.0)
 
 Test every single embedded library in SuperCode node with simple functionality check.
+Now includes 52+ libraries with NLP, language detection, async control, and more!
 
 ## SuperCode JavaScript
 
@@ -385,6 +386,69 @@ testOptional('ffmpegStatic', () => {
 	);
 });
 
+// NEW Natural Language Processing & Text Analysis
+testOptional('franc', () => {
+	if (typeof franc === 'undefined') return 'Not available';
+	const { franc: francFunc } = franc;
+	const langs = [
+		francFunc('Hello world this is a test'),
+		francFunc('Hola mundo esto es una prueba'),
+		francFunc('Bonjour le monde ceci est un test')
+	];
+	return 'Language detection | English: ' + langs[0] + ' | Spanish: ' + langs[1] + ' | French: ' + langs[2];
+});
+
+testOptional('compromise', () => {
+	if (typeof compromise === 'undefined') return 'Not available';
+	const doc = compromise('The quick brown fox jumps over the lazy dog');
+	return 'NLP | Nouns: ' + doc.nouns().out('array').length + ' | Verbs: ' + doc.verbs().out('array').length;
+});
+
+// NEW Async Control Flow
+testOptional('pRetry', () => {
+	if (typeof pRetry === 'undefined') return 'Not available';
+	return 'Promise retry | Type: ' + typeof pRetry + ' | Has default: ' + !!pRetry.default;
+});
+
+testOptional('pLimit', () => {
+	if (typeof pLimit === 'undefined') return 'Not available';
+	return 'Promise limiter | Type: ' + typeof pLimit + ' | Has default: ' + !!pLimit.default;
+});
+
+// NEW Text Processing & Conversion
+testOptional('htmlToText', () => {
+	if (typeof htmlToText === 'undefined') return 'Not available';
+	const { htmlToText: convert } = htmlToText;
+	const html = '<h1>Title</h1><p>This is a <b>test</b> paragraph.</p>';
+	const text = convert(html);
+	return 'HTML to text | Converted: ' + text.replace(/\n/g, ' ').substring(0, 50);
+});
+
+testOptional('marked', () => {
+	if (typeof marked === 'undefined') return 'Not available';
+	const { marked: markedFunc } = marked;
+	const markdown = '# Title\n\nThis is **bold** text.';
+	const html = markedFunc(markdown);
+	return 'Markdown parser | HTML length: ' + html.length + ' | Has h1: ' + html.includes('<h1>');
+});
+
+// NEW Data Comparison
+testOptional('jsonDiff', () => {
+	if (typeof jsonDiff === 'undefined') return 'Not available';
+	const { diff } = jsonDiff;
+	const obj1 = { a: 1, b: 2 };
+	const obj2 = { a: 1, b: 3, c: 4 };
+	const changes = diff(obj1, obj2);
+	return 'JSON diff | Changes: ' + changes.length + ' | Types: ' + changes.map(c => c.type).join(',');
+});
+
+// NEW Data Operations
+testOptional('cronParser', () => {
+	if (typeof cronParser === 'undefined') return 'Not available';
+	// Note: cron-parser v5 has different API
+	return 'Cron parser | Type: ' + typeof cronParser + ' | Has CronExpression: ' + !!cronParser.CronExpression;
+});
+
 // Additional libraries that might be available
 testOptional('natural', () => {
 	if (typeof natural === 'undefined') return 'Not available';
@@ -428,9 +492,15 @@ const categories = {
 		['joi', 'Joi', 'validator', 'Ajv'].some((name) => lib.library.includes(name)),
 	),
 	dataProcessing: libraryTests.filter((lib) =>
-		['XLSX', 'xml2js', 'XMLParser', 'YAML', 'papaparse', 'Papa', 'csvParse'].some((name) =>
+		['XLSX', 'xml2js', 'XMLParser', 'YAML', 'papaparse', 'Papa', 'csvParse', 'jsonDiff', 'cronParser'].some((name) =>
 			lib.library.includes(name),
 		),
+	),
+	nlpAndText: libraryTests.filter((lib) =>
+		['franc', 'compromise', 'htmlToText', 'marked'].some((name) => lib.library.includes(name)),
+	),
+	asyncControl: libraryTests.filter((lib) =>
+		['pRetry', 'pLimit'].some((name) => lib.library.includes(name)),
 	),
 	webScraping: libraryTests.filter((lib) =>
 		['axios', 'cheerio', 'puppeteer'].some((name) => lib.library.includes(name)),
@@ -522,6 +592,14 @@ return {
 			count: categories.dataProcessing.length,
 			working: categories.dataProcessing.filter((l) => l.status === 'WORKING').length,
 		},
+		nlpAndText: {
+			count: categories.nlpAndText.length,
+			working: categories.nlpAndText.filter((l) => l.status === 'WORKING').length,
+		},
+		asyncControl: {
+			count: categories.asyncControl.length,
+			working: categories.asyncControl.filter((l) => l.status === 'WORKING').length,
+		},
 		webScraping: {
 			count: categories.webScraping.length,
 			working: categories.webScraping.filter((l) => l.status === 'WORKING').length,
@@ -550,7 +628,7 @@ return {
 
 	// 📋 Metadata
 	testedAt: dayjs().format('YYYY-MM-DD HH:mm:ss'),
-	environment: 'SuperCode v1.0.81',
+	environment: 'SuperCode v1.4.0',
 };
 ```
 
@@ -559,8 +637,10 @@ return {
 This will return:
 
 - **libraryTests**: Array with each library showing name, status, result, available
-- **summary**: Total counts and success rate
-- **categories**: Libraries grouped by functionality
+- **summary**: Total counts and success rate (52+ libraries tested)
+- **categories**: Libraries grouped by functionality including new categories:
+  - **nlpAndText**: Language detection (franc), NLP (compromise), HTML/Markdown conversion
+  - **asyncControl**: Promise retry (pRetry) and concurrency limiting (pLimit)
 - **testedAt**: Timestamp of test execution
 
-The test covers all embedded libraries including the optional ones that may not be available in all environments.
+The test covers all embedded libraries including the optional ones that may not be available in all environments. Version 1.4.0 adds 8 new libraries for enhanced text processing and async control.
