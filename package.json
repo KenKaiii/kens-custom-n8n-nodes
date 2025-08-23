@@ -1,6 +1,6 @@
 {
 	"name": "@kenkaiii/n8n-nodes-supercode",
-	"version": "1.4.3",
+	"version": "1.4.4",
 	"description": "Advanced JavaScript/Python execution nodes for n8n with complete workflow context support ($() node referencing), 50+ JavaScript libraries, AI agent support, language detection, NLP, YouTube downloading and FFmpeg video processing",
 	"keywords": [
 		"n8n-community-node-package",
@@ -113,7 +113,8 @@
 		"xlsx": "^0.18.5",
 		"xml2js": "^0.6.2",
 		"yaml": "^2.8.1",
-		"yup": "^1.7.0"
+		"yup": "^1.7.0",
+		"zod": "^3.25.76"
 	},
 	"devDependencies": {
 		"@types/crypto-js": "^4.2.1",

@@ -57,9 +57,28 @@ const embeddedLibraries = {
 			return undefined;
 		}
 	},
+	get zod() {
+		try {
+			return require('zod');
+		} catch (error) {
+			console.warn('[SuperCode] zod not available in this environment:', error.message);
+			return undefined;
+		}
+	},
+	z: (() => {
+		// Alias for zod
+		try {
+			return require('zod');
+		} catch (error) {
+			return undefined;
+		}
+	})(),
 
 	// Parsing & Processing
-	csvParse: require('csv-parse'),
+	csvParse: (() => {
+		const { parse } = require('csv-parse');
+		return parse;
+	})(),
 	xml2js: require('xml2js'),
 	XMLParser: require('fast-xml-parser').XMLParser,
 	YAML: require('yaml'),
@@ -88,6 +107,11 @@ const embeddedLibraries = {
 		const xlsx = require('xlsx');
 		// Use enhanced security wrapper to protect against CVE vulnerabilities
 		// Addresses GHSA-4r6h-8v6p-xvw6 (Prototype Pollution) and GHSA-5pgg-2g8v-p4x9 (ReDoS)
+		return xlsx;
+	})(),
+	xlsx: (() => {
+		// Lowercase alias for compatibility
+		const xlsx = require('xlsx');
 		return xlsx;
 	})(),
 	get pdfLib() {
@@ -162,7 +186,11 @@ const embeddedLibraries = {
 	bytes: require('bytes'),
 
 	// Financial & Geographic
-	currency: require('currency.js'),
+	currency: (() => {
+		const currencyLib = require('currency.js');
+		// Return the default export if it exists, otherwise the module itself
+		return currencyLib.default || currencyLib;
+	})(),
 	phoneNumber: require('libphonenumber-js'),
 	iban: require('iban'),
 
