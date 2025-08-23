@@ -254,22 +254,78 @@ const embeddedLibraries = {
 	},
 
 	// Natural Language Processing & Text Analysis
-	franc: require('franc-min'),
-	compromise: require('compromise'),
+	get franc() {
+		try {
+			return require('franc-min');
+		} catch (error) {
+			console.warn('[SuperCode] franc-min not available in this environment:', error.message);
+			return undefined;
+		}
+	},
+	get compromise() {
+		try {
+			return require('compromise');
+		} catch (error) {
+			console.warn('[SuperCode] compromise not available in this environment:', error.message);
+			return undefined;
+		}
+	},
 
-	// Async Control Flow  
-	pRetry: require('p-retry'),
-	pLimit: require('p-limit'),
+	// Async Control Flow
+	get pRetry() {
+		try {
+			return require('p-retry');
+		} catch (error) {
+			console.warn('[SuperCode] p-retry not available in this environment:', error.message);
+			return undefined;
+		}
+	},
+	get pLimit() {
+		try {
+			return require('p-limit');
+		} catch (error) {
+			console.warn('[SuperCode] p-limit not available in this environment:', error.message);
+			return undefined;
+		}
+	},
 
 	// Text Processing & Conversion
-	htmlToText: require('html-to-text'),
-	marked: require('marked'),
+	get htmlToText() {
+		try {
+			return require('html-to-text');
+		} catch (error) {
+			console.warn('[SuperCode] html-to-text not available in this environment:', error.message);
+			return undefined;
+		}
+	},
+	get marked() {
+		try {
+			return require('marked');
+		} catch (error) {
+			console.warn('[SuperCode] marked not available in this environment:', error.message);
+			return undefined;
+		}
+	},
 
 	// Data Comparison
-	jsonDiff: require('json-diff-ts'),
+	get jsonDiff() {
+		try {
+			return require('json-diff-ts');
+		} catch (error) {
+			console.warn('[SuperCode] json-diff-ts not available in this environment:', error.message);
+			return undefined;
+		}
+	},
 
 	// Data Operations
-	cronParser: require('cron-parser'),
+	get cronParser() {
+		try {
+			return require('cron-parser');
+		} catch (error) {
+			console.warn('[SuperCode] cron-parser not available in this environment:', error.message);
+			return undefined;
+		}
+	},
 };
 
 // Try to load full bundle, fall back to embedded
