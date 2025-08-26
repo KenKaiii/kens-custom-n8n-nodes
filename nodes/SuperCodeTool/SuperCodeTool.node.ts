@@ -293,7 +293,7 @@ export class SuperCodeTool implements INodeType {
 					{
 						name: 'JavaScript',
 						value: 'javascript',
-						description: 'Execute JavaScript/TypeScript with 44+ enhanced libraries including YouTube/FFmpeg',
+						description: '🚀 AI Tool version: Replace entire workflows with ONE node! 47+ libraries, full context access, LLM-optimized for code generation',
 					},
 					{
 						name: 'Python',

@@ -923,7 +923,7 @@ export class SuperCodeNode implements INodeType {
 		group: ['transform'],
 		version: 1,
 		description:
-			'Execute JavaScript/TypeScript with 44+ enhanced libraries and utilities including YouTube downloading and FFmpeg video processing',
+			'🚀 The node that replaces entire workflows! Consolidate 10-15 nodes into ONE with 47+ libraries, full workflow access, and AI-ready code generation',
 		defaults: {
 			name: 'Super Code',
 		},

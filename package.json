@@ -1,7 +1,7 @@
 {
 	"name": "@kenkaiii/n8n-nodes-supercode",
-	"version": "1.4.4",
-	"description": "Advanced JavaScript/Python execution nodes for n8n with complete workflow context support ($() node referencing), 50+ JavaScript libraries, AI agent support, language detection, NLP, YouTube downloading and FFmpeg video processing",
+	"version": "1.4.5",
+	"description": "Revolutionary n8n node that replaces entire workflow chains. Consolidate 10-15 nodes into one with 50+ JavaScript libraries, full workflow context access, and zero external dependencies. The node that takes n8n to the next level.",
 	"keywords": [
 		"n8n-community-node-package",
 		"n8n",
